@@ -157,7 +157,12 @@ function translateValue(value) {
 
 function translateElement(root) {
     if (root.nodeType === Node.TEXT_NODE) {
-        root.nodeValue = translateValue(root.nodeValue ?? "");
+        const currentValue = root.nodeValue ?? "";
+        const translatedValue = translateValue(currentValue);
+        // Avoid emitting a new characterData mutation when no translation is
+        // needed. Reassigning the same value can otherwise keep the observer
+        // busy and make buttons appear unresponsive.
+        if (translatedValue !== currentValue) root.nodeValue = translatedValue;
         return;
     }
     if (!(root instanceof Element) && root !== document) return;
@@ -167,14 +172,18 @@ function translateElement(root) {
     while ((node = walker.nextNode())) {
         const parent = node.parentElement;
         if (parent?.matches("script, style, code, pre")) continue;
-        node.nodeValue = translateValue(node.nodeValue ?? "");
+        const currentValue = node.nodeValue ?? "";
+        const translatedValue = translateValue(currentValue);
+        if (translatedValue !== currentValue) node.nodeValue = translatedValue;
     }
 
     const elements = root instanceof Element ? [root, ...root.querySelectorAll("[placeholder], [title], [aria-label]")] : root.querySelectorAll("[placeholder], [title], [aria-label]");
     for (const element of elements) {
         for (const attribute of ["placeholder", "title", "aria-label"]) {
             if (element.hasAttribute(attribute)) {
-                element.setAttribute(attribute, translateValue(element.getAttribute(attribute) ?? ""));
+                const currentValue = element.getAttribute(attribute) ?? "";
+                const translatedValue = translateValue(currentValue);
+                if (translatedValue !== currentValue) element.setAttribute(attribute, translatedValue);
             }
         }
     }
@@ -187,4 +196,3 @@ new MutationObserver((mutations) => {
         for (const node of mutation.addedNodes) translateElement(node);
     }
 }).observe(document.body, { childList: true, subtree: true, characterData: true });
-
