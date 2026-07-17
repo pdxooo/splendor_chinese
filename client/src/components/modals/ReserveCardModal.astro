@@ -9,6 +9,12 @@ import ModalLayout from "../../layouts/ModalLayout.astro";
     <p>Please select the card you wish to reserve.</p>
 
     <div id="reserve-card-board" class="reserve-card-board">
+        <p>Or reserve the top card of a deck:</p>
+        <div class="reserve-deck-options">
+            <button type="button" data-deck-id="DECK_TIER_1">Level 1 deck</button>
+            <button type="button" data-deck-id="DECK_TIER_2">Level 2 deck</button>
+            <button type="button" data-deck-id="DECK_TIER_3">Level 3 deck</button>
+        </div>
         <div class="modal-board-cards"></div>
     </div>
     <div class="button-container">
