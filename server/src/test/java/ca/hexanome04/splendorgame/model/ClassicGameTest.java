@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import ca.hexanome04.splendorgame.model.action.ActionResult;
+import ca.hexanome04.splendorgame.model.action.actions.BuyCardAction;
 import ca.hexanome04.splendorgame.model.action.actions.ReserveCardAction;
 import ca.hexanome04.splendorgame.model.action.actions.TakeTokenAction;
 import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
@@ -11,6 +12,7 @@ import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientPlayer;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -86,6 +88,47 @@ class ClassicGameTest {
     }
 
     @Test
+    @DisplayName("A purchased card permanently discounts a later purchase")
+    void classicGameAppliesPurchasedCardBonusToNextPurchase() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        HashMap<TokenType, Integer> tokens = new HashMap<>();
+        tokens.put(TokenType.Green, 1);
+        tokens.put(TokenType.Blue, 2);
+        tokens.put(TokenType.Red, 1);
+        player.addTokens(tokens);
+
+        game.takeAction("Player1", new BuyCardAction("05", new HashMap<>(Map.of(TokenType.Green, 1))));
+        game.takeAction("Player2", new TakeTokenAction(new HashMap<>(Map.of(
+                TokenType.White, 1, TokenType.Blue, 1, TokenType.Brown, 1)), new HashMap<>()));
+        List<ActionResult> secondPurchase = game.takeAction("Player1", new BuyCardAction("03",
+                new HashMap<>(Map.of(TokenType.Blue, 2, TokenType.Red, 1))));
+
+        assertEquals(List.of(ActionResult.TURN_COMPLETED, ActionResult.VALID_ACTION), secondPurchase);
+        assertEquals(2, player.getBonuses().get(TokenType.Green));
+        assertEquals(0, player.getTokens().get(TokenType.Green));
+        assertEquals(0, player.getTokens().get(TokenType.Blue));
+        assertEquals(0, player.getTokens().get(TokenType.Red));
+    }
+
+    @Test
+    @DisplayName("A single qualifying noble visits automatically at end of turn")
+    void classicGameAutomaticallyAwardsSingleQualifyingNoble() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        player.addBonus(TokenType.Blue, 2);
+        player.addBonus(TokenType.Green, 2);
+        player.addBonus(TokenType.Red, 1);
+        player.addBonus(TokenType.Brown, 1);
+
+        game.takeAction("Player1", new TakeTokenAction(new HashMap<>(Map.of(
+                TokenType.White, 1, TokenType.Blue, 1, TokenType.Green, 1)), new HashMap<>()));
+
+        assertEquals(List.of("98"), player.getNobles().stream().map(Card::getId).toList());
+        assertEquals(3, player.getPrestigePoints());
+    }
+
+    @Test
     @DisplayName("Classic game finishes the round and ranks by prestige first")
     void classicGameFinishesRoundAndUsesCorrectWinnerOrder() {
         OrientGame unfinishedRound = createClassicGame(0);
@@ -103,6 +146,22 @@ class ClassicGameTest {
         finishedRound.addPlayersWhoCanWin(higherScore);
 
         assertEquals(List.of(higherScore), finishedRound.checkForWin());
+    }
+
+    @Test
+    @DisplayName("Prestige ties are broken by fewest purchased development cards")
+    void classicGameBreaksPrestigeTieWithFewestDevelopmentCards() {
+        OrientGame game = createClassicGame(1);
+        Player moreCards = game.getPlayerFromName("Player1");
+        Player fewerCards = game.getPlayerFromName("Player2");
+        moreCards.addPrestigePoints(15);
+        fewerCards.addPrestigePoints(15);
+        moreCards.addCard(new RegDevelopmentCard(CardTier.TIER_1, TokenType.White, 1,
+                0, CostType.Token, new HashMap<>(), "tie-break-card"));
+        game.addPlayersWhoCanWin(moreCards);
+        game.addPlayersWhoCanWin(fewerCards);
+
+        assertEquals(List.of(fewerCards), game.checkForWin());
     }
 
     private OrientGame createClassicGame(int turnCounter) {
