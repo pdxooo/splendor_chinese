@@ -6,6 +6,7 @@ import ca.hexanome04.splendorgame.model.action.Action;
 import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.Actions;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
+import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPlayer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -72,7 +73,12 @@ public class TakeTokenAction extends Action {
                 return result;
             }
 
-            if (putBackTokensNum > playerCurrentTokensNum) {
+            if (takeTokensNum < 0 || putBackTokensNum < 0) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+
+            if (putBackTokensNum > playerCurrentTokensNum + takeTokensNum) {
                 result.add(ActionResult.NOT_ENOUGH_TOKENS_IN_INVENTORY);
                 return result;
             }
@@ -105,6 +111,30 @@ public class TakeTokenAction extends Action {
                 if (takeTokens.get(t) > 0) {
                     uniqueTokens++;
                 }
+            }
+        }
+
+        if (game.getGameVersion() == GameVersions.BASE) {
+            int goldTaken = takeTokens.getOrDefault(TokenType.Gold, 0);
+            int satchelTaken = takeTokens.getOrDefault(TokenType.Satchel, 0);
+            if (goldTaken > 0 || satchelTaken > 0) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+
+            int availableColours = 0;
+            for (TokenType type : List.of(TokenType.White, TokenType.Blue, TokenType.Green,
+                    TokenType.Red, TokenType.Brown)) {
+                if (game.getTokens().getOrDefault(type, 0) > 0) {
+                    availableColours++;
+                }
+            }
+            int requiredUniqueColours = Math.min(3, availableColours);
+            boolean validDifferentColours = doubleTokens == 0 && uniqueTokens == requiredUniqueColours;
+            boolean validSameColour = doubleTokens == 1 && uniqueTokens == 0;
+            if (!validDifferentColours && !validSameColour) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
             }
         }
 
