@@ -52,6 +52,56 @@ const submitTakeTokens = (putBackTokens = {}) => {
         }).catch((err) => showError(err.toString()));
 };
 
+const paymentColors = ["Red", "Blue", "Green", "White", "Brown"];
+
+const getPlayerPaymentState = () => {
+    const tokens = {};
+    const bonuses = {};
+    document.querySelectorAll("#player-inventory .player-inventory-tokens .bonus-container").forEach(container => {
+        const token = container.querySelector("board-token");
+        const color = token?.getAttribute("color");
+        if(!color) return;
+        const key = color.charAt(0).toUpperCase() + color.slice(1);
+        tokens[key] = readTokenCount(token);
+        bonuses[key] = Number(container.querySelector(".bonus-icon > span")?.textContent) || 0;
+    });
+    return { tokens, bonuses };
+};
+
+const calculateMinimumPayment = (cardNode) => {
+    const rawCost = cardNode.getAttribute("cost");
+    if(!rawCost) return { purchasable: false, payment: {} };
+
+    const cost = JSON.parse(rawCost);
+    const { tokens, bonuses } = getPlayerPaymentState();
+    const payment = {};
+
+    // Some Orient cards are paid by permanently discarding bonuses instead
+    // of spending tokens. They are purchasable only when the bonus cost is met.
+    if(cardNode.getAttribute("cost-type") === "Bonus") {
+        const purchasable = paymentColors.every(color =>
+            Number(bonuses[color] || 0) >= Number(cost[color] || 0));
+        paymentColors.forEach(color => payment[color] = 0);
+        payment.Gold = 0;
+        return { purchasable, payment };
+    }
+
+    let goldNeeded = 0;
+
+    paymentColors.forEach(color => {
+        const remainingCost = Math.max(0, Number(cost[color] || 0) - Number(bonuses[color] || 0));
+        const coloredPayment = Math.min(remainingCost, Number(tokens[color] || 0));
+        payment[color] = coloredPayment;
+        goldNeeded += remainingCost - coloredPayment;
+    });
+    payment.Gold = goldNeeded;
+
+    return {
+        purchasable: goldNeeded <= Number(tokens.Gold || 0),
+        payment
+    };
+};
+
 
 // -----------------------------------------------------------------------------------------
 // Setup take token & put back token
@@ -150,6 +200,8 @@ const showPurchasableDevCards = () => {
         const imgUrl = `/images/development-cards/${cid}.jpg`;
 
         div.setAttribute("card-id", cid);
+        if(elm.hasAttribute("cost")) div.setAttribute("cost", elm.getAttribute("cost"));
+        if(elm.hasAttribute("cost-type")) div.setAttribute("cost-type", elm.getAttribute("cost-type"));
         div.querySelector("img").setAttribute("src", imgUrl);
 
         // add to inv
@@ -172,6 +224,12 @@ const showPurchasableDevCards = () => {
 
     const cardsSelectionSelector = "#buy-card-modal .board-card-dev";
 
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        const { purchasable } = calculateMinimumPayment(card);
+        card.classList.toggle("purchasable", purchasable);
+        card.classList.toggle("unaffordable", !purchasable);
+    });
+
     setupSelection(cardsSelectionSelector);
 
     document.querySelector("#buy-card-modal #buy-card-confirm-btn").onclick = () => {
@@ -179,6 +237,10 @@ const showPurchasableDevCards = () => {
         if(!selectedCard) {
             // no card has been selected, error
             showError("You have not selected a card to purchase!");
+            return;
+        }
+        if(!calculateMinimumPayment(selectedCard).purchasable) {
+            showError("You do not have enough tokens to purchase this card.");
             return;
         }
 
@@ -199,14 +261,14 @@ const showPayment = (cardNode) => {
     const imgSrc = `/images/development-cards/${cardId}.jpg`;
     document.querySelector("#dev-card-payment-modal .purchase-show-card img").setAttribute("src", imgSrc);
 
-    // clear previous numbers
-    document.querySelectorAll("#dev-card-payment-modal board-token").forEach(elm => {
-        elm.setCount(0);
-    });
-
-    // set min and max for counters, TODO: set max and min values to what tokens the player has
+    const { payment } = calculateMinimumPayment(cardNode);
     document.querySelectorAll("#dev-card-payment-modal board-token-counter").forEach(elm => {
-        elm.setMax(10);
+        const color = elm.getAttribute("color");
+        const key = color.charAt(0).toUpperCase() + color.slice(1);
+        const amount = Number(payment[key] || 0);
+        elm.querySelector("board-token").setCount(amount);
+        elm.setMin(amount);
+        elm.setMax(amount);
     });
 
     confirmBtn.onclick = () => {
@@ -256,6 +318,19 @@ const showReservableDevCards = () => {
     cardRows.forEach((elm) => {
         const cNode = elm.cloneNode(true);
         modalCardRows.appendChild(cNode);
+    });
+
+    const deckByRow = {
+        "board-cards-level1": "DECK_TIER_1",
+        "board-cards-level2": "DECK_TIER_2",
+        "board-cards-level3": "DECK_TIER_3"
+    };
+    Object.entries(deckByRow).forEach(([rowClass, deckId]) => {
+        const deck = modalCardRows.querySelector(`.${rowClass} .board-cards-dev-deck`);
+        if(deck) {
+            deck.setAttribute("data-deck-id", deckId);
+            deck.setAttribute("title", `Reserve blindly from ${deckId.replace("DECK_TIER_", "level ")}`);
+        }
     });
 
     const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev";
