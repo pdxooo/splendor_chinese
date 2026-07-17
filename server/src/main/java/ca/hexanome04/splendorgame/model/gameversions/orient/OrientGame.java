@@ -323,6 +323,15 @@ public class OrientGame implements Game {
         return takenCard != null;
     }
 
+    @Override
+    public DevelopmentCard takeTopDevelopmentCard(CardTier tier) {
+        return switch (tier) {
+            case TIER_1 -> this.tier1Deck.takeTopCard();
+            case TIER_2 -> this.tier2Deck.takeTopCard();
+            case TIER_3 -> this.tier3Deck.takeTopCard();
+        };
+    }
+
     /**
      * Check if player has the right bonuses to qualify for any nobles.
      *
@@ -597,26 +606,25 @@ public class OrientGame implements Game {
 
     @Override
     public List<Player> checkForWin() {
-        if (playersWhoCanWin.size() > 0 && turnCounter != 0 && turnCounter % (players.size() - 1) == 0) {
-            List<Player> tmpWinners = new ArrayList<>(winners);
-            tmpWinners.add(playersWhoCanWin.get(0));
-
-            for (Player p : playersWhoCanWin) {
-                Player currentWinner = tmpWinners.get(0);
-                if (p.getDevCards().size() < currentWinner.getDevCards().size()) {
-                    tmpWinners.clear();
-                    tmpWinners.add(p);
-                } else if (p != currentWinner && p.getDevCards().size() == currentWinner.getDevCards().size()) {
-                    if (!tmpWinners.contains(currentWinner)) {
-                        tmpWinners.add(currentWinner);
-                    }
-                    if (!tmpWinners.contains(p)) {
-                        tmpWinners.add(p);
-                    }
-                }
-            }
+        // Everyone must receive the same number of turns. Player 0 starts, so
+        // the round is complete only after the last player has acted.
+        if (playersWhoCanWin.size() > 0 && turnCounter == players.size() - 1) {
+            int highestPrestige = players.stream()
+                    .mapToInt(Player::getPrestigePoints)
+                    .max()
+                    .orElse(0);
+            List<Player> highestScorers = players.stream()
+                    .filter(player -> player.getPrestigePoints() == highestPrestige)
+                    .toList();
+            int fewestDevelopmentCards = highestScorers.stream()
+                    .mapToInt(player -> player.getDevCards().size())
+                    .min()
+                    .orElse(0);
+            List<Player> tmpWinners = highestScorers.stream()
+                    .filter(player -> player.getDevCards().size() == fewestDevelopmentCards)
+                    .toList();
             gameOver = true;
-            return tmpWinners;
+            return new ArrayList<>(tmpWinners);
         }
         return null;
     }
