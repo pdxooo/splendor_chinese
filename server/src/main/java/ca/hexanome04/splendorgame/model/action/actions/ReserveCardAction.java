@@ -1,7 +1,7 @@
 package ca.hexanome04.splendorgame.model.action.actions;
 
-import ca.hexanome04.splendorgame.model.DevelopmentCard;
 import ca.hexanome04.splendorgame.model.CardTier;
+import ca.hexanome04.splendorgame.model.DevelopmentCard;
 import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.SplendorException;
 import ca.hexanome04.splendorgame.model.TokenType;
