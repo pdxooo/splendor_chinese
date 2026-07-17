@@ -8,11 +8,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/** Keeps only the four accounts required by this deployment. */
+/** Keeps only the accounts required by this deployment. */
 @Component
 public class AccountBootstrap implements CommandLineRunner {
 
-    private static final Set<String> ALLOWED_ACCOUNTS = Set.of("lxh", "maex", "xox", "xyj");
+    private static final Set<String> ALLOWED_ACCOUNTS = Set.of("lxh", "maex", "qhc", "xox", "xyj");
     private final PlayerRepository playerRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -28,6 +28,7 @@ public class AccountBootstrap implements CommandLineRunner {
                 .forEach(playerRepository::delete);
 
         savePlayerWithSimplePassword("lxh", "00DD44");
+        savePlayerWithSimplePassword("qhc", "2288EE");
         savePlayerWithSimplePassword("xyj", "EE2222");
     }
 
