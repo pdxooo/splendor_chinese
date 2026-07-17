@@ -367,7 +367,7 @@ public class ActionsTests {
         ArrayList<ActionResult> result = game.takeAction(p1.getName(), new TakeTokenAction(tokensToTake, tokensToPutBack));
 
         assertThat(expected).isEqualTo(p1.getTokens());
-        assertThat(ActionResult.INVALID_TOKENS_GIVEN).isIn(result);
+        assertThat(ActionResult.TOO_MANY_SAME_COLOUR_TOKENS).isIn(result);
     }
 
     @DisplayName("Ensure players cannot take more than 3 unique tokens per turn.")
