@@ -43,6 +43,34 @@ class ClassicGameTest {
     }
 
     @Test
+    @DisplayName("A player at ten tokens may take first and then return the excess")
+    void classicGameAllowsReturningExcessAfterTaking() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        HashMap<TokenType, Integer> startingTokens = new HashMap<>();
+        startingTokens.put(TokenType.Red, 2);
+        startingTokens.put(TokenType.Blue, 2);
+        startingTokens.put(TokenType.Green, 2);
+        startingTokens.put(TokenType.White, 2);
+        startingTokens.put(TokenType.Brown, 2);
+        player.addTokens(startingTokens);
+
+        HashMap<TokenType, Integer> take = new HashMap<>();
+        take.put(TokenType.Red, 1);
+        take.put(TokenType.Blue, 1);
+        take.put(TokenType.Green, 1);
+        HashMap<TokenType, Integer> putBack = new HashMap<>();
+        putBack.put(TokenType.White, 2);
+        putBack.put(TokenType.Brown, 1);
+
+        List<ActionResult> result = game.takeAction("Player1", new TakeTokenAction(take, putBack));
+        int finalTokenCount = player.getTokens().values().stream().mapToInt(Integer::intValue).sum();
+
+        assertEquals(List.of(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED), result);
+        assertEquals(10, finalTokenCount);
+    }
+
+    @Test
     @DisplayName("Classic game allows reserving a face-down card and grants gold")
     void classicGameAllowsBlindReservation() {
         OrientGame game = createClassicGame(0);
