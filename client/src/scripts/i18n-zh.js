@@ -7,6 +7,7 @@
  */
 const translations = new Map(Object.entries({
     "Splendor": "璀璨宝石",
+    "Splendor Classic": "璀璨宝石：经典版",
     "Splendor | Login": "璀璨宝石 | 登录",
     "Splendor | Lobby": "璀璨宝石 | 游戏大厅",
     "Splendor | Settings": "璀璨宝石 | 设置",
