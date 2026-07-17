@@ -79,6 +79,14 @@ public interface Game {
     boolean takeCard(Card card);
 
     /**
+     * Reserve a face-down card from the top of a regular development deck.
+     *
+     * @param tier deck tier
+     * @return top card, or null when that deck is empty
+     */
+    DevelopmentCard takeTopDevelopmentCard(CardTier tier);
+
+    /**
      * Add tokens to the board.
      *
      * @param tokensInput tokens to be added
