@@ -144,11 +144,17 @@ public class OrientGame implements Game {
 
                     case "N" -> nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
 
-                    case "O1" -> tier1OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_1, tokenType, bonusCount,
-                            CascadeType.None, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
+                    case "O1" -> {
+                        if (gameVersion != GameVersions.BASE) {
+                            tier1OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_1, tokenType, bonusCount,
+                                    CascadeType.None, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
+                        }
+                    }
 
                     case "O2" -> {
-                        if (!card[7].isBlank()) {
+                        if (gameVersion == GameVersions.BASE) {
+                            // The classic game does not use Orient cards.
+                        } else if (!card[7].isBlank()) {
                             tier2OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_2, tokenType, bonusCount,
                                     CascadeType.Tier1, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
                         } else if (!card[8].isBlank()) {
@@ -161,7 +167,9 @@ public class OrientGame implements Game {
                     }
 
                     case "O3" -> {
-                        if (!card[7].isBlank()) {
+                        if (gameVersion == GameVersions.BASE) {
+                            // The classic game does not use Orient cards.
+                        } else if (!card[7].isBlank()) {
                             tier3OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_3, tokenType, bonusCount,
                                     CascadeType.Tier2, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
                         } else {
