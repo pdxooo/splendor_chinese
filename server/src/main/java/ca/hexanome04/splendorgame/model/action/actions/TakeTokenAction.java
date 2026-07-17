@@ -97,14 +97,14 @@ public class TakeTokenAction extends Action {
         for (TokenType t : takeTokens.keySet()) {
             // invalid if player tries to take >2 of one token type (unless trade routes power unlocked)
             if (takeTokens.get(t) > 2) {
-                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                result.add(ActionResult.TOO_MANY_SAME_COLOUR_TOKENS);
                 return result;
             } else if (takeTokens.get(t) == 2) {
                 doubleTokens += 1;
 
                 // board pile must have at least 4 of this token for player to take two
                 if (game.getTokens().get(t) < 4) {
-                    result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                    result.add(ActionResult.DOUBLE_TOKENS_REQUIRE_FOUR);
                     return result;
                 }
             } else {
@@ -118,7 +118,7 @@ public class TakeTokenAction extends Action {
             int goldTaken = takeTokens.getOrDefault(TokenType.Gold, 0);
             int satchelTaken = takeTokens.getOrDefault(TokenType.Satchel, 0);
             if (goldTaken > 0 || satchelTaken > 0) {
-                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                result.add(ActionResult.CANNOT_TAKE_GOLD_TOKEN);
                 return result;
             }
 
@@ -133,7 +133,11 @@ public class TakeTokenAction extends Action {
             boolean validDifferentColours = doubleTokens == 0 && uniqueTokens == requiredUniqueColours;
             boolean validSameColour = doubleTokens == 1 && uniqueTokens == 0;
             if (!validDifferentColours && !validSameColour) {
-                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                if (doubleTokens > 0 && uniqueTokens > 0) {
+                    result.add(ActionResult.CANNOT_MIX_DOUBLE_AND_SINGLE_TOKENS);
+                } else {
+                    result.add(ActionResult.MUST_TAKE_THREE_DIFFERENT_TOKENS);
+                }
                 return result;
             }
         }
@@ -146,7 +150,9 @@ public class TakeTokenAction extends Action {
                 return result;
             }
         } else if (doubleTokens > 1 || uniqueTokens > 3 || (uniqueTokens > 0 && doubleTokens > 0)) {
-            result.add(ActionResult.INVALID_TOKENS_GIVEN);
+            result.add(doubleTokens > 0 && uniqueTokens > 0
+                    ? ActionResult.CANNOT_MIX_DOUBLE_AND_SINGLE_TOKENS
+                    : ActionResult.INVALID_TOKENS_GIVEN);
             return result;
         }
 
