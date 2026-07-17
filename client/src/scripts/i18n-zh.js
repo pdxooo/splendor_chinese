@@ -79,6 +79,7 @@ const translations = new Map(Object.entries({
     "TAKE TOKEN": "拿取宝石",
     "Please select the tokens you wish to take from the bank.": "请选择要从银行拿取的宝石。",
     "Bank Tokens": "银行宝石",
+    "Available to return": "可返还的宝石",
     "Select Tokens": "已选宝石",
     "BACK": "返回",
     "CONFIRM": "确认",
