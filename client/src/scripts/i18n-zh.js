@@ -60,7 +60,7 @@ const translations = new Map(Object.entries({
     "Admin": "管理员",
     "Service": "服务账号",
     "Only latin alphabet characters.": "只能使用英文字母。",
-    "8-32 characters long, with at least one uppercase, lowercase, digit and special character.": "长度为 8–32 位，且至少包含一个大写字母、小写字母、数字和特殊字符。",
+    "8-32 characters long, with at least one uppercase, lowercase, digit and special character.": "密码可自由设置，只要不为空即可。",
     "Select the user's type.": "选择用户类型。",
     "Preferred in-game colour.": "选择游戏中的偏好颜色。",
     "Registered Users": "已注册用户",
@@ -127,7 +127,24 @@ const translations = new Map(Object.entries({
     "Gold": "黄金",
     "PLAYER": "玩家",
     "ADMIN": "管理员",
-    "SERVICE": "服务账号"
+    "SERVICE": "服务账号",
+    "It is not this players turn.": "现在不是你的回合。",
+    "The tokens chosen are invalid.": "所选宝石不符合规则，请重新选择。",
+    "You cannot take three or more tokens of the same colour.": "不能拿取三个或更多同色宝石。",
+    "You may take two tokens of one colour only when at least four remain.": "只有该颜色宝石至少剩余 4 枚时，才能拿取 2 枚。",
+    "You must take three tokens of different colours when three colours are available.": "有至少三种颜色可选时，必须拿取三枚不同颜色的宝石。",
+    "Gold tokens cannot be taken directly; reserve a card to receive one.": "黄金不能直接拿取；预留卡牌时才能获得黄金。",
+    "You cannot combine two tokens of one colour with tokens of another colour.": "拿取两枚同色宝石时，不能再拿其他颜色。",
+    "You already have the maximum amount of reserved cards!": "你已经预留了 3 张卡牌，不能继续预留。",
+    "There are not enough tokens on the board for you to take.": "银行中的对应宝石数量不足。",
+    "You must return enough tokens to keep no more than 10.": "请返还足够的宝石，使持有总数不超过 10 枚。",
+    "You do not have enough tokens in your inventory.": "你没有足够的宝石可以返还或支付。",
+    "Invalid token type chosen for assigning satchel card bonus.": "选择的钱袋奖励颜色无效。",
+    "You have not selected a card to purchase!": "请先选择一张要购买的卡牌。",
+    "You have not selected a card to reserve!": "请先选择一张要预留的卡牌或一个牌堆。",
+    "You have not selected a noble!": "请先选择一位贵族。",
+    "You have not selected a city!": "请先选择一座城市。",
+    "You have not selected a card!": "请先选择一张卡牌。"
 }));
 
 const dynamicTranslations = [
@@ -139,7 +156,8 @@ const dynamicTranslations = [
     [/^🎉 (.+) is the winner! 🎉$/, "🎉 $1 获胜！🎉"],
     [/^(.+)'s turn$/, "轮到 $1"],
     [/^Welcome, (.+)!$/, "欢迎，$1！"],
-    [/^Hello, (.+)!$/, "你好，$1！"]
+    [/^Hello, (.+)!$/, "你好，$1！"],
+    [/^You must return exactly (\d+) token\(s\) to keep no more than 10\.$/, "你必须恰好返还 $1 枚宝石，使总数不超过 10 枚。"]
 ];
 
 function translateValue(value) {
