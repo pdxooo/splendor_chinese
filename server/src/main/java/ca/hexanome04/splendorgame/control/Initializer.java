@@ -59,6 +59,10 @@ public class Initializer {
         this.auth = auth;
         this.gameSaveInitializer = gameSaveInitializer;
         this.gameServices = new GameServiceInfo[] {
+            new GameServiceInfo(gsName + "_" + GameVersions.BASE,
+                        gsDisplayName + " Classic", gsLocation,
+                    2, 4, "true"),
+
             new GameServiceInfo(gsName + "_" + GameVersions.BASE_ORIENT,
                         gsDisplayName + " Orient", gsLocation,
                     2, 4, "true"),
