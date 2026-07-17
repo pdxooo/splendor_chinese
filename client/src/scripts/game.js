@@ -48,6 +48,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
     const updateCardElement = (deckSelector, cardSelector, freeCardElm, cardInfo) => {
         const cardId = cardInfo["id"];
         const cost = cardInfo["tokenCost"];
+        const costType = cardInfo["costType"];
 
         const imgUrl = `/images/development-cards/${cardId}.jpg`;
         const imgElm = freeCardElm.querySelector("img");
@@ -57,6 +58,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
         // add additional info
         freeCardElm.setAttribute("card-id", cardId);
         freeCardElm.setAttribute("cost", JSON.stringify(cost));
+        freeCardElm.setAttribute("cost-type", costType);
 
         // slight timeout to ensure no content shift
         // only delay if deck is not invisible
@@ -76,6 +78,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
             const oldElm = row.querySelector(`${selector} ${cardSelector}[card-id="${cid}"]`);
             oldElm.removeAttribute("card-id");
             oldElm.removeAttribute("cost");
+            oldElm.removeAttribute("cost-type");
             oldElm.querySelector("img").removeAttribute("src");
         });
 
@@ -132,6 +135,9 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
         const imgUrl = `/images/${imageFolder}/${cid}.jpg`;
 
         div.setAttribute("card-id", cid);
+        const cardInfo = cards.find(card => card.id === cid);
+        if(cardInfo?.tokenCost) div.setAttribute("cost", JSON.stringify(cardInfo.tokenCost));
+        if(cardInfo?.costType) div.setAttribute("cost-type", cardInfo.costType);
         const imgElm = div.querySelector("img");
         imgElm.setAttribute("src", imgUrl);
 
