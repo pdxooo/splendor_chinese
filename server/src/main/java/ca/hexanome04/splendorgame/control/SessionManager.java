@@ -159,6 +159,7 @@ public class SessionManager {
     public Game launchNewGame(GameVersions version, List<PlayerInfo> players) {
 
         Game game = switch (version) {
+            case BASE -> new OrientGame(GameVersions.BASE, 15, 0);
             case BASE_ORIENT -> new OrientGame(15, 0);
             case BASE_ORIENT_CITIES -> new CitiesGame(0);
             case BASE_ORIENT_TRADE_ROUTES -> new TradingPostsGame(15, 0);
