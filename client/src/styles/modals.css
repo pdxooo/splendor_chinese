@@ -396,14 +396,41 @@
   outline: 0.2rem solid goldenrod;
 }
 
+#buy-card-modal .board-card-dev.purchasable {
+  outline: 0.18rem solid #68f58a;
+  box-shadow: 0 0 18px 3px rgb(104 245 138 / 70%);
+}
+
+#buy-card-modal .board-card-dev.unaffordable {
+  filter: brightness(55%) grayscale(30%);
+  opacity: 0.7;
+}
+
+#buy-card-modal .board-card-dev.selected {
+  outline-color: goldenrod;
+  filter: none;
+  opacity: 1;
+}
+
 /* Unnecessary to show in modal */
 #buy-card-modal .board-cards-row .board-cards-dev-deck,
 #buy-card-modal .board-cards-row .board-cards-dev-deck-orient,
-#reserve-card-modal .board-cards-row .board-cards-dev-deck,
 #reserve-card-modal .board-cards-row .board-cards-dev-deck-orient,
 #cascade-modal .board-cards-row .board-cards-dev-deck,
 #cascade-modal .board-cards-row .board-cards-dev-deck-orient {
   display: none;
+}
+
+#reserve-card-modal .board-cards-dev-deck {
+  cursor: pointer;
+  margin-right: 1.2em;
+}
+
+#reserve-card-modal .board-cards-dev-deck:hover,
+#reserve-card-modal .board-cards-dev-deck.selected {
+  outline: 0.2rem solid goldenrod;
+  border-radius: var(--card-border-radius);
+  transform: scale(1.08);
 }
 
 .cascade-board {
