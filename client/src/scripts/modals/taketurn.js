@@ -32,6 +32,17 @@ const setBoardTokens = (modal) => {
     modalNode.querySelector(".gold-token > span").textContent = boardNode.querySelector(".gold-token > span").textContent;
 };
 
+const countTokens = (selector) => Array.from(document.querySelectorAll(selector))
+    .reduce((total, node) => total + (Number(node.count ?? node.parentNode?.count) || 0), 0);
+
+const submitTakeTokens = (putBackTokens = {}) => {
+    const takeTokens = getTokensList("#take-token-modal board-token-counter board-token .board-token");
+    return performAction("TAKE_TOKEN", { takeTokens, putBackTokens })
+        .then((resp) => {
+            if(resp.error) showError(resp.message);
+        }).catch((err) => showError(err.toString()));
+};
+
 
 // -----------------------------------------------------------------------------------------
 // Setup take token & put back token
@@ -57,12 +68,18 @@ const takeTokens = () => {
     setBoardTokens("#take-token-modal");
 
     document.querySelector("#take-token-modal #take-token-confirm-btn").onclick = () => {
-        putBackTokens();
-        showNextModal("#put-back-token-modal");
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const selectedTotal = countTokens("#take-token-modal board-token-counter board-token .board-token");
+        if(currentTotal + selectedTotal <= 10) {
+            submitTakeTokens();
+        } else {
+            putBackTokens(currentTotal + selectedTotal - 10);
+            showNextModal("#put-back-token-modal");
+        }
     };
 };
 
-const putBackTokens = () => {
+const putBackTokens = (requiredCount) => {
     const confirmBtn = document.querySelector("#put-back-token-modal .put-back-token-confirm-btn");
 
     // clear previous numbers
@@ -78,23 +95,14 @@ const putBackTokens = () => {
     setBoardTokens("#put-back-token-modal");
 
     confirmBtn.onclick = () => {
+        const selectedCount = countTokens("#put-back-token-modal board-token-counter board-token .board-token");
+        if(selectedCount !== requiredCount) {
+            showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+            return;
+        }
         confirmBtn.disabled = true;
-
-        const dataCallback = () => {
-            return {
-                "takeTokens": getTokensList("#take-token-modal board-token-counter board-token .board-token"),
-                "putBackTokens": getTokensList("#put-back-token-modal board-token-counter board-token .board-token")
-            };
-        };
-
-        performAction("TAKE_TOKEN", dataCallback)
-            .then((resp) => {
-                if(resp.error) {
-                    showError(resp.message);
-                }
-            }).catch((err) => {
-                showError(err.toString());
-            }).finally(() =>  confirmBtn.disabled = false);
+        submitTakeTokens(getTokensList("#put-back-token-modal board-token-counter board-token .board-token"))
+            .finally(() => confirmBtn.disabled = false);
     };
 };
 
