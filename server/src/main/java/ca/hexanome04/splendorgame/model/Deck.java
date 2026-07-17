@@ -118,4 +118,18 @@ public class Deck<T extends Card> {
         this.updateDrawable();
     }
 
+    /**
+     * Remove and return the top face-down card without revealing a replacement.
+     *
+     * @return top card, or null when the deck is empty
+     */
+    public T takeTopCard() {
+        if (this.cards.isEmpty()) {
+            return null;
+        }
+        T card = this.cards.pop();
+        this.updateDrawable();
+        return card;
+    }
+
 }
