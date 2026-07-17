@@ -1,6 +1,7 @@
 package ca.hexanome04.splendorgame.model.action.actions;
 
 import ca.hexanome04.splendorgame.model.DevelopmentCard;
+import ca.hexanome04.splendorgame.model.CardTier;
 import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.SplendorException;
 import ca.hexanome04.splendorgame.model.TokenType;
@@ -43,19 +44,27 @@ public class ReserveCardAction extends Action {
 
         ArrayList<ActionResult> result = new ArrayList<>();
 
-        // get card from board
-        DevelopmentCard dc = (DevelopmentCard) game.getCardFromId(this.reserveCardId);
-        if (dc == null) {
-            throw new SplendorException("Card with id '" + this.reserveCardId + "' does not exist.");
-        }
-
         if (player.getReservedCards().size() >= 3) {
             result.add(ActionResult.MAXIMUM_CARDS_RESERVED);
             return result;
         }
 
+        boolean faceDownReservation = this.reserveCardId.startsWith("DECK_TIER_");
+        DevelopmentCard dc;
+        if (faceDownReservation) {
+            CardTier tier = CardTier.valueOf(this.reserveCardId.substring("DECK_".length()));
+            dc = game.takeTopDevelopmentCard(tier);
+        } else {
+            dc = (DevelopmentCard) game.getCardFromId(this.reserveCardId);
+        }
+        if (dc == null) {
+            throw new SplendorException("Card with id '" + this.reserveCardId + "' does not exist.");
+        }
+
         // no error handling
-        game.takeCard(dc);
+        if (!faceDownReservation) {
+            game.takeCard(dc);
+        }
         player.reserveCard(dc);
 
 
