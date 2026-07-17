@@ -335,6 +335,7 @@ const updateGameboard = async () => {
     gameStateHash = newHash;
     console.log("[AS] Update available!");
     const data = JSON.parse(dataText);
+    document.body.classList.toggle("classic-game", data.gameVersion === "BASE");
     lastState = currentState;
     currentState = data;
     writeUpdate(lastState, currentState);
