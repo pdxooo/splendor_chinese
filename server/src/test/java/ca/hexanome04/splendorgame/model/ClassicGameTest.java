@@ -39,7 +39,7 @@ class ClassicGameTest {
 
         List<ActionResult> result = game.takeAction("Player1", new TakeTokenAction(take, new HashMap<>()));
 
-        assertEquals(List.of(ActionResult.INVALID_TOKENS_GIVEN), result);
+        assertEquals(List.of(ActionResult.MUST_TAKE_THREE_DIFFERENT_TOKENS), result);
     }
 
     @Test
