@@ -232,11 +232,29 @@ const showReservableDevCards = () => {
 
     setupSelection(cardsSelectionSelector);
 
+    let selectedDeckId = null;
+    const deckButtons = document.querySelectorAll("#reserve-card-modal [data-deck-id]");
+    deckButtons.forEach(button => {
+        button.classList.remove("selected");
+        button.onclick = () => {
+            document.querySelectorAll(cardsSelectionSelector).forEach(card => card.classList.remove("selected"));
+            deckButtons.forEach(other => other.classList.remove("selected"));
+            button.classList.add("selected");
+            selectedDeckId = button.getAttribute("data-deck-id");
+        };
+    });
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        card.addEventListener("click", () => {
+            selectedDeckId = null;
+            deckButtons.forEach(button => button.classList.remove("selected"));
+        });
+    });
+
     confirmBtn.onclick = () => {
         confirmBtn.disabled = true;
 
         const selectedCard = document.querySelector(`${cardsSelectionSelector}.selected`);
-        if(!selectedCard) {
+        if(!selectedCard && !selectedDeckId) {
             // no card has been selected, error
             showError("You have not selected a card to reserve!");
             confirmBtn.disabled = false;
@@ -244,7 +262,7 @@ const showReservableDevCards = () => {
         }
 
         const dataCallback = () => {
-            return { "cardId": selectedCard.getAttribute("card-id") };
+            return { "cardId": selectedDeckId ?? selectedCard.getAttribute("card-id") };
         };
 
         performAction("RESERVE_CARD", dataCallback)
