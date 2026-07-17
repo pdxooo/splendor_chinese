@@ -37,7 +37,7 @@ const countTokens = (selector) => Array.from(document.querySelectorAll(selector)
 
 const submitTakeTokens = (putBackTokens = {}) => {
     const takeTokens = getTokensList("#take-token-modal board-token-counter board-token .board-token");
-    return performAction("TAKE_TOKEN", { takeTokens, putBackTokens })
+    return performAction("TAKE_TOKEN", () => ({ takeTokens, putBackTokens }))
         .then((resp) => {
             if(resp.error) showError(resp.message);
         }).catch((err) => showError(err.toString()));
@@ -87,12 +87,21 @@ const putBackTokens = (requiredCount) => {
         elm.setCount(0);
     });
 
-    // set min and max for counters, TODO: set max and min values to what tokens the player has
+    // A player may return tokens already held as well as tokens selected in
+    // this action. Restrict each counter to that actual available amount.
     document.querySelectorAll("#put-back-token-modal board-token-counter").forEach(elm => {
-        elm.setMax(10);
+        const color = elm.getAttribute("color");
+        const held = document.querySelector(`#player-inventory .player-inventory-tokens board-token[color="${color}"]`)?.count ?? 0;
+        const taken = document.querySelector(`#take-token-modal board-token-counter[color="${color}"] board-token`)?.count ?? 0;
+        elm.setMax(Number(held) + Number(taken));
     });
 
-    setBoardTokens("#put-back-token-modal");
+    document.querySelectorAll("#put-back-token-modal .player-token-count-container board-token").forEach(elm => {
+        const color = elm.getAttribute("color");
+        const held = document.querySelector(`#player-inventory .player-inventory-tokens board-token[color="${color}"]`)?.count ?? 0;
+        const taken = document.querySelector(`#take-token-modal board-token-counter[color="${color}"] board-token`)?.count ?? 0;
+        elm.setCount(Number(held) + Number(taken));
+    });
 
     confirmBtn.onclick = () => {
         const selectedCount = countTokens("#put-back-token-modal board-token-counter board-token .board-token");
