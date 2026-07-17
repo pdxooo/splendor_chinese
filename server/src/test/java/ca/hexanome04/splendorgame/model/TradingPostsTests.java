@@ -132,7 +132,7 @@ public class TradingPostsTests {
         tokensToAdd.put(TokenType.Satchel, 0);
         tokensToAdd.put(TokenType.White, 0);
 
-        assertThat(ActionResult.INVALID_TOKENS_GIVEN).isIn(result);
+        assertThat(ActionResult.TOO_MANY_SAME_COLOUR_TOKENS).isIn(result);
     }
 
     @DisplayName("Ensure you can buy a card using gold tokens with Power 3")
