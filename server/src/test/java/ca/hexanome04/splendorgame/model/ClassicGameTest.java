@@ -88,6 +88,63 @@ class ClassicGameTest {
     }
 
     @Test
+    @DisplayName("A player at ten tokens receives reserve gold and returns one token")
+    void classicGameReturnsOneTokenAfterReserveGold() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        addTenTokens(player);
+        String cardId = game.getTier1PurchasableDevelopmentCards().get(0).getId();
+        int bankGoldBefore = game.getTokens().get(TokenType.Gold);
+        int bankRedBefore = game.getTokens().get(TokenType.Red);
+
+        HashMap<TokenType, Integer> returned = new HashMap<>(Map.of(TokenType.Red, 1));
+        List<ActionResult> result = game.takeAction("Player1", new ReserveCardAction(cardId, returned));
+        int finalTokenCount = player.getTokens().values().stream().mapToInt(Integer::intValue).sum();
+
+        assertEquals(List.of(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED), result);
+        assertEquals(10, finalTokenCount);
+        assertEquals(1, player.getTokens().get(TokenType.Gold));
+        assertEquals(bankGoldBefore - 1, game.getTokens().get(TokenType.Gold));
+        assertEquals(bankRedBefore + 1, game.getTokens().get(TokenType.Red));
+        assertEquals(List.of(cardId), player.getReservedCards().stream().map(Card::getId).toList());
+    }
+
+    @Test
+    @DisplayName("A player may return the gold just received when reserving at ten tokens")
+    void classicGameCanReturnReserveGold() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        addTenTokens(player);
+        String cardId = game.getTier1PurchasableDevelopmentCards().get(0).getId();
+        int bankGoldBefore = game.getTokens().get(TokenType.Gold);
+
+        HashMap<TokenType, Integer> returned = new HashMap<>(Map.of(TokenType.Gold, 1));
+        List<ActionResult> result = game.takeAction("Player1", new ReserveCardAction(cardId, returned));
+
+        assertEquals(List.of(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED), result);
+        assertEquals(10, player.getTokens().values().stream().mapToInt(Integer::intValue).sum());
+        assertEquals(0, player.getTokens().get(TokenType.Gold));
+        assertEquals(bankGoldBefore, game.getTokens().get(TokenType.Gold));
+    }
+
+    @Test
+    @DisplayName("A reservation at ten tokens is rejected until one token is returned")
+    void classicGameRejectsReserveWithoutRequiredReturn() {
+        OrientGame game = createClassicGame(0);
+        Player player = game.getPlayerFromName("Player1");
+        addTenTokens(player);
+        String cardId = game.getTier1PurchasableDevelopmentCards().get(0).getId();
+        int bankGoldBefore = game.getTokens().get(TokenType.Gold);
+
+        List<ActionResult> result = game.takeAction("Player1", new ReserveCardAction(cardId));
+
+        assertEquals(List.of(ActionResult.MAXIMUM_TOKENS_IN_INVENTORY), result);
+        assertEquals(0, player.getReservedCards().size());
+        assertEquals(10, player.getTokens().values().stream().mapToInt(Integer::intValue).sum());
+        assertEquals(bankGoldBefore, game.getTokens().get(TokenType.Gold));
+    }
+
+    @Test
     @DisplayName("A purchased card permanently discounts a later purchase")
     void classicGameAppliesPurchasedCardBonusToNextPurchase() {
         OrientGame game = createClassicGame(0);
@@ -185,5 +242,15 @@ class ClassicGameTest {
         } catch (ReflectiveOperationException exception) {
             throw new AssertionError("Unable to prepare a face-down test card", exception);
         }
+    }
+
+    private void addTenTokens(Player player) {
+        player.addTokens(new HashMap<>(Map.of(
+                TokenType.Red, 2,
+                TokenType.Blue, 2,
+                TokenType.Green, 2,
+                TokenType.White, 2,
+                TokenType.Brown, 2
+        )));
     }
 }
