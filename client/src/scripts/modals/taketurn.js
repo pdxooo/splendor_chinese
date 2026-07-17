@@ -32,8 +32,17 @@ const setBoardTokens = (modal) => {
     modalNode.querySelector(".gold-token > span").textContent = boardNode.querySelector(".gold-token > span").textContent;
 };
 
+const readTokenCount = (node) => {
+    if(!node) return 0;
+    const displayedCount = node.querySelector?.(".board-token > span, span")?.textContent;
+    if(displayedCount !== undefined && displayedCount !== null && displayedCount.trim() !== "") {
+        return Number(displayedCount) || 0;
+    }
+    return Number(node.count ?? node.parentNode?.count) || 0;
+};
+
 const countTokens = (selector) => Array.from(document.querySelectorAll(selector))
-    .reduce((total, node) => total + (Number(node.count ?? node.parentNode?.count) || 0), 0);
+    .reduce((total, node) => total + readTokenCount(node), 0);
 
 const submitTakeTokens = (putBackTokens = {}) => {
     const takeTokens = getTokensList("#take-token-modal board-token-counter board-token .board-token");
@@ -91,16 +100,20 @@ const putBackTokens = (requiredCount) => {
     // this action. Restrict each counter to that actual available amount.
     document.querySelectorAll("#put-back-token-modal board-token-counter").forEach(elm => {
         const color = elm.getAttribute("color");
-        const held = document.querySelector(`#player-inventory .player-inventory-tokens board-token[color="${color}"]`)?.count ?? 0;
-        const taken = document.querySelector(`#take-token-modal board-token-counter[color="${color}"] board-token`)?.count ?? 0;
-        elm.setMax(Number(held) + Number(taken));
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setMax(held + taken);
     });
 
     document.querySelectorAll("#put-back-token-modal .player-token-count-container board-token").forEach(elm => {
         const color = elm.getAttribute("color");
-        const held = document.querySelector(`#player-inventory .player-inventory-tokens board-token[color="${color}"]`)?.count ?? 0;
-        const taken = document.querySelector(`#take-token-modal board-token-counter[color="${color}"] board-token`)?.count ?? 0;
-        elm.setCount(Number(held) + Number(taken));
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setCount(held + taken);
     });
 
     confirmBtn.onclick = () => {
