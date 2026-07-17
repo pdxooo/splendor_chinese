@@ -355,28 +355,71 @@ const showReservableDevCards = () => {
         });
     });
 
-    confirmBtn.onclick = () => {
+    const submitReservation = (cardId, putBackTokens = {}) => {
         confirmBtn.disabled = true;
+        return performAction("RESERVE_CARD", () => ({ cardId, putBackTokens }))
+            .then((resp) => {
+                if(resp.error) showError(resp.message);
+            }).catch((err) => showError(err.toString()))
+            .finally(() => confirmBtn.disabled = false);
+    };
 
+    const requestReservationReturn = (cardId, requiredCount) => {
+        const modalSelector = "#put-back-token-modal";
+        const modal = document.querySelector(modalSelector);
+
+        modal.querySelectorAll("board-token-counter").forEach(counter => {
+            const color = counter.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            const goldReceived = color === "gold" ? 1 : 0;
+            counter.querySelector("board-token").setCount(0);
+            counter.setMin(0);
+            counter.setMax(held + goldReceived);
+        });
+
+        modal.querySelectorAll(".player-token-count-container board-token").forEach(token => {
+            const color = token.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            token.setCount(held + (color === "gold" ? 1 : 0));
+        });
+
+        const returnConfirmBtn = modal.querySelector(".put-back-token-confirm-btn");
+        returnConfirmBtn.onclick = () => {
+            const selectedCount = countTokens(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            if(selectedCount !== requiredCount) {
+                showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+                return;
+            }
+            returnConfirmBtn.disabled = true;
+            const returnedTokens = getTokensList(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            submitReservation(cardId, returnedTokens)
+                .finally(() => returnConfirmBtn.disabled = false);
+        };
+
+        showNextModal(modalSelector);
+    };
+
+    confirmBtn.onclick = () => {
         const selectedCard = document.querySelector(`${cardsSelectionSelector}.selected`);
         if(!selectedCard && !selectedDeckId) {
             // no card has been selected, error
             showError("You have not selected a card to reserve!");
-            confirmBtn.disabled = false;
             return;
         }
 
-        const dataCallback = () => {
-            return { "cardId": selectedDeckId ?? selectedCard.getAttribute("card-id") };
-        };
+        const cardId = selectedDeckId ?? selectedCard.getAttribute("card-id");
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const bankGold = readTokenCount(document.querySelector("#board .board-tokens .gold-token"));
+        const requiredReturnCount = Math.max(0, currentTotal + (bankGold > 0 ? 1 : 0) - 10);
 
-        performAction("RESERVE_CARD", dataCallback)
-            .then((resp) => {
-                if(resp.error) {
-                    showError(resp.message);
-                }
-            }).catch((err) => {
-                showError(err.toString());
-            }).finally(() =>  confirmBtn.disabled = false);
+        if(requiredReturnCount > 0) {
+            requestReservationReturn(cardId, requiredReturnCount);
+        } else {
+            submitReservation(cardId);
+        }
     };
 };
