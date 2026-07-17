@@ -22,9 +22,9 @@ class ClassicGameTest {
         OrientGame game = createClassicGame(0);
 
         assertEquals(GameVersions.BASE, game.getGameVersion());
-        assertEquals(4, game.getTier1PurchasableDevelopmentCards().size());
+        assertEquals(3, game.getTier1PurchasableDevelopmentCards().size());
         assertEquals(4, game.getTier2PurchasableDevelopmentCards().size());
-        assertEquals(4, game.getTier3PurchasableDevelopmentCards().size());
+        assertEquals(2, game.getTier3PurchasableDevelopmentCards().size());
         assertEquals(0, game.getTier1PurchasableOrientCards().size());
         assertEquals(0, game.getTier2PurchasableOrientCards().size());
     }
@@ -46,6 +46,7 @@ class ClassicGameTest {
     @DisplayName("Classic game allows reserving a face-down card and grants gold")
     void classicGameAllowsBlindReservation() {
         OrientGame game = createClassicGame(0);
+        addFaceDownTier1Card(game);
 
         List<ActionResult> result = game.takeAction("Player1", new ReserveCardAction("DECK_TIER_1"));
         Player player = game.getPlayerFromName("Player1");
@@ -53,7 +54,7 @@ class ClassicGameTest {
         assertEquals(List.of(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED), result);
         assertEquals(1, player.getReservedCards().size());
         assertEquals(1, player.getTokens().get(TokenType.Gold));
-        assertEquals(4, game.getTier1PurchasableDevelopmentCards().size());
+        assertEquals(3, game.getTier1PurchasableDevelopmentCards().size());
     }
 
     @Test
@@ -85,5 +86,17 @@ class ClassicGameTest {
         game.createSplendorBoard();
         game.initBoard();
         return game;
+    }
+
+    private void addFaceDownTier1Card(OrientGame game) {
+        try {
+            var field = OrientGame.class.getDeclaredField("tier1Deck");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Deck<RegDevelopmentCard> deck = (Deck<RegDevelopmentCard>) field.get(game);
+            deck.add(game.getTier1PurchasableDevelopmentCards().get(0));
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("Unable to prepare a face-down test card", exception);
+        }
     }
 }
