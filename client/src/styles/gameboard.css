@@ -588,3 +588,24 @@ body {
   flex-direction: row;
   gap: 0.4em;
 }
+
+/* The classic board has only four face-up cards per tier. Give those cards
+ * more room instead of reserving space for the Orient expansion slots. */
+body.classic-game .board-cards {
+  gap: 0.8em;
+  --board-deck-margin: 2em;
+}
+
+body.classic-game .board-cards-dev-selectable {
+  gap: 1em;
+}
+
+body.classic-game .board-card-dev-orient,
+body.classic-game .board-cards-dev-deck-orient {
+  display: none;
+}
+
+body.classic-game .board-cards-row .board-cards-dev-deck > img,
+body.classic-game .board-cards-row .board-card-dev > img {
+  height: 6.5em;
+}
