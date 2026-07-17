@@ -6,6 +6,11 @@ package ca.hexanome04.splendorgame.model.gameversions;
 public enum GameVersions {
 
     /**
+     * Classic base game without expansions.
+     */
+    BASE,
+
+    /**
      * Base game + Orient expansion.
      */
     BASE_ORIENT,
