@@ -3,7 +3,7 @@ name: Backend Build
 
 on:
   push:
-    branches: [master]
+    branches: [master, chinese-localization]
     paths:
       - 'server/**'
       - 'client/**'
