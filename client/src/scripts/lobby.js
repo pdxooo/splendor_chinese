@@ -19,7 +19,8 @@ export const createNewSession = async (gameVersion, saveId="") => {
     const postData = {
         "creator": SETTINGS.getUsername(),
         "game": gameVersion,
-        "savegame": saveId
+        "savegame": saveId,
+        "turnTimeSeconds": Number(document.querySelector("#turn-time-limit")?.value || 120)
     };
 
     const url = new URL(`${SETTINGS.getLS_API()}/api/sessions`);
