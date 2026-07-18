@@ -392,6 +392,29 @@ tr > th {
   box-sizing: border-box;
 }
 
+.turn-time-setting {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  color: rgb(227 178 56);
+  font-family: Charm, cursive;
+  font-size: 0.72em;
+  font-weight: normal;
+}
+
+.turn-time-setting select {
+  border: 1px solid goldenrod;
+  border-radius: 0.45em;
+  padding: 0.45em 0.65em;
+  color: white;
+  background: #142033;
+}
+
+.turn-time-setting + .game-selection-dropdown {
+  margin-left: 1em;
+}
+
 #section-loadgame .game-selection-dropdown {
   visibility: hidden;
 }
