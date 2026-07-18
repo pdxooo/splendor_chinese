@@ -243,9 +243,23 @@ const updateOtherPlayerInfo = (pInfo) => {
     updateCards(pInfo.devCards, pNode, ".other-inventory-cards",
                 ".other-inventory-card", "development-cards", "#other-player-dev-card-template");
 
-    // UPDATE RESERVED CARDS IN OTHER PLAYER INVENTORIES
-    updateCards(pInfo.reservedCards, pNode, ".other-inventory-cards-reserved",
-                ".other-inventory-card-reserved", "development-cards", "#other-player-reserved-card-template");
+    // Other players' reserved cards intentionally contain only cardTier.
+    // Render the matching tier back without ever requiring a card ID.
+    const reservedCardBacks = {
+        "TIER_1": "/images/GreenCard.jpg",
+        "TIER_2": "/images/YellowCard.jpg",
+        "TIER_3": "/images/BlueCard.jpg"
+    };
+    const hiddenReservedCards = (pInfo.reservedCards || []).map((card, index) => {
+        const node = document.querySelector("#other-player-reserved-card-template").content.cloneNode(true);
+        const div = node.querySelector(".other-inventory-card-reserved");
+        const image = div.querySelector("img");
+        div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
+        image.setAttribute("src", reservedCardBacks[card.cardTier] || "/images/GreenCard.jpg");
+        image.setAttribute("alt", `Reserved ${card.cardTier || "unknown tier"} card ${index + 1}`);
+        return node;
+    });
+    pNode.querySelector(".other-inventory-cards-reserved").replaceChildren(...hiddenReservedCards);
 
     // Update nobles
     updateCards(pInfo.nobleCards, pNode, ".other-inventory-noble-cards",
@@ -310,7 +324,8 @@ const updateGameboard = async () => {
     const windowParams = (new URL(document.location)).searchParams;
     const sessionId = windowParams.get("sessionId");
     const params = {
-        "hash": gameStateHash
+        "hash": gameStateHash,
+        "access_token": SETTINGS.getAccessToken()
     };
 
     const url = new URL(`${SETTINGS.getGS_API()}/api/sessions/${sessionId}`);
