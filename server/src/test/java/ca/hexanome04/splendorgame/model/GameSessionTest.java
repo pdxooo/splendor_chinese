@@ -61,8 +61,22 @@ public class GameSessionTest {
         int previousTurn = game.getTurnCounter();
 
         assertTrue(session.advanceTurnIfExpired(session.getTurnDeadlineEpochMillis() + 1));
-        assertNotEquals(previousTurn, game.getTurnCounter());
+        assertNotEquals(previousTurn, session.getGame().getTurnCounter());
         assertFalse(session.advanceTurnIfExpired(session.getTurnDeadlineEpochMillis() - 1));
+    }
+
+    @Test
+    @DisplayName("Timeout rolls back an unfinished multi-step action")
+    public void testTimeoutRollsBackPartialTurn() throws FileNotFoundException {
+        OrientGame game = GameUtils.createNewOrientGame(15, 2);
+        GameSession session = new GameSession("12345", "Player1", "MyGame", 30);
+        session.setGame(game);
+        String activeName = game.getTurnCurrentPlayer().getName();
+        game.getTurnCurrentPlayer().addPrestigePoints(5);
+
+        session.advanceTurnIfExpired(session.getTurnDeadlineEpochMillis() + 1);
+
+        assertEquals(0, session.getGame().getPlayerFromName(activeName).getPrestigePoints());
     }
 
     @Test
