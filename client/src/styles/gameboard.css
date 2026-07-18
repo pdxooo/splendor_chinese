@@ -148,14 +148,14 @@ body {
   flex-direction: column;
   justify-content: center;
   max-height: 100%;
-  font-size: 2.5vmin;
+  font-size: clamp(1rem, 2.75vmin, 1.9rem);
   z-index: 3;
   /* this would make the transition to a smaller inventory smoother, but breaks card moving animations... */
   /* transition: font-size 0.01s; */
 }
 
 .player-inventory.shrink {
-  font-size: 2.15vmin;
+  font-size: clamp(0.95rem, 2.4vmin, 1.65rem);
 }
 
 .player-inventory.hide {
@@ -171,7 +171,7 @@ body {
   align-items: center;
   gap: 1em;
   background: rgba(104 105 119 / 25%);
-  padding: 1em 0.7em;
+  padding: 1.1em 1em;
   border-top-right-radius: 1em;
   border-bottom-right-radius: 1em;
   border-left: none;
@@ -279,6 +279,7 @@ body {
   position: relative;
   display: flex;
   max-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
+  z-index: 5;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved {
@@ -287,6 +288,7 @@ body {
   min-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
   aspect-ratio: calc(1 / (var(--dev-card-aspect-ratio)));
   transition: margin-left 0.3s;
+  z-index: 5;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved:not(:first-child) {
@@ -305,7 +307,17 @@ body {
   border-radius: var(--card-border-radius);
   rotate: 90deg;
   box-shadow: rgba(0 0 0 / 10%) 0 4px 12px;
-  transform-origin: calc((var(--player-inv-card-height) * var(--dev-card-aspect-ratio)) / 2);
+  transform-origin: left center;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.player-inventory-reservedcards .player-inventory-card-reserved:hover {
+  z-index: 50;
+}
+
+.player-inventory-reservedcards .player-inventory-card-reserved:hover > img {
+  transform: scale(1.9);
+  filter: drop-shadow(0 0.4em 0.5em rgb(0 0 0 / 80%));
 }
 
 .player-inventory-nobles {
@@ -348,11 +360,15 @@ body {
 
 .board {
   flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+    "tokens tokens"
+    "cards nobles";
+  align-content: center;
   justify-content: center;
-  gap: 5%;
+  align-items: start;
+  gap: 1em 1.6em;
   font-size: 2.8vmin;
 }
 
@@ -465,6 +481,7 @@ body {
 
 /* Board tokens */
 .board-tokens {
+  grid-area: tokens;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -502,9 +519,11 @@ body {
 
 /* Board nobles */
 .board-nobles {
+  grid-area: nobles;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0.7em;
+  align-self: start;
 }
 
 .noble-card img {
@@ -513,12 +532,13 @@ body {
 }
 
 .board-nobles .noble-card img {
-  height: 4em;
+  height: clamp(4.5rem, 8.5vh, 6.3rem);
   box-shadow: var(--card-box-shadow);
 }
 
 /* Board development cards */
 .board-cards {
+  grid-area: cards;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -589,6 +609,13 @@ body {
   gap: 0.4em;
 }
 
+/* Moving nobles to a right-hand column releases vertical room for the market. */
+#board .board-cards-row .board-cards-dev-deck > img,
+#board .board-cards-row .board-cards-dev-deck-orient > img,
+#board .board-cards-row .board-card-dev > img {
+  height: clamp(8rem, 18vh, 12.2rem);
+}
+
 /* The classic board has only four face-up cards per tier. Give those cards
  * more room instead of reserving space for the Orient expansion slots. */
 body.classic-game .board-cards {
@@ -605,7 +632,7 @@ body.classic-game .board-cards-dev-deck-orient {
   display: none;
 }
 
-body.classic-game .board-cards-row .board-cards-dev-deck > img,
-body.classic-game .board-cards-row .board-card-dev > img {
-  height: 6.5em;
+body.classic-game #board .board-cards-row .board-cards-dev-deck > img,
+body.classic-game #board .board-cards-row .board-card-dev > img {
+  height: clamp(8.5rem, 19vh, 13rem);
 }
