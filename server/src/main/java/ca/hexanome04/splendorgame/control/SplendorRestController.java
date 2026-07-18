@@ -10,6 +10,9 @@ import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.Actions;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dacbiet.simpoll.ContentWatcher;
@@ -165,10 +168,13 @@ public class SplendorRestController {
      *
      * @param sessionId session id to get game state of
      * @param hash optional hash from client
+     * @param token access token identifying which player's cards may be shown
      * @return JSON object of game state
      */
     @GetMapping(value = "/api/sessions/{sessionId}", produces = "application/json; charset=utf-8")
-    public DeferredResult getGameState(@PathVariable String sessionId, @RequestParam(required = false) String hash) {
+    public DeferredResult getGameState(@PathVariable String sessionId,
+                                       @RequestParam(required = false) String hash,
+                                       @RequestParam(name = "access_token", required = false) String token) {
         try {
             // Check if session exists
             GameSession game = sessionManager.getGameSession(sessionId);
@@ -177,8 +183,8 @@ public class SplendorRestController {
             }
 
             ContentWatcher watcher = gameWatcher.get(sessionId);
-            // serialize game
-            Fetcher fetcher = () -> SplendorTypeAdapter.newClientGson().toJson(game.getGame());
+            String viewerName = token == null ? "" : auth.getNameFromToken(token);
+            Fetcher fetcher = () -> serializeGameForViewer(game.getGame(), viewerName);
 
             return ResultGenerator.getStringResult(watcher, fetcher, hash, this.longPollTimeout);
         } catch (SplendorException e) {
@@ -195,6 +201,11 @@ public class SplendorRestController {
         }
     }
 
+    /** Preserve the original two-argument entry point used by controller tests. */
+    public DeferredResult getGameState(String sessionId, String hash) {
+        return getGameState(sessionId, hash, null);
+    }
+
     /**
      * Get players in the specified game session.
      *
@@ -208,8 +219,11 @@ public class SplendorRestController {
                 throw new SplendorException("There is no session associated this session ID: " + sessionId + ".");
             }
 
-            String serializedPlayers = SplendorTypeAdapter.newClientGson()
-                    .toJson(sessionManager.getGameSession(sessionId).getGame().getPlayers());
+            Gson gson = SplendorTypeAdapter.newClientGson();
+            JsonArray players = gson.toJsonTree(
+                    sessionManager.getGameSession(sessionId).getGame().getPlayers()).getAsJsonArray();
+            hideReservedCardFaces(players, "");
+            String serializedPlayers = gson.toJson(players);
             return ResponseEntity.status(HttpStatus.OK).body(serializedPlayers);
         } catch (SplendorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -217,6 +231,45 @@ public class SplendorRestController {
             logger.warn("Issue while retrieving player data: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Server ran into an issue while retrieving player data.");
+        }
+    }
+
+    private String serializeGameForViewer(Game game, String viewerName) {
+        Gson gson = SplendorTypeAdapter.newClientGson();
+        JsonObject gameJson = gson.toJsonTree(game).getAsJsonObject();
+        hideReservedCardFaces(gameJson.getAsJsonArray("players"), viewerName);
+        return gson.toJson(gameJson);
+    }
+
+    /**
+     * Other players may know the tier of a reserved card, but not its face.
+     * Replace every hidden card with a tier-only object so IDs and costs never
+     * reach an unauthorized browser.
+     */
+    private void hideReservedCardFaces(JsonArray players, String viewerName) {
+        if (players == null) {
+            return;
+        }
+        for (JsonElement playerElement : players) {
+            JsonObject player = playerElement.getAsJsonObject();
+            String playerName = player.get("name").getAsString();
+            if (playerName.equals(viewerName)) {
+                continue;
+            }
+
+            JsonArray hiddenCards = new JsonArray();
+            JsonArray reservedCards = player.getAsJsonArray("reservedCards");
+            if (reservedCards != null) {
+                for (JsonElement cardElement : reservedCards) {
+                    JsonObject hiddenCard = new JsonObject();
+                    JsonElement tier = cardElement.getAsJsonObject().get("cardTier");
+                    if (tier != null) {
+                        hiddenCard.add("cardTier", tier);
+                    }
+                    hiddenCards.add(hiddenCard);
+                }
+            }
+            player.add("reservedCards", hiddenCards);
         }
     }
 
