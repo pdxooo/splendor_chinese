@@ -7,6 +7,7 @@ import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -25,7 +26,7 @@ public class SessionManager {
      */
     @Autowired
     public SessionManager() {
-        this.gameSessions = new HashMap<>();
+        this.gameSessions = new ConcurrentHashMap<>();
     }
 
     /**
@@ -64,6 +65,12 @@ public class SessionManager {
     public GameSession createNewSession(String sessionId, List<PlayerInfo> players,
                                         String creatorName, String sessionName,
                                         GameVersions version) throws SplendorException {
+        return createNewSession(sessionId, players, creatorName, sessionName, version, 120);
+    }
+
+    public GameSession createNewSession(String sessionId, List<PlayerInfo> players,
+                                        String creatorName, String sessionName,
+                                        GameVersions version, int turnTimeSeconds) throws SplendorException {
         // Refuse creation if session with this ID already exists
         if (gameSessions.containsKey(sessionId)) {
             throw new SplendorException("Game can not be created, the requested ID " + sessionId
@@ -74,7 +81,7 @@ public class SessionManager {
             throw new SplendorException("Game can not be created, 2-4 players required");
         }
 
-        GameSession session = new GameSession(sessionId, creatorName, sessionName);
+        GameSession session = new GameSession(sessionId, creatorName, sessionName, turnTimeSeconds);
         session.setGame(this.launchNewGame(version, players));
 
         gameSessions.put(sessionId, session);
@@ -142,7 +149,8 @@ public class SessionManager {
             p.setColour(pi.colour());
         }
 
-        GameSession session = new GameSession(sessionId, launchSessionInfo.creator(), launchSessionInfo.savegame());
+        GameSession session = new GameSession(sessionId, launchSessionInfo.creator(),
+                launchSessionInfo.savegame(), launchSessionInfo.normalizedTurnTimeSeconds());
         session.setGame(game);
 
         gameSessions.put(sessionId, session);
@@ -170,11 +178,16 @@ public class SessionManager {
             Player newPlayer = game.createPlayer(p.name(), p.colour());
             playerList.add(newPlayer);
         }
+        Collections.shuffle(playerList);
         game.setPlayers(playerList);
         game.createSplendorBoard();
         game.initBoard();
 
         return game;
+    }
+
+    public Collection<GameSession> getGameSessions() {
+        return new ArrayList<>(gameSessions.values());
     }
 
 
