@@ -364,6 +364,7 @@ public class SplendorRestController {
                 if (gameSession.advanceTurnIfExpired()) {
                     gameWatcher.get(sessionId).markDirty();
                 }
+                game = gameSession.getGame();
 
                 if (!game.getTurnCurrentPlayer().getName().equals(playerName)) {
                     throw new SplendorException("思考时间已到，当前回合已经交给下一位玩家。");
