@@ -243,7 +243,6 @@ public class SplendorRestController {
         hideReservedCardFaces(gameJson.getAsJsonArray("players"), viewerName);
         gameJson.addProperty("turnTimeSeconds", session.getTurnTimeSeconds());
         gameJson.addProperty("turnDeadlineEpochMillis", session.getTurnDeadlineEpochMillis());
-        gameJson.addProperty("serverTimeEpochMillis", System.currentTimeMillis());
         gameJson.add("chatMessages", gson.toJsonTree(session.getChatMessages()));
         return gson.toJson(gameJson);
     }
