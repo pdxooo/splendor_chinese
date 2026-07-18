@@ -195,7 +195,9 @@ public class SplendorRestControllerTest {
     @Test
     @DisplayName("Verify that the list of possible actions is obtained through the end point")
     public void testApiGetActions() {
-        assertThat(restController.getActions(testGameSessionId, "p1").getStatusCode()).isEqualTo(HttpStatus.OK);
+        String currentPlayer = sessionManager.getGameSession(testGameSessionId)
+                .getGame().getTurnCurrentPlayer().getName();
+        assertThat(restController.getActions(testGameSessionId, currentPlayer).getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     /**
@@ -315,10 +317,15 @@ public class SplendorRestControllerTest {
                 .getGameState(testGameSessionId, null, "viewer-token").getResult();
         JsonArray players = JsonParser.parseString((String) result.getBody())
                 .getAsJsonObject().getAsJsonArray("players");
-        JsonObject ownReservedCard = players.get(0).getAsJsonObject()
-                .getAsJsonArray("reservedCards").get(0).getAsJsonObject();
-        JsonObject otherReservedCard = players.get(1).getAsJsonObject()
-                .getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+        JsonObject ownPlayer = null;
+        JsonObject otherPlayer = null;
+        for (int i = 0; i < players.size(); i++) {
+            JsonObject candidate = players.get(i).getAsJsonObject();
+            if (candidate.get("name").getAsString().equals("p1")) ownPlayer = candidate;
+            if (candidate.get("name").getAsString().equals("p2")) otherPlayer = candidate;
+        }
+        JsonObject ownReservedCard = ownPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+        JsonObject otherReservedCard = otherPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
 
         assertThat(ownReservedCard.has("id")).isTrue();
         assertThat(ownReservedCard.has("tokenCost")).isTrue();
