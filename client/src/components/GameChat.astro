@@ -1,0 +1,14 @@
+---
+import "../styles/game-chat.css";
+---
+<aside id="game-chat" class="game-chat">
+    <button id="chat-toggle" class="chat-toggle" type="button" aria-expanded="true">房间聊天</button>
+    <div class="chat-panel">
+        <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form">
+            <input id="chat-input" maxlength="300" autocomplete="off" placeholder="输入消息…" />
+            <button type="submit">发送</button>
+        </form>
+    </div>
+</aside>
+<script src="../scripts/chat.js"></script>
