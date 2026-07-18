@@ -1,6 +1,12 @@
 package ca.hexanome04.splendorgame.model;
 
+import ca.hexanome04.splendorgame.control.SplendorTypeAdapter;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
+import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
+import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
+import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
+import com.google.gson.Gson;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +23,8 @@ public class GameSession {
     private String sessionName;
     private final int turnTimeSeconds;
     private long turnDeadlineEpochMillis;
+    private String turnStartSnapshot;
+    private GameVersions snapshotVersion;
     private final List<ChatMessage> chatMessages = new ArrayList<>();
     private long nextChatMessageId = 1;
 
@@ -105,6 +113,7 @@ public class GameSession {
     }
 
     public synchronized void resetTurnDeadline() {
+        captureTurnStartSnapshot();
         turnDeadlineEpochMillis = System.currentTimeMillis() + turnTimeSeconds * 1000L;
     }
 
@@ -117,9 +126,31 @@ public class GameSession {
         if (game == null || game.isGameOver() || now < turnDeadlineEpochMillis) {
             return false;
         }
+        restoreTurnStartSnapshot();
         game.incrementTurn();
+        captureTurnStartSnapshot();
         turnDeadlineEpochMillis = now + turnTimeSeconds * 1000L;
         return true;
+    }
+
+    private void captureTurnStartSnapshot() {
+        if (game == null) {
+            return;
+        }
+        snapshotVersion = game.getGameVersion();
+        turnStartSnapshot = SplendorTypeAdapter.createGson().toJson(game);
+    }
+
+    private void restoreTurnStartSnapshot() {
+        if (turnStartSnapshot == null || snapshotVersion == null) {
+            return;
+        }
+        Gson gson = SplendorTypeAdapter.createGson();
+        game = switch (snapshotVersion) {
+            case BASE, BASE_ORIENT -> gson.fromJson(turnStartSnapshot, OrientGame.class);
+            case BASE_ORIENT_CITIES -> gson.fromJson(turnStartSnapshot, CitiesGame.class);
+            case BASE_ORIENT_TRADE_ROUTES -> gson.fromJson(turnStartSnapshot, TradingPostsGame.class);
+        };
     }
 
     public synchronized ChatMessage addChatMessage(String sender, String text) {
