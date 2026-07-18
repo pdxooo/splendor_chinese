@@ -7,6 +7,7 @@ import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.action.*;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.*;
@@ -298,5 +299,33 @@ public class SplendorRestControllerTest {
         JsonObject deckObject = jsonObject.getAsJsonObject("tier1Deck");
         assertThat(deckObject.has("cards")).isFalse();
         assertThat(deckObject.has("visibleCards")).isTrue();
+    }
+
+    @Test
+    @DisplayName("Reserved cards expose their tier only to other players")
+    public void testReservedCardsHideFacesFromOtherPlayers() {
+        Game game = sessionManager.getGameSession(testGameSessionId).getGame();
+        Player firstPlayer = game.getPlayerFromName("p1");
+        Player secondPlayer = game.getPlayerFromName("p2");
+        firstPlayer.reserveCard(game.getTier1PurchasableDevelopmentCards().get(0));
+        secondPlayer.reserveCard(game.getTier2PurchasableDevelopmentCards().get(0));
+        Mockito.when(auth.getNameFromToken("viewer-token")).thenReturn("p1");
+
+        ResponseEntity result = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null, "viewer-token").getResult();
+        JsonArray players = JsonParser.parseString((String) result.getBody())
+                .getAsJsonObject().getAsJsonArray("players");
+        JsonObject ownReservedCard = players.get(0).getAsJsonObject()
+                .getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+        JsonObject otherReservedCard = players.get(1).getAsJsonObject()
+                .getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+
+        assertThat(ownReservedCard.has("id")).isTrue();
+        assertThat(ownReservedCard.has("tokenCost")).isTrue();
+        assertThat(otherReservedCard.get("cardTier").getAsString()).isEqualTo("TIER_2");
+        assertThat(otherReservedCard.entrySet().size()).isEqualTo(1);
+        assertThat(otherReservedCard.has("id")).isFalse();
+        assertThat(otherReservedCard.has("tokenCost")).isFalse();
+        assertThat(otherReservedCard.has("prestigePoints")).isFalse();
     }
 }
