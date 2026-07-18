@@ -163,9 +163,21 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
     });
 };
 
-const updateMainPlayerInfo = (playerInfo) => {
+const setTurnOrderBadge = (container, order) => {
+    let badge = container.querySelector(":scope > .turn-order-badge");
+    if(!badge) {
+        badge = document.createElement("span");
+        badge.className = "turn-order-badge";
+        container.appendChild(badge);
+    }
+    badge.textContent = order;
+    badge.title = `行动顺序：第 ${order} 位`;
+};
+
+const updateMainPlayerInfo = (playerInfo, order) => {
 
     const playerInv = document.querySelector("#player-inventory");
+    setTurnOrderBadge(playerInv.querySelector(".player-inventory-container"), order);
 
 
     // update prestige points
@@ -216,7 +228,7 @@ const updateMainPlayerInfo = (playerInfo) => {
     }
 };
 
-const updateOtherPlayerInfo = (pInfo) => {
+const updateOtherPlayerInfo = (pInfo, order) => {
     const selector = `.other-players .other-player[pname="${pInfo.name}"]`;
     let pNode = document.querySelector(selector);
 
@@ -233,6 +245,7 @@ const updateOtherPlayerInfo = (pInfo) => {
         // now reget the node
         pNode = document.querySelector(selector);
     }
+    setTurnOrderBadge(pNode.querySelector(".other-player-container"), order);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;
@@ -301,6 +314,17 @@ const updateNoblesBoard = async (cards) => {
 let gameStateHash = "-";
 let lastState = null;
 let currentState = null;
+let turnDeadline = 0;
+let serverClockOffset = 0;
+
+const updateTurnTimer = () => {
+    const timer = document.querySelector("#turn-timer");
+    if(!timer || !currentState?.players?.length) return;
+    const remaining = Math.max(0, Math.ceil((turnDeadline - (Date.now() + serverClockOffset)) / 1000));
+    const player = currentState.players[currentState.turnCounter];
+    timer.textContent = remaining > 0 ? `${player.name} · ${remaining} 秒` : "时间到，正在换人…";
+    timer.classList.toggle("warning", remaining <= 10);
+};
 
 const attempUpdate = () => {
     let nextCallTime = 1;
@@ -359,6 +383,10 @@ const updateGameboard = async () => {
     document.body.classList.toggle("classic-game", data.gameVersion === "BASE");
     lastState = currentState;
     currentState = data;
+    turnDeadline = data.turnDeadlineEpochMillis || 0;
+    serverClockOffset = (data.serverTimeEpochMillis || Date.now()) - Date.now();
+    updateTurnTimer();
+    window.dispatchEvent(new CustomEvent("splendor-state-update", {detail: data}));
     writeUpdate(lastState, currentState);
 
     // tokens update
@@ -369,12 +397,12 @@ const updateGameboard = async () => {
 
     const playersData = data.players;
     let amPlaying = false;
-    playersData.forEach((pInfo) => {
+    playersData.forEach((pInfo, index) => {
         if(pInfo.name === curUsername) {
-            updateMainPlayerInfo(pInfo);
+            updateMainPlayerInfo(pInfo, index + 1);
             amPlaying = true;
         } else {
-            updateOtherPlayerInfo(pInfo);
+            updateOtherPlayerInfo(pInfo, index + 1);
         }
     });
     const playerInv = document.querySelector("#player-inventory");
@@ -419,6 +447,11 @@ export const addUpdater = (func) => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-
+    const timer = document.createElement("div");
+    timer.id = "turn-timer";
+    timer.className = "turn-timer";
+    timer.textContent = "等待游戏状态…";
+    document.body.appendChild(timer);
+    setInterval(updateTurnTimer, 250);
     setTimeout(attempUpdate, 1);
 });
