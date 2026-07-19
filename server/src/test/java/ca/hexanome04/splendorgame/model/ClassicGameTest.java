@@ -223,6 +223,32 @@ class ClassicGameTest {
         assertEquals(List.of(fewerCards), game.checkForWin());
     }
 
+    @Test
+    @DisplayName("A fully discounted two-point card can be bought for zero tokens to win")
+    void classicGameAllowsZeroTokenWinningPurchaseWhenBonusesCoverCost() {
+        OrientGame game = createClassicGame(1);
+        Player player = game.getPlayerFromName("Player2");
+        HashMap<TokenType, Integer> cost = new HashMap<>();
+        cost.put(TokenType.Brown, 5);
+        RegDevelopmentCard winningCard = new RegDevelopmentCard(
+                CardTier.TIER_2, TokenType.Red, 1, 2,
+                CostType.Token, cost, "zero-token-winning-card");
+
+        player.addPrestigePoints(13);
+        player.addBonus(TokenType.Brown, 5);
+        player.reserveCard(winningCard);
+
+        List<ActionResult> result = game.takeAction(
+                player.getName(), new BuyCardAction(winningCard.getId(), new HashMap<>()));
+
+        assertTrue(result.contains(ActionResult.VALID_ACTION));
+        assertTrue(result.contains(ActionResult.TURN_COMPLETED));
+        assertTrue(player.getDevCards().contains(winningCard));
+        assertEquals(15, player.getPrestigePoints());
+        assertTrue(game.isGameOver());
+        assertEquals(List.of(player), game.getWinner());
+    }
+
     private OrientGame createClassicGame(int turnCounter) {
         OrientGame game = new OrientGame(GameVersions.BASE, 15, turnCounter);
         game.setPlayers(List.of(
@@ -256,3 +282,4 @@ class ClassicGameTest {
         )));
     }
 }
+
