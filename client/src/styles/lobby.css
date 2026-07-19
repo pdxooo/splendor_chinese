@@ -594,9 +594,17 @@ tr > th {
 .is-admin .saved-games-table tr .del-btn,
 .is-service .current-sessions-table tr .del-btn,
 .is-service .saved-games-table tr .del-btn,
-.current-sessions-table tr:not([started]):is([created]) .del-btn,
+.current-sessions-table tr:is([created]) .del-btn,
 .saved-games-table tr:not([started]):is([created]) .del-btn {
   display: block;
+}
+
+.current-sessions-table .session-id {
+  max-width: 12rem;
+  overflow-wrap: anywhere;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.95em;
+  user-select: all;
 }
 
 /* Add play button to join a launched session */

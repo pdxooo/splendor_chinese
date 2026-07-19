@@ -168,7 +168,7 @@
 #your-turn-modal.collapsed .modal-container {
   width: min(22rem, calc(100vw - 2rem));
   min-height: 0;
-  margin: 5rem auto 0;
+  margin: 7.25rem auto 0;
   pointer-events: auto;
 }
 

@@ -29,6 +29,12 @@ test.describe.parallel("Test default game modals", () => {
         await expect(page.locator("#get-tokens-btn")).toBeHidden();
         await expect(page.getByRole("button", { name: "展开操作框" })).toHaveText("+");
 
+        const timerBox = await page.locator("#turn-timer").boundingBox();
+        const collapsedBox = await modal.locator(".modal-container").boundingBox();
+        expect(timerBox).not.toBeNull();
+        expect(collapsedBox).not.toBeNull();
+        expect(collapsedBox!.y).toBeGreaterThanOrEqual(timerBox!.y + timerBox!.height + 8);
+
         await page.getByRole("button", { name: "展开操作框" }).click();
         await expect(modal).not.toHaveClass(/collapsed/);
         await expect(page.locator("#get-tokens-btn")).toBeVisible();

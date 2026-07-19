@@ -1,10 +1,13 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 WORKDIR /LS
+COPY maven-settings.xml /root/.m2/settings.xml
 COPY LobbyService /LS
 COPY lobby-overrides/AccountBootstrap.java /LS/src/main/java/eu/kartoffelquadrat/ls/accountmanager/config/AccountBootstrap.java
 COPY lobby-overrides/CreateGameForm.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/CreateGameForm.java
+COPY lobby-overrides/SessionController.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/SessionController.java
 COPY lobby-overrides/Session.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/model/Session.java
 COPY lobby-overrides/LauncherInfo.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/model/LauncherInfo.java
+COPY lobby-overrides/SessionControllerTest.java /LS/src/test/java/eu/kartoffelquadrat/ls/lobby/control/SessionControllerTest.java
 RUN sed -i 's/new Session(creator, gameParameters, savegameid)/new Session(creator, gameParameters, savegameid, createGameForm.getTurnTimeSeconds())/' \
     /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/SessionController.java \
     && sed -i 's/new Session(creator, brandedParams, createGameForm.getSavegame())/new Session(creator, brandedParams, createGameForm.getSavegame(), createGameForm.getTurnTimeSeconds())/' \

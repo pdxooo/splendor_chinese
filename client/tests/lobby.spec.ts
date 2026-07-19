@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("available rooms display their configured turn time", async ({ page }) => {
+test("rooms show their number, turn time, and creator delete control", async ({ page }) => {
     await page.addInitScript(() => {
         localStorage.setItem("username", "lxh");
         localStorage.setItem("accessToken", "test-token");
@@ -15,10 +15,10 @@ test("available rooms display their configured turn time", async ({ page }) => {
         contentType: "application/json",
         body: JSON.stringify({
             sessions: {
-                "room-120": {
+                "731204": {
                     creator: "lxh",
                     players: ["lxh", "xyj"],
-                    launched: false,
+                    launched: true,
                     savegameid: "",
                     turnTimeSeconds: 120,
                     gameParameters: {
@@ -33,6 +33,10 @@ test("available rooms display their configured turn time", async ({ page }) => {
 
     await page.goto("/lobby/");
 
+    await expect(page.getByRole("columnheader", { name: "房间号" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "回合限时" })).toBeVisible();
-    await expect(page.locator('tr[session-id="room-120"] .session-turn-time')).toHaveText("每回合 120 秒");
+    const room = page.locator('tr[session-id="731204"]');
+    await expect(room.locator(".session-id")).toHaveText("731204");
+    await expect(room.locator(".session-turn-time")).toHaveText("每回合 120 秒");
+    await expect(room.locator(".del-btn")).toBeVisible();
 });

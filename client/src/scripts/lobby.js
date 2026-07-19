@@ -285,10 +285,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     node.removeAttribute("launchable");
                 }
+            } else {
+                node.removeAttribute("created");
+                node.removeAttribute("launchable");
             }
 
             if(ses.launched) {
                 node.setAttribute("started", "true");
+            } else {
+                node.removeAttribute("started");
             }
         };
 
@@ -306,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 trNode.setAttribute("save-id", ses.savegameid);
             }
 
+            trNode.querySelector(".session-id").textContent = sesId;
             trNode.querySelector(".session-game-name").textContent = ses.gameParameters.displayName;
             trNode.querySelector(".session-creator-name").textContent = ses.creator;
 
@@ -357,6 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const trNode = document.querySelector(`tr[session-id="${sesId}"]`);
 
             setAttributes(ses, trNode);
+            trNode.querySelector(".session-id").textContent = sesId;
 
             const node = document.querySelector(`${tableSel} tr[session-id="${sesId}"] .session-players-info`);
             const newText = `[${curP}/${maxP}]: ${sesPlayers.join(", ")}`;
