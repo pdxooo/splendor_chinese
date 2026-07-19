@@ -68,6 +68,18 @@ public class SessionManager {
         return createNewSession(sessionId, players, creatorName, sessionName, version, 120);
     }
 
+    /**
+     * Create and add a session with a turn time limit.
+     *
+     * @param sessionId session id
+     * @param players players in the session
+     * @param creatorName creator name
+     * @param sessionName session name
+     * @param version game version
+     * @param turnTimeSeconds maximum thinking time for one turn
+     * @return created game session
+     * @throws SplendorException if the session cannot be created
+     */
     public GameSession createNewSession(String sessionId, List<PlayerInfo> players,
                                         String creatorName, String sessionName,
                                         GameVersions version, int turnTimeSeconds) throws SplendorException {
@@ -186,6 +198,11 @@ public class SessionManager {
         return game;
     }
 
+    /**
+     * Get a stable copy of all active sessions.
+     *
+     * @return active game sessions
+     */
     public Collection<GameSession> getGameSessions() {
         return new ArrayList<>(gameSessions.values());
     }
