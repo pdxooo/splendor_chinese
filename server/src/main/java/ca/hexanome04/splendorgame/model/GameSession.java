@@ -39,6 +39,14 @@ public class GameSession {
         this(sessionId, creatorUsername, sessionName, 120);
     }
 
+    /**
+     * Initialize a game session with a turn time limit.
+     *
+     * @param sessionId session id associated with this game session
+     * @param creatorUsername username of the session creator
+     * @param sessionName name of this session
+     * @param turnTimeSeconds maximum thinking time for one turn
+     */
     public GameSession(String sessionId, String creatorUsername, String sessionName,
                        int turnTimeSeconds) {
         this.launched = false;
@@ -104,20 +112,35 @@ public class GameSession {
         return this.creatorUsername;
     }
 
+    /**
+     * Get the maximum thinking time for one turn.
+     *
+     * @return turn time limit in seconds
+     */
     public int getTurnTimeSeconds() {
         return turnTimeSeconds;
     }
 
+    /**
+     * Get the deadline of the current turn.
+     *
+     * @return deadline as Unix epoch milliseconds
+     */
     public synchronized long getTurnDeadlineEpochMillis() {
         return turnDeadlineEpochMillis;
     }
 
+    /** Reset the deadline and save the state at the start of the turn. */
     public synchronized void resetTurnDeadline() {
         captureTurnStartSnapshot();
         turnDeadlineEpochMillis = System.currentTimeMillis() + turnTimeSeconds * 1000L;
     }
 
-    /** Advance an expired turn and discard any unfinished follow-up action. */
+    /**
+     * Advance an expired turn and discard any unfinished follow-up action.
+     *
+     * @return true when an expired turn was advanced
+     */
     public synchronized boolean advanceTurnIfExpired() {
         return advanceTurnIfExpired(System.currentTimeMillis());
     }
@@ -138,7 +161,16 @@ public class GameSession {
             return;
         }
         snapshotVersion = game.getGameVersion();
-        turnStartSnapshot = SplendorTypeAdapter.createGson().toJson(game);
+        if (snapshotVersion == null) {
+            turnStartSnapshot = null;
+            return;
+        }
+        Gson gson = SplendorTypeAdapter.createGson();
+        turnStartSnapshot = switch (snapshotVersion) {
+            case BASE, BASE_ORIENT -> gson.toJson(game, OrientGame.class);
+            case BASE_ORIENT_CITIES -> gson.toJson(game, CitiesGame.class);
+            case BASE_ORIENT_TRADE_ROUTES -> gson.toJson(game, TradingPostsGame.class);
+        };
     }
 
     private void restoreTurnStartSnapshot() {
@@ -153,6 +185,13 @@ public class GameSession {
         };
     }
 
+    /**
+     * Add a message to this session's bounded chat history.
+     *
+     * @param sender message sender
+     * @param text message text
+     * @return stored chat message
+     */
     public synchronized ChatMessage addChatMessage(String sender, String text) {
         ChatMessage message = new ChatMessage(nextChatMessageId++, sender, text,
                 Instant.now().toEpochMilli());
@@ -163,6 +202,11 @@ public class GameSession {
         return message;
     }
 
+    /**
+     * Get a read-only copy of this session's chat history.
+     *
+     * @return chat messages in chronological order
+     */
     public synchronized List<ChatMessage> getChatMessages() {
         return Collections.unmodifiableList(new ArrayList<>(chatMessages));
     }
