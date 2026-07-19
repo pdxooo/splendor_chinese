@@ -52,6 +52,10 @@ import GameChat from "../components/GameChat.astro";
                     <div class="player-prestige-points-container">
                         <span>0</span>
                     </div>
+                    <div class="player-identity">
+                        <p class="player-name"></p>
+                        <span class="turn-order-label"></span>
+                    </div>
                     <div class="player-inventory-tokens">
                         <!-- RED -->
                         <div class="bonus-container">
@@ -284,7 +288,8 @@ import GameChat from "../components/GameChat.astro";
                         <span>15</span>
                     </div>
                     <div class="other-player-profile">
-                        <p class="other-player-name">NAME</p>
+                        <p class="other-player-name player-name">NAME</p>
+                        <span class="turn-order-label"></span>
                     </div>
                     <div class="other-player-inventory">
                         <div class="other-player-tokens">

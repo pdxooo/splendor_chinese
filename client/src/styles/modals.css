@@ -35,6 +35,32 @@
   z-index: 4;
 }
 
+.turn-modal-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 5;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(239 200 93 / 70%);
+  border-radius: 0.45rem;
+  color: #efc85d;
+  background: rgb(8 17 29 / 72%);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.turn-modal-toggle:hover,
+.turn-modal-toggle:focus-visible {
+  color: white;
+  border-color: #efc85d;
+  outline: none;
+}
+
 /* Removes invisible if present (used for animation purposes and should not take effect here) */
 .modal img.invisible {
   visibility: visible;
@@ -132,6 +158,39 @@
 }
 
 /* YOUR TURN MODAL */
+
+#your-turn-modal.collapsed {
+  align-items: flex-start;
+  background: transparent;
+  pointer-events: none;
+}
+
+#your-turn-modal.collapsed .modal-container {
+  width: min(22rem, calc(100vw - 2rem));
+  min-height: 0;
+  margin: 5rem auto 0;
+  pointer-events: auto;
+}
+
+#your-turn-modal.collapsed .modal-content {
+  min-height: 3.4rem;
+  padding: 0.55rem 3.8rem 0.55rem 1rem;
+}
+
+#your-turn-modal.collapsed .modal-content > :not(h1) {
+  display: none;
+}
+
+#your-turn-modal.collapsed .modal-content h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+#your-turn-modal.collapsed .turn-modal-toggle {
+  top: 0.6rem;
+  right: 0.65rem;
+}
 
 .turn-button-container {
   display: flex;

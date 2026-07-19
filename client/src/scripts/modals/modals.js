@@ -90,7 +90,14 @@ const showModal = (selector) => {
 };
 
 const closeModal = (selector) => {
-    document.querySelector(selector).classList.remove("show");
+    const modal = document.querySelector(selector);
+    modal.classList.remove("show", "collapsed");
+    const toggle = modal.querySelector(".turn-modal-toggle");
+    if(toggle) {
+        toggle.textContent = "−";
+        toggle.setAttribute("aria-label", "收起操作框");
+        toggle.setAttribute("aria-expanded", "true");
+    }
 };
 
 export const showNextModal = (selector) => {

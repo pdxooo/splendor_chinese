@@ -5,14 +5,16 @@ import { Icon } from 'astro-icon';
 export interface Props {
     id: string;
     hasHover?: boolean;
+    collapsible?: boolean;
 }
 
-const { id, hasHover=true } = Astro.props;
+const { id, hasHover=true, collapsible=false } = Astro.props;
 ---
 
 <div id={id} class="modal">
     <div class="modal-container">
         {hasHover && <Icon class="dropdown-btn" name="ic:baseline-visibility-off"/>}
+        {collapsible && <button type="button" class="turn-modal-toggle" aria-label="收起操作框" aria-expanded="true">−</button>}
         <div class="modal-content">
             <slot />
         </div>

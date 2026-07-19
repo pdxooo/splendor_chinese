@@ -47,23 +47,23 @@ test.describe.parallel("Test orient game", () => {
         await expect(page.locator(".chat-panel")).toBeVisible();
     });
 
-    test("turn-order labels stay inside player panels", async ({ page }) => {
-        const mainPanel = page.locator(".player-inventory-container");
-        const mainBadge = mainPanel.locator(":scope > .turn-order-badge");
-        await expect(mainBadge).toHaveText("第 1 位");
+    test("turn-order labels appear directly below player nicknames", async ({ page }) => {
+        const identities = [
+            page.locator(".player-identity"),
+            page.locator(".other-player-profile").first()
+        ];
 
-        const otherPanel = page.locator(".other-player-container").first();
-        const otherBadge = otherPanel.locator(":scope > .turn-order-badge");
-        await expect(otherBadge).toHaveText("第 2 位");
+        for (const [index, identity] of identities.entries()) {
+            const nickname = identity.locator(".player-name");
+            const order = identity.locator(".turn-order-label");
+            await expect(nickname).toBeVisible();
+            await expect(order).toHaveText(`第 ${index + 1} 位`);
 
-        for (const [panel, badge] of [[mainPanel, mainBadge], [otherPanel, otherBadge]]) {
-            const panelBox = await panel.boundingBox();
-            const badgeBox = await badge.boundingBox();
-            expect(panelBox).not.toBeNull();
-            expect(badgeBox).not.toBeNull();
-            expect(badgeBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
-            expect(badgeBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
-            expect(badgeBox!.x + badgeBox!.width).toBeLessThanOrEqual(panelBox!.x + panelBox!.width);
+            const nicknameBox = await nickname.boundingBox();
+            const orderBox = await order.boundingBox();
+            expect(nicknameBox).not.toBeNull();
+            expect(orderBox).not.toBeNull();
+            expect(orderBox!.y).toBeGreaterThanOrEqual(nicknameBox!.y + nicknameBox!.height - 1);
         }
     });
 

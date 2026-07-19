@@ -2,6 +2,17 @@ import { showNextModal, setupSelection, backButton } from "./modals.js";
 import { performAction } from "../actions";
 import { showError } from "../notify.js";
 
+const turnModal = document.querySelector("#your-turn-modal");
+const turnModalToggle = turnModal?.querySelector(".turn-modal-toggle");
+if(turnModalToggle) {
+    turnModalToggle.onclick = () => {
+        const collapsed = turnModal.classList.toggle("collapsed");
+        turnModalToggle.textContent = collapsed ? "+" : "−";
+        turnModalToggle.setAttribute("aria-label", collapsed ? "展开操作框" : "收起操作框");
+        turnModalToggle.setAttribute("aria-expanded", String(!collapsed));
+    };
+}
+
 /**
  * Get the list of tokens when taking / putting back tokens or purchasing a development card
  * @returns [{ token: count }]

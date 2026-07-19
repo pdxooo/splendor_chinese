@@ -97,23 +97,43 @@
   pointer-events: none;
 }
 .turn-timer.warning { color: #ff8b78; border-color: #ff6554; }
-.turn-order-badge {
-  position: absolute;
-  z-index: 8;
-  top: 0.45rem;
-  left: 0.45rem;
-  min-width: 3.6rem;
-  height: 1.55rem;
-  display: grid;
-  place-items: center;
-  padding: 0 0.5rem;
+.player-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  color: white;
+}
+
+.player-identity .player-name {
+  max-width: 8rem;
+  margin: 0;
+  overflow: hidden;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turn-order-label {
+  display: inline-flex;
+  min-height: 1.45rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.55rem;
   border: 1px solid goldenrod;
   border-radius: 999px;
   color: #f5cc65;
   background: rgb(19 34 58 / 94%);
   font-size: 0.72rem;
   font-weight: bold;
-  box-shadow: 0 2px 6px black;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 70%);
   white-space: nowrap;
 }
-.player-inventory-container > .turn-order-badge { left: 0.45rem; top: 0.45rem; }
+
+.other-player-profile .turn-order-label {
+  align-self: center;
+}

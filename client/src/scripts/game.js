@@ -163,21 +163,20 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
     });
 };
 
-const setTurnOrderBadge = (container, order) => {
-    let badge = container.querySelector(":scope > .turn-order-badge");
-    if(!badge) {
-        badge = document.createElement("span");
-        badge.className = "turn-order-badge";
-        container.appendChild(badge);
+const setPlayerIdentity = (container, name, order) => {
+    const nameNode = container.querySelector(".player-name");
+    const orderNode = container.querySelector(".turn-order-label");
+    if(nameNode) nameNode.textContent = name;
+    if(orderNode) {
+        orderNode.textContent = `第 ${order} 位`;
+        orderNode.title = `行动顺序：第 ${order} 位`;
     }
-    badge.textContent = `第 ${order} 位`;
-    badge.title = `行动顺序：第 ${order} 位`;
 };
 
 const updateMainPlayerInfo = (playerInfo, order) => {
 
     const playerInv = document.querySelector("#player-inventory");
-    setTurnOrderBadge(playerInv.querySelector(".player-inventory-container"), order);
+    setPlayerIdentity(playerInv.querySelector(".player-identity"), playerInfo.name, order);
 
 
     // update prestige points
@@ -245,7 +244,7 @@ const updateOtherPlayerInfo = (pInfo, order) => {
         // now reget the node
         pNode = document.querySelector(selector);
     }
-    setTurnOrderBadge(pNode.querySelector(".other-player-container"), order);
+    setPlayerIdentity(pNode.querySelector(".other-player-profile"), pInfo.name, order);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;
