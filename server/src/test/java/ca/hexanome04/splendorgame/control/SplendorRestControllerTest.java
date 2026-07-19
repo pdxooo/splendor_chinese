@@ -233,6 +233,40 @@ public class SplendorRestControllerTest {
                 .getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Verify that a completed game remains available until the room owner deletes it.
+     */
+    @Test
+    @DisplayName("Winning action keeps the completed session available")
+    public void testWinningActionDoesNotDeleteSession() {
+        Game game = Mockito.mock(Game.class);
+        Player player = Mockito.mock(Player.class);
+        Initializer initializer = Mockito.mock(Initializer.class);
+        ArrayList<ActionResult> result = new ArrayList<>(List.of(
+                ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED));
+
+        Mockito.when(auth.getNameFromToken("token")).thenReturn("p1");
+        Mockito.when(game.getPlayerFromName("p1")).thenReturn(player);
+        Mockito.when(game.getTurnCurrentPlayer()).thenReturn(player);
+        Mockito.when(player.getName()).thenReturn("p1");
+        Mockito.when(game.getCurValidActions()).thenReturn(List.of(Actions.TAKE_TOKEN));
+        Mockito.when(game.getTurnCounter()).thenReturn(1);
+        Mockito.when(game.takeAction(Mockito.eq("p1"), Mockito.any()))
+                .thenReturn(result);
+        Mockito.when(game.isGameOver()).thenReturn(true);
+
+        restController.initializer = initializer;
+        sessionManager.getGameSession(testGameSessionId).setGame(game);
+
+        ResponseEntity<String> response = restController.putAction(
+                "token", testGameSessionId, "p1", Actions.TAKE_TOKEN,
+                "{\"takeTokens\":{},\"putBackTokens\":{}}");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNotNull();
+        Mockito.verify(initializer, Mockito.never()).deleteGameSession(testGameSessionId);
+    }
+
     @Test
     @DisplayName("Verify previously saved game launches")
     void testLaunchSavedGame() throws FileNotFoundException {
@@ -403,3 +437,4 @@ public class SplendorRestControllerTest {
         assertThat(reservedCard.has("prestigePoints")).isTrue();
     }
 }
+
