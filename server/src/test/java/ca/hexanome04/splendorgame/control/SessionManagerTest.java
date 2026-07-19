@@ -62,4 +62,24 @@ public class SessionManagerTest {
         dummySessionManager.createNewSession(dummyID, players, "creator", "sessionName", BASE_ORIENT);
         assertThat(dummySessionManager.getGameSession(dummyID)).isInstanceOf(GameSession.class);
     }
+
+    /**
+     * Verify deleting a session removes its complete in-memory game state.
+     *
+     * @throws Exception if test session creation fails
+     */
+    @Test
+    @DisplayName("Verify delete session")
+    public void testDeleteGameSession() throws Exception {
+        ArrayList<PlayerInfo> players = new ArrayList<>();
+        players.add(p1);
+        players.add(p2);
+        dummySessionManager.createNewSession(
+                dummyID, players, "creator", "sessionName", BASE_ORIENT);
+
+        assertThat(dummySessionManager.deleteGameSession(dummyID)).isNotNull();
+        assertNull(dummySessionManager.getGameSession(dummyID));
+        assertThat(dummySessionManager.getNumSessions()).isZero();
+        assertNull(dummySessionManager.deleteGameSession(dummyID));
+    }
 }

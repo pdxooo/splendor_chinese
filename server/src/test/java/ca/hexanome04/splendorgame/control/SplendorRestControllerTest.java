@@ -61,6 +61,7 @@ public class SplendorRestControllerTest {
         sessionManager = new SessionManager();
         restController = new SplendorRestController(sessionManager, auth,
                 gameSavesManager, gameServiceName, 30000);
+        restController.internalDeleteToken = "test-delete-secret";
 
         LaunchSessionInfo launchSessionInfo = new LaunchSessionInfo(
                 gameServiceName,
@@ -339,6 +340,41 @@ public class SplendorRestControllerTest {
         assertThat(otherReservedCard.has("id")).isFalse();
         assertThat(otherReservedCard.has("tokenCost")).isFalse();
         assertThat(otherReservedCard.has("prestigePoints")).isFalse();
+    }
+
+    /** A trusted lobby request deletes the game and its public state. */
+    @Test
+    @DisplayName("Verify authenticated session deletion")
+    public void testDeleteSession() {
+        ResponseEntity response = restController.deleteSession(
+                testGameSessionId, "test-delete-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNull();
+        ResponseEntity state = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null).getResult();
+        assertThat(state.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    /** A public caller without the internal secret cannot delete a game. */
+    @Test
+    @DisplayName("Reject unauthenticated session deletion")
+    public void testDeleteSessionRejectsWrongSecret() {
+        ResponseEntity response = restController.deleteSession(
+                testGameSessionId, "wrong-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNotNull();
+    }
+
+    /** A trusted deletion request reports a missing game without side effects. */
+    @Test
+    @DisplayName("Report missing session deletion")
+    public void testDeleteMissingSession() {
+        ResponseEntity response = restController.deleteSession(
+                "missing", "test-delete-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test

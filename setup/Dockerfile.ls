@@ -4,6 +4,8 @@ COPY maven-settings.xml /root/.m2/settings.xml
 COPY LobbyService /LS
 COPY lobby-overrides/AccountForm.java /LS/src/main/java/eu/kartoffelquadrat/ls/accountmanager/controller/AccountForm.java
 COPY lobby-overrides/AccountBootstrap.java /LS/src/main/java/eu/kartoffelquadrat/ls/accountmanager/config/AccountBootstrap.java
+COPY lobby-overrides/InviteRegistrationForm.java /LS/src/main/java/eu/kartoffelquadrat/ls/accountmanager/controller/InviteRegistrationForm.java
+COPY lobby-overrides/InviteRegistrationController.java /LS/src/main/java/eu/kartoffelquadrat/ls/accountmanager/controller/InviteRegistrationController.java
 COPY lobby-overrides/CreateGameForm.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/CreateGameForm.java
 COPY lobby-overrides/SessionController.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/SessionController.java
 COPY lobby-overrides/Session.java /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/model/Session.java
@@ -11,6 +13,7 @@ COPY lobby-overrides/LauncherInfo.java /LS/src/main/java/eu/kartoffelquadrat/ls/
 COPY lobby-overrides/SessionControllerTest.java /LS/src/test/java/eu/kartoffelquadrat/ls/lobby/control/SessionControllerTest.java
 COPY lobby-overrides/AccountFormTest.java /LS/src/test/java/eu/kartoffelquadrat/ls/accountmanager/controller/AccountFormTest.java
 COPY lobby-overrides/AccountBootstrapTest.java /LS/src/test/java/eu/kartoffelquadrat/ls/accountmanager/config/AccountBootstrapTest.java
+COPY lobby-overrides/InviteRegistrationControllerTest.java /LS/src/test/java/eu/kartoffelquadrat/ls/accountmanager/controller/InviteRegistrationControllerTest.java
 RUN sed -i 's/new Session(creator, gameParameters, savegameid)/new Session(creator, gameParameters, savegameid, createGameForm.getTurnTimeSeconds())/' \
     /LS/src/main/java/eu/kartoffelquadrat/ls/lobby/control/SessionController.java \
     && sed -i 's/new Session(creator, brandedParams, createGameForm.getSavegame())/new Session(creator, brandedParams, createGameForm.getSavegame(), createGameForm.getTurnTimeSeconds())/' \

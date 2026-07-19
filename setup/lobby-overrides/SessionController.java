@@ -11,6 +11,7 @@ import eu.kartoffelquadrat.ls.lobby.model.LauncherInfo;
 import eu.kartoffelquadrat.ls.lobby.model.PlayerInfo;
 import eu.kartoffelquadrat.ls.lobby.model.Sessions;
 import eu.kartoffelquadrat.ls.lobby.model.Session;
+import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.security.Principal;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -34,6 +36,10 @@ import java.util.Map.Entry;
 @RestController
 public class SessionController {
 
+    private static final int MINIMUM_ROOM_NUMBER = 10000;
+    private static final int ROOM_NUMBER_RANGE = 90000;
+    private static final SecureRandom ROOM_NUMBER_RANDOM = new SecureRandom();
+
 
     // Note: Ideally this object is loaded from a DB on service startup. For now it is created empty and within memory.
     Sessions sessions;
@@ -43,6 +49,9 @@ public class SessionController {
 
     @Value("${api.games.url}")
     String apiGamesUrl;
+
+    @Value("${SPLENDOR_INTERNAL_DELETE_TOKEN:}")
+    String internalDeleteToken;
 
     @Autowired
     PlayerRepository playerRepository;
@@ -199,8 +208,15 @@ public class SessionController {
                         + "the admin who registered the corresponding game-server.");
 
         if (session.isLaunched()
-                && !gameServers.getGameServerParameters(session.getGameName()).isPhantom())
-            notifyGameServerAboutDeletion(sessionid, session.getGameName());
+                && !gameServers.getGameServerParameters(session.getGameName()).isPhantom()) {
+            try {
+                notifyGameServerAboutDeletion(sessionid, session.getGameName());
+            } catch (RegistryException exception) {
+                logger.warn("Game server did not delete session {}.", sessionid, exception);
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(
+                        "游戏服务器未能清理房间，房间已保留，请稍后重试。");
+            }
+        }
 
         deleteSessionAndNotifyListeners(sessionid);
         return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -442,9 +458,11 @@ public class SessionController {
      * Creates a random session ID that is not yet in use.
      */
     private long generateUniqueSessionId() {
-        long randomSessionId = Math.abs(new Random().nextLong());
+        long randomSessionId = MINIMUM_ROOM_NUMBER
+                + ROOM_NUMBER_RANDOM.nextInt(ROOM_NUMBER_RANGE);
         while (sessions.isExistent(randomSessionId)) {
-            randomSessionId = Math.abs(new Random().nextLong());
+            randomSessionId = MINIMUM_ROOM_NUMBER
+                    + ROOM_NUMBER_RANDOM.nextInt(ROOM_NUMBER_RANGE);
         }
         return randomSessionId;
     }
@@ -530,7 +548,8 @@ public class SessionController {
      * @param gamename  as the name of the associated game-service.
      * @throws RegistryException
      */
-    private void notifyGameServerAboutDeletion(long sessionid, String gamename) throws RegistryException {
+    protected void notifyGameServerAboutDeletion(long sessionid, String gamename)
+            throws RegistryException {
 
         // Reject launch notification if game-service was registered in phantom (p2p) mode.
         if (gameServers.getGameServerParameters(gamename).getLocation().isEmpty())
@@ -542,7 +561,16 @@ public class SessionController {
         urlBuilder.append(gameServers.getGameServerParameters(gamename).getLocation());
         urlBuilder.append(apiGamesUrl);
         urlBuilder.append(sessionid);
-        Unirest.delete(urlBuilder.toString()).header("Content-Type", "application/json; charset=utf-8").asString();
+        if (internalDeleteToken == null || internalDeleteToken.isEmpty()) {
+            throw new RegistryException("Internal game deletion is not configured.");
+        }
+        HttpResponse<String> response = Unirest.delete(urlBuilder.toString())
+                .header("Content-Type", "application/json; charset=utf-8")
+                .header("X-Splendor-Internal-Token", internalDeleteToken)
+                .asString();
+        if (response.getStatus() < 200 || response.getStatus() >= 300) {
+            throw new RegistryException("Game server rejected session deletion.");
+        }
     }
 
     /**
@@ -574,5 +602,3 @@ public class SessionController {
             }
     }
 }
-
-

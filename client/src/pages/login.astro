@@ -6,8 +6,9 @@ import "../styles/loginstyle.css";
 import "../styles/transitions.css";
 ---
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head>
+        <meta charset="utf-8">
         <title>Splendor | Login</title>
         <link rel="icon" type="image/png" href="/images/SplendorFavicon.png">
         
@@ -23,22 +24,49 @@ import "../styles/transitions.css";
         <div class="transition transition1 is-active"></div>
 
         <div class="login-form">
-            <form>
-                <h1>Splendor</h1>
+            <form id="login-form">
+                <h1>璀璨宝石</h1>
                 <div class="txt-field">
                     <input type="text" name="uname" required>
                     <span></span>
-                    <label for="uname"> Username </label>
+                    <label for="uname">用户名</label>
                 </div>
                 
                 <div class="txt-field">          
                     <input type="password" name="psw" required>
                     <span></span>
-                    <label for="psw"> Password </label>
+                    <label for="psw">密码</label>
                 </div>
 
                 <div class="button-area">
-                    <button class="login-button" input type="submit"> Login </button>
+                    <button class="login-button" type="submit">登录</button>
+                    <button class="secondary-button show-register-button" type="button">使用邀请码注册</button>
+                </div>
+            </form>
+            <form id="register-form" class="hidden">
+                <h1>注册玩家</h1>
+                <div class="txt-field">
+                    <input type="text" name="reg-uname" maxlength="32" required>
+                    <span></span>
+                    <label for="reg-uname">用户名</label>
+                </div>
+                <div class="txt-field">
+                    <input type="password" name="reg-psw" required>
+                    <span></span>
+                    <label for="reg-psw">密码（非空即可）</label>
+                </div>
+                <div class="txt-field">
+                    <input type="password" name="invite-code" autocomplete="off" required>
+                    <span></span>
+                    <label for="invite-code">邀请码</label>
+                </div>
+                <label class="colour-field">
+                    游戏颜色
+                    <input type="color" name="preferred-colour" value="#2684ff">
+                </label>
+                <div class="button-area">
+                    <button class="login-button" type="submit">注册</button>
+                    <button class="secondary-button show-login-button" type="button">返回登录</button>
                 </div>
             </form>
         </div>

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import eu.kartoffelquadrat.asyncrestlib.BroadcastContentManager;
@@ -14,6 +16,7 @@ import eu.kartoffelquadrat.ls.gameregistry.model.GameServers;
 import eu.kartoffelquadrat.ls.lobby.model.Session;
 import eu.kartoffelquadrat.ls.lobby.model.Sessions;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Map;
@@ -23,6 +26,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /** Authorization tests for deleting lobby sessions. */
 public class SessionControllerTest {
+
+    /** Every newly generated public room number has exactly five digits. */
+    @Test
+    public void generatedRoomNumbersHaveFiveDigits() throws Exception {
+        SessionController controller = new SessionController(new Sessions());
+        Method generator = SessionController.class.getDeclaredMethod("generateUniqueSessionId");
+        generator.setAccessible(true);
+
+        for (int index = 0; index < 1000; index++) {
+            long roomNumber = (Long) generator.invoke(controller);
+            assertTrue(roomNumber >= 10000L);
+            assertTrue(roomNumber <= 99999L);
+        }
+    }
 
     /** A creator can delete a room even after it has launched. */
     @Test
@@ -52,6 +69,23 @@ public class SessionControllerTest {
         assertTrue(sessions.isExistent(731204L));
     }
 
+    /** The room stays visible when the game server refuses or fails deletion. */
+    @Test
+    public void backendDeleteFailureKeepsLobbySession() throws Exception {
+        Sessions sessions = new Sessions();
+        Session session = launchedSession("lxh", "http://server:33402");
+        sessions.addSession(731204L, session);
+        SessionController controller = spy(controllerFor(sessions, session));
+        doThrow(new RegistryException("backend deletion failed"))
+                .when(controller).notifyGameServerAboutDeletion(
+                        731204L, session.getGameName());
+
+        ResponseEntity response = controller.removeSession(731204L, principal("lxh"));
+
+        assertEquals(502, response.getStatusCodeValue());
+        assertTrue(sessions.isExistent(731204L));
+    }
+
     private SessionController controllerFor(Sessions sessions, Session session) throws Exception {
         SessionController controller = new SessionController(sessions);
         controller.tokenController = mock(TokenController.class);
@@ -71,8 +105,12 @@ public class SessionControllerTest {
     }
 
     private Session launchedSession(String creator) throws RegistryException {
+        return launchedSession(creator, "");
+    }
+
+    private Session launchedSession(String creator, String location) throws RegistryException {
         GameServerParameters parameters = new GameServerParameters(
-                "splendor_base", "Splendor Classic", "", 2, 4, "true");
+                "splendor_base", "Splendor Classic", location, 2, 4, "true");
         Session session = new Session(creator, parameters, "");
         session.markAsLaunched();
         return session;
@@ -82,5 +120,3 @@ public class SessionControllerTest {
         return () -> name;
     }
 }
-
-

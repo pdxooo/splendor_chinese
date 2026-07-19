@@ -52,6 +52,16 @@ public class SessionManager {
     }
 
     /**
+     * Remove a live game and all state owned by its game session.
+     *
+     * @param sessionId session id to remove
+     * @return removed session, or null if no session used that id
+     */
+    public @Nullable GameSession deleteGameSession(String sessionId) {
+        return gameSessions.remove(sessionId);
+    }
+
+    /**
      * Creates and adds a new session to the session manager.
      *
      * @param sessionId session id

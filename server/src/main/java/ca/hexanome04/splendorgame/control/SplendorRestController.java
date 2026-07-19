@@ -18,6 +18,8 @@ import com.google.gson.JsonParser;
 import dev.dacbiet.simpoll.ContentWatcher;
 import dev.dacbiet.simpoll.Fetcher;
 import dev.dacbiet.simpoll.ResultGenerator;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +51,9 @@ public class SplendorRestController {
     private final GameSavesManager gameSavesManager;
     private final long longPollTimeout;
     private final Map<String, ContentWatcher> gameWatcher;
+
+    @Value("${SPLENDOR_INTERNAL_DELETE_TOKEN:}")
+    String internalDeleteToken;
 
     @Autowired
     Initializer initializer;
@@ -85,6 +90,49 @@ public class SplendorRestController {
     public String online() {
         return "The server currently has " + sessionManager.getNumSessions() + " sessions created.";
 
+    }
+
+    /**
+     * Delete a live game after authenticating the lobby service.
+     *
+     * @param sessionId session id to delete
+     * @param suppliedToken shared internal service token
+     * @return deletion result
+     */
+    @DeleteMapping(value = "/api/sessions/{sessionId}")
+    public ResponseEntity<String> deleteSession(
+            @PathVariable String sessionId,
+            @RequestHeader(value = "X-Splendor-Internal-Token", required = false)
+            String suppliedToken) {
+        if (internalDeleteToken == null || internalDeleteToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Internal deletion is not configured.");
+        }
+        if (!secureTokenMatches(suppliedToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden.");
+        }
+
+        GameSession removed = sessionManager.deleteGameSession(sessionId);
+        if (removed == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Game session does not exist.");
+        }
+
+        ContentWatcher watcher = gameWatcher.remove(sessionId);
+        if (watcher != null) {
+            watcher.markDirty();
+        }
+        logger.info("Deleted game session: {}", sessionId);
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
+    private boolean secureTokenMatches(String suppliedToken) {
+        if (suppliedToken == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                internalDeleteToken.getBytes(StandardCharsets.UTF_8),
+                suppliedToken.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
