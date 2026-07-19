@@ -203,7 +203,13 @@ public class SplendorRestController {
         }
     }
 
-    /** Preserve the original two-argument entry point used by controller tests. */
+    /**
+     * Preserve the original two-argument game-state entry point.
+     *
+     * @param sessionId game session id
+     * @param hash hash of the previously observed state
+     * @return deferred game-state response
+     */
     public DeferredResult getGameState(String sessionId, String hash) {
         return getGameState(sessionId, hash, null);
     }
@@ -376,31 +382,31 @@ public class SplendorRestController {
                     throw new SplendorException("Given action is not valid: " + actionIdentifier);
                 }
 
-            JsonObject jobj = JsonParser.parseString(bodyData).getAsJsonObject();
+                JsonObject jobj = JsonParser.parseString(bodyData).getAsJsonObject();
 
-            logger.info("Valid actions BEFORE turn: " + game.getCurValidActions());
+                logger.info("Valid actions BEFORE turn: " + game.getCurValidActions());
 
                 int turnBefore = game.getTurnCounter();
                 ArrayList<ActionResult> actionResult =
                         game.takeAction(playerName, ActionDecoder.createAction(actionIdentifier.toString(), jobj));
 
-            if (game.isGameOver()) {
-                initializer.deleteGameSession(sessionId);
-            }
+                if (game.isGameOver()) {
+                    initializer.deleteGameSession(sessionId);
+                }
 
                 if (!actionResult.contains(ActionResult.VALID_ACTION)) {
-                // This should technically only have the ones that are errors,
-                // not the ones that are because they need to do an extra action.
-                // (Since, the ones that require an additional action have VALID_ACTION)
-                Optional<ActionResult> result = actionResult.stream()
-                        .filter(ar -> ar != ActionResult.TURN_COMPLETED) // idk if necessary
-                        .findFirst();
-                if (result.isPresent() && !result.get().getDescription().isEmpty()) {
-                    String desc = result.get().getDescription();
-                    throw new SplendorException(desc);
-                } else {
-                    throw new SplendorException("Invalid action performed.");
-                }
+                    // This should technically only have the ones that are errors,
+                    // not the ones that are because they need to do an extra action.
+                    // (Since, the ones that require an additional action have VALID_ACTION)
+                    Optional<ActionResult> result = actionResult.stream()
+                            .filter(ar -> ar != ActionResult.TURN_COMPLETED) // idk if necessary
+                            .findFirst();
+                    if (result.isPresent() && !result.get().getDescription().isEmpty()) {
+                        String desc = result.get().getDescription();
+                        throw new SplendorException(desc);
+                    } else {
+                        throw new SplendorException("Invalid action performed.");
+                    }
                 }
 
                 if (game.getTurnCounter() != turnBefore) {
@@ -423,7 +429,14 @@ public class SplendorRestController {
         }
     }
 
-    /** Send a chat message to players in the current room. */
+    /**
+     * Send a chat message to players in the current room.
+     *
+     * @param token access token
+     * @param sessionId game session id
+     * @param body request body containing the message text
+     * @return an empty successful response or a localized error
+     */
     @PostMapping(value = "/api/sessions/{sessionId}/chat",
             consumes = "application/json; charset=utf-8")
     public ResponseEntity<String> postChatMessage(@RequestParam("access_token") String token,
