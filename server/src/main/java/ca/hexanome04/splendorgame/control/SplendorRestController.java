@@ -445,10 +445,6 @@ public class SplendorRestController {
                 ArrayList<ActionResult> actionResult =
                         game.takeAction(playerName, ActionDecoder.createAction(actionIdentifier.toString(), jobj));
 
-                if (game.isGameOver()) {
-                    initializer.deleteGameSession(sessionId);
-                }
-
                 if (!actionResult.contains(ActionResult.VALID_ACTION)) {
                     // This should technically only have the ones that are errors,
                     // not the ones that are because they need to do an extra action.
@@ -473,7 +469,13 @@ public class SplendorRestController {
 
             // TODO: return what further actions are needed (if any)
             // mark that the game state has changed
-            gameWatcher.get(sessionId).markDirty();
+            // Keep completed games available so every client can retrieve and display
+            // the final result. The creator or an administrator explicitly removes
+            // the room later through the normal room deletion endpoint.
+            ContentWatcher watcher = gameWatcher.get(sessionId);
+            if (watcher != null) {
+                watcher.markDirty();
+            }
             return ResponseEntity.status(HttpStatus.OK).body("");
         } catch (SplendorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -589,3 +591,4 @@ public class SplendorRestController {
     }
 
 }
+
