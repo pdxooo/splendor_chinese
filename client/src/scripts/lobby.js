@@ -66,6 +66,12 @@ const showLoadGameTab = () => {
 // for focusing on a session
 const toFocusList = [];
 
+const formatTurnTime = (seconds) => {
+    const value = Number(seconds) || 120;
+    if(value > 120 && value % 60 === 0) return `每回合 ${value / 60} 分钟`;
+    return `每回合 ${value} 秒`;
+};
+
 /**
  * Attempts to focus on session item if it's already availabe,
  * else it will wait until it gets added to the page.
@@ -307,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const curP = ses.players.length;
             const maxP = ses.gameParameters.maxSessionPlayers;
             trNode.querySelector(".session-players-info").textContent = `[${curP}/${maxP}]: ${sesPlayers.join(", ")}`;
+            trNode.querySelector(".session-turn-time").textContent = formatTurnTime(ses.turnTimeSeconds);
 
             setAttributes(ses, trNode);
 
@@ -355,6 +362,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const newText = `[${curP}/${maxP}]: ${sesPlayers.join(", ")}`;
             if(node.textContent !== newText) {
                 node.textContent = newText;
+            }
+
+            const turnTimeNode = trNode.querySelector(".session-turn-time");
+            const turnTimeText = formatTurnTime(ses.turnTimeSeconds);
+            if(turnTimeNode.textContent !== turnTimeText) {
+                turnTimeNode.textContent = turnTimeText;
             }
         });
 

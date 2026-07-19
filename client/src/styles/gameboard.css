@@ -278,15 +278,18 @@ body {
 .player-inventory-reservedcards {
   position: relative;
   display: flex;
-  max-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
+  align-items: center;
+  width: var(--player-inv-card-height);
+  min-height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
   z-index: 5;
+  overflow: visible;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved {
-  /* position: absolute; */
-  max-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  min-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  aspect-ratio: calc(1 / (var(--dev-card-aspect-ratio)));
+  position: relative;
+  width: var(--player-inv-card-height);
+  min-width: var(--player-inv-card-height);
+  height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
   transition: margin-left 0.3s;
   z-index: 5;
 }
@@ -302,13 +305,15 @@ body {
 
 .player-inventory-reservedcards .player-inventory-card-reserved > img {
   position: absolute;
-  height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  aspect-ratio: calc((var(--dev-card-aspect-ratio)));
+  top: 50%;
+  left: 50%;
+  height: var(--player-inv-card-height);
+  aspect-ratio: var(--dev-card-aspect-ratio);
   border-radius: var(--card-border-radius);
-  rotate: 90deg;
   box-shadow: rgba(0 0 0 / 10%) 0 4px 12px;
-  transform-origin: left center;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+  transition: left 0.2s ease, transform 0.2s ease, filter 0.2s ease;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved:hover {
@@ -316,7 +321,8 @@ body {
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved:hover > img {
-  transform: scale(1.9);
+  left: calc(50% + 1.5em);
+  transform: translate(-50%, -50%) rotate(90deg) scale(1.55);
   filter: drop-shadow(0 0.4em 0.5em rgb(0 0 0 / 80%));
 }
 

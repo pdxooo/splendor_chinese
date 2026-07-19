@@ -170,7 +170,7 @@ const setTurnOrderBadge = (container, order) => {
         badge.className = "turn-order-badge";
         container.appendChild(badge);
     }
-    badge.textContent = order;
+    badge.textContent = `第 ${order} 位`;
     badge.title = `行动顺序：第 ${order} 位`;
 };
 

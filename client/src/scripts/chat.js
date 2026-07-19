@@ -5,10 +5,19 @@ const chat = document.querySelector("#game-chat");
 const messages = document.querySelector("#chat-messages");
 const form = document.querySelector("#chat-form");
 const input = document.querySelector("#chat-input");
+const toggle = document.querySelector("#chat-toggle");
 
-document.querySelector("#chat-toggle")?.addEventListener("click", () => {
+const updateToggle = () => {
+    const collapsed = chat.classList.contains("collapsed");
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.setAttribute("aria-label", collapsed ? "展开聊天" : "收起聊天");
+    toggle.setAttribute("title", collapsed ? "展开聊天" : "收起聊天");
+    toggle.querySelector("span").textContent = collapsed ? "+" : "−";
+};
+
+toggle?.addEventListener("click", () => {
     chat.classList.toggle("collapsed");
-    document.querySelector("#chat-toggle").setAttribute("aria-expanded", String(!chat.classList.contains("collapsed")));
+    updateToggle();
 });
 
 window.addEventListener("splendor-state-update", (event) => {
