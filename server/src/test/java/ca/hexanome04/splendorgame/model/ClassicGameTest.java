@@ -2,6 +2,7 @@ package ca.hexanome04.splendorgame.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.actions.BuyCardAction;
@@ -83,6 +84,7 @@ class ClassicGameTest {
 
         assertEquals(List.of(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED), result);
         assertEquals(1, player.getReservedCards().size());
+        assertTrue(player.getReservedCards().get(0).isReservedFaceDown());
         assertEquals(1, player.getTokens().get(TokenType.Gold));
         assertEquals(3, game.getTier1PurchasableDevelopmentCards().size());
     }

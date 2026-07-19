@@ -3,6 +3,7 @@ package ca.hexanome04.splendorgame.control;
 import ca.hexanome04.splendorgame.control.templates.LaunchSessionInfo;
 import ca.hexanome04.splendorgame.control.templates.PlayerInfo;
 import ca.hexanome04.splendorgame.model.GameUtils;
+import ca.hexanome04.splendorgame.model.DevelopmentCard;
 import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.action.*;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
@@ -304,13 +305,17 @@ public class SplendorRestControllerTest {
     }
 
     @Test
-    @DisplayName("Reserved cards expose their tier only to other players")
-    public void testReservedCardsHideFacesFromOtherPlayers() {
+    @DisplayName("Blind reserved cards expose their tier only to other players")
+    public void testBlindReservedCardsHideFacesFromOtherPlayers() {
         Game game = sessionManager.getGameSession(testGameSessionId).getGame();
         Player firstPlayer = game.getPlayerFromName("p1");
         Player secondPlayer = game.getPlayerFromName("p2");
-        firstPlayer.reserveCard(game.getTier1PurchasableDevelopmentCards().get(0));
-        secondPlayer.reserveCard(game.getTier2PurchasableDevelopmentCards().get(0));
+        DevelopmentCard ownBlindCard = game.getTier1PurchasableDevelopmentCards().get(0);
+        DevelopmentCard otherBlindCard = game.getTier2PurchasableDevelopmentCards().get(0);
+        ownBlindCard.setReservedFaceDown(true);
+        otherBlindCard.setReservedFaceDown(true);
+        firstPlayer.reserveCard(ownBlindCard);
+        secondPlayer.reserveCard(otherBlindCard);
         Mockito.when(auth.getNameFromToken("viewer-token")).thenReturn("p1");
 
         ResponseEntity result = (ResponseEntity) restController
@@ -334,5 +339,31 @@ public class SplendorRestControllerTest {
         assertThat(otherReservedCard.has("id")).isFalse();
         assertThat(otherReservedCard.has("tokenCost")).isFalse();
         assertThat(otherReservedCard.has("prestigePoints")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Face-up reserved cards remain public to other players")
+    public void testFaceUpReservedCardsRemainVisibleToOtherPlayers() {
+        Game game = sessionManager.getGameSession(testGameSessionId).getGame();
+        Player secondPlayer = game.getPlayerFromName("p2");
+        DevelopmentCard publicCard = game.getTier2PurchasableDevelopmentCards().get(0);
+        publicCard.setReservedFaceDown(false);
+        secondPlayer.reserveCard(publicCard);
+        Mockito.when(auth.getNameFromToken("viewer-token")).thenReturn("p1");
+
+        ResponseEntity result = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null, "viewer-token").getResult();
+        JsonArray players = JsonParser.parseString((String) result.getBody())
+                .getAsJsonObject().getAsJsonArray("players");
+        JsonObject otherPlayer = null;
+        for (int i = 0; i < players.size(); i++) {
+            JsonObject candidate = players.get(i).getAsJsonObject();
+            if (candidate.get("name").getAsString().equals("p2")) otherPlayer = candidate;
+        }
+        JsonObject reservedCard = otherPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+
+        assertThat(reservedCard.get("id").getAsString()).isEqualTo(publicCard.getId());
+        assertThat(reservedCard.has("tokenCost")).isTrue();
+        assertThat(reservedCard.has("prestigePoints")).isTrue();
     }
 }

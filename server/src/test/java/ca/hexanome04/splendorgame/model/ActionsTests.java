@@ -364,562 +364,4 @@ public class ActionsTests {
         expected.put(TokenType.Green, 2);
         expected.put(TokenType.White, 1);
 
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new TakeTokenAction(tokensToTake, tokensToPutBack));
-
-        assertThat(expected).isEqualTo(p1.getTokens());
-        assertThat(ActionResult.TOO_MANY_SAME_COLOUR_TOKENS).isIn(result);
-    }
-
-    @DisplayName("Ensure players cannot take more than 3 unique tokens per turn.")
-    @Test
-    void testPlayerTakeTokens_InvalidFourUniqueTokens() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> playerTokens = new HashMap<>();
-        playerTokens.put(TokenType.Red, 1);
-        playerTokens.put(TokenType.Green, 2);
-        playerTokens.put(TokenType.White, 1);
-        p1.addTokens(playerTokens);
-
-        HashMap<TokenType, Integer> tokensToTake = new HashMap<>();
-        tokensToTake.put(TokenType.Blue, 1);
-        tokensToTake.put(TokenType.Green, 1);
-        tokensToTake.put(TokenType.Red, 1);
-        tokensToTake.put(TokenType.Brown, 1);
-
-
-        HashMap<TokenType, Integer> tokensToPutBack = new HashMap<>();
-
-        HashMap<TokenType, Integer> expected = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expected.put(type, 0);
-        }
-        expected.put(TokenType.Red, 1);
-        expected.put(TokenType.Green, 2);
-        expected.put(TokenType.White, 1);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new TakeTokenAction(tokensToTake, tokensToPutBack));
-
-        assertThat(expected).isEqualTo(p1.getTokens());
-        assertThat(ActionResult.INVALID_TOKENS_GIVEN).isIn(result);
-    }
-
-    @DisplayName("Ensure players can reserve a card when they have not reached the limit.")
-    @Test
-    void testPlayerReserveCard_Valid() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveCardAction("01"));
-
-        assertThat(p1.getTokens().get(TokenType.Gold)).isEqualTo(1);
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players can reserve a card even when the board has no gold left.")
-    @Test
-    void testPlayerReserveCard_ValidNoGold() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> goldsToRemove = new HashMap<>();
-        goldsToRemove.put(TokenType.Gold, 5);
-        game.removeTokens(goldsToRemove);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveCardAction("01"));
-
-        assertThat(p1.getTokens().get(TokenType.Gold)).isEqualTo(0);
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players cannot reserve a card when they have reached the limit.")
-    @Test
-    void testPlayerReserveCard_Invalid() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        RegDevelopmentCard c1 = (RegDevelopmentCard) game.getCardFromId("01");
-        RegDevelopmentCard c2 = (RegDevelopmentCard) game.getCardFromId("02");
-        RegDevelopmentCard c3 = (RegDevelopmentCard) game.getCardFromId("03");
-
-        p1.reserveCard(c1);
-        p1.reserveCard(c2);
-        p1.reserveCard(c3);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveCardAction("04"));
-
-        assertThat(p1.getReservedCards().size()).isEqualTo(3);
-        assertThat(p1.getTokens().get(TokenType.Gold)).isEqualTo(0);
-        assertThat(ActionResult.MAXIMUM_CARDS_RESERVED).isIn(result);
-    }
-
-    @DisplayName("Ensure ChooseNoble action is triggered when player qualifies for 2+ nobles.")
-    @Test
-    void testPlayerChooseNoble_QualifiesForTwo() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        p1.addBonus(TokenType.Blue, 1);
-        p1.addBonus(TokenType.Green, 2);
-        p1.addBonus(TokenType.Red, 2);
-        p1.addBonus(TokenType.Brown, 1);
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Blue, 1);
-        tokensToAdd.put(TokenType.Red, 2);
-        tokensToAdd.put(TokenType.Brown, 1);
-        p1.addTokens(tokensToAdd);
-
-        HashMap<TokenType, Integer> tokensToTake = new HashMap<>();
-        tokensToTake.put(TokenType.Blue, 1);
-        tokensToTake.put(TokenType.Brown, 1);
-        tokensToTake.put(TokenType.Red, 2);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("02", tokensToTake));
-
-        assertThat(ActionResult.MUST_CHOOSE_NOBLE).isIn(result);
-    }
-
-    @DisplayName("Ensure players can choose noble when prompted.")
-    @Test
-    void testPlayerChooseNoble_ValidChooseCard() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        p1.addBonus(TokenType.Blue, 2);
-        p1.addBonus(TokenType.Green, 2);
-        p1.addBonus(TokenType.Red, 1);
-        p1.addBonus(TokenType.Brown, 1);
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Blue, 1);
-        tokensToAdd.put(TokenType.Red, 2);
-        tokensToAdd.put(TokenType.Brown, 1);
-        p1.addTokens(tokensToAdd);
-
-        HashMap<TokenType, Integer> tokensToTake = new HashMap<>();
-        tokensToTake.put(TokenType.Brown, 1);
-
-        NobleCard c1 = (NobleCard) game.getCardFromId("98");
-        ArrayList<NobleCard> nobleCards = new ArrayList<>();
-        nobleCards.add(c1);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ChooseNobleAction("98"));
-
-        // make sure action is valid since player can afford it
-        assertThat(p1.getNobles()).isEqualTo(nobleCards);
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players can burn a double bonus card when burning bonuses to buy a card.")
-    @Test
-    void testBurnDoubleBonusCardForOrientCardPurchase() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        Player p2 = game.getPlayerFromName("Player2");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 2);
-        p1.addTokens(tokensToAdd);
-
-        HashMap<TokenType, Integer> p2Tokens = new HashMap<>();
-        p2Tokens.put(TokenType.Blue, 2);
-
-        game.takeAction(p1.getName(), new BuyCardAction("07", tokensToAdd));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        Card expectedCard = game.getCardFromId("10");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("10", new HashMap<>()));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Brown, 1);
-
-        // make sure action is valid since player can afford it
-        assertThat(game.getCardFromId(expectedCard.getId())).isNull();
-        assertThat(p1.getDevCards().size()).isEqualTo(1);
-        assertThat(p1.getDevCards().get(0)).isEqualTo(expectedCard);
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players can burn a bonus card and the satchel card takes priority.")
-    @Test
-    void testBurnDoubleBonusCardSatchelPriority() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        Player p2 = game.getPlayerFromName("Player2");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 2);
-        tokensToAdd.put(TokenType.Blue, 2);
-        tokensToAdd.put(TokenType.Red, 1);
-        p1.addTokens(tokensToAdd);
-
-        HashMap<TokenType, Integer> add = new HashMap<>();
-        add.put(TokenType.Green, 1);
-        p1.addTokens(add);
-        p1.addTokens(add);
-
-        HashMap<TokenType, Integer> p2Tokens = new HashMap<>();
-        p2Tokens.put(TokenType.Blue, 1);
-
-        game.takeAction(p1.getName(), new BuyCardAction("03", tokensToAdd));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        game.takeAction(p1.getName(), new BuyCardAction("11", add));
-        game.takeAction(p1.getName(), new ChooseTokenTypeAction("11", TokenType.Red));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        Card expectedCard1 = game.getCardFromId("07");
-        game.takeAction(p1.getName(), new BuyCardAction("07", add));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        Card expectedCard2 = game.getCardFromId("10");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("10", new HashMap<>()));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Red, 2);
-        expectedBonuses.put(TokenType.Brown, 1);
-
-        assertThat(game.getCardFromId(expectedCard1.getId())).isNull();
-        assertThat(game.getCardFromId(expectedCard2.getId())).isNull();
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(expectedCard1).isIn(p1.getDevCards());
-        assertThat(expectedCard2).isIn(p1.getDevCards());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players can burn a bonus card and lowest prestige point cards take priority.")
-    @Test
-    void testBurnDoubleBonusCardOptimalChoice() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        Player p2 = game.getPlayerFromName("Player2");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 2);
-        tokensToAdd.put(TokenType.Blue, 2);
-        tokensToAdd.put(TokenType.Red, 1);
-        p1.addTokens(tokensToAdd);
-
-        HashMap<TokenType, Integer> add = new HashMap<>();
-        add.put(TokenType.Green, 1);
-        p1.addTokens(add);
-        p1.addTokens(add);
-
-        HashMap<TokenType, Integer> p2Tokens = new HashMap<>();
-        p2Tokens.put(TokenType.Blue, 1);
-
-        Card expectedCard1 = game.getCardFromId("03");
-        game.takeAction(p1.getName(), new BuyCardAction("03", tokensToAdd));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        game.takeAction(p1.getName(), new BuyCardAction("12", add));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        game.takeAction(p1.getName(), new BuyCardAction("13", add));
-        game.takeAction(p1.getName(), new ReserveNobleAction("99"));
-
-        game.takeAction(p2.getName(), new TakeTokenAction(p2Tokens, new HashMap<>()));
-
-        Card expectedCard2 = game.getCardFromId("10");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("10", new HashMap<>()));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Red, 1);
-        expectedBonuses.put(TokenType.Brown, 1);
-
-        assertThat(game.getCardFromId(expectedCard1.getId())).isNull();
-        assertThat(game.getCardFromId(expectedCard2.getId())).isNull();
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(p1.getPrestigePoints()).isEqualTo(3);
-        assertThat(expectedCard1).isIn(p1.getDevCards());
-        assertThat(expectedCard2).isIn(p1.getDevCards());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure a player can properly use a cascade tier 2 card.")
-    @Test
-    void testCascadeTier2() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 1);
-        p1.addTokens(tokensToAdd);
-
-        Card expectedCard1 = game.getCardFromId("14");
-        game.takeAction(p1.getName(), new BuyCardAction("14", tokensToAdd));
-
-        Card expectedCard2 = game.getCardFromId("10");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new CascadeTier2Action("10"));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Blue, 1);
-        expectedBonuses.put(TokenType.Brown, 1);
-
-        assertThat(game.getCardFromId(expectedCard1.getId())).isNull();
-        assertThat(game.getCardFromId(expectedCard2.getId())).isNull();
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(expectedCard1).isIn(p1.getDevCards());
-        assertThat(expectedCard2).isIn(p1.getDevCards());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure a player can properly use a cascade tier 1 card.")
-    @Test
-    void testCascadeTier1() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 1);
-        p1.addTokens(tokensToAdd);
-
-        Card expectedCard1 = game.getCardFromId("15");
-        game.takeAction(p1.getName(), new BuyCardAction("15", tokensToAdd));
-
-        Card expectedCard2 = game.getCardFromId("12");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new CascadeTier1Action("12"));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Red, 2);
-
-        assertThat(game.getCardFromId(expectedCard1.getId())).isNull();
-        assertThat(game.getCardFromId(expectedCard2.getId())).isNull();
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(expectedCard1).isIn(p1.getDevCards());
-        assertThat(expectedCard2).isIn(p1.getDevCards());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure a player can properly use a cascade tier 1 card to pick a satchel" +
-            " and then choose the color of the satchel.")
-    @Test
-    void testCascadeTier1ToSatchel() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 1);
-        p1.addTokens(tokensToAdd);
-
-        Card expectedCard1 = game.getCardFromId("15");
-        game.takeAction(p1.getName(), new BuyCardAction("15", tokensToAdd));
-
-        Card expectedCard2 = game.getCardFromId("11");
-        game.takeAction(p1.getName(), new CascadeTier2Action("11"));
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ChooseTokenTypeAction("11", TokenType.Red));
-
-        HashMap<TokenType, Integer> expectedBonuses = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            expectedBonuses.put(type, 0);
-        }
-        expectedBonuses.put(TokenType.Red, 2);
-
-        assertThat(game.getCardFromId(expectedCard1.getId())).isNull();
-        assertThat(game.getCardFromId(expectedCard2.getId())).isNull();
-        assertThat(p1.getBonuses()).isEqualTo(expectedBonuses);
-        assertThat(expectedCard1).isIn(p1.getDevCards());
-        assertThat(expectedCard2).isIn(p1.getDevCards());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Test reserve noble action")
-    @Test
-    void testReserveNoble() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Green, 1);
-        p1.addTokens(tokensToAdd);
-
-        game.takeAction(p1.getName(), new CascadeTier2Action("13"));
-
-        Card expected = game.getCardFromId("99");
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveNobleAction("99"));
-
-        assertThat(game.getCardFromId(expected.getId())).isNull();
-        assertThat(expected).isIn(p1.getReservedNobles());
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure end of game is marked at end of round when player reaches 15 prestige points.")
-    @Test
-    void testEndOfRound_OneWinner() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        Player p2 = game.getPlayerFromName("Player2");
-        p1.addPrestigePoints(14);
-
-        HashMap<TokenType, Integer> tokensToUse = new HashMap<>();
-        tokensToUse.put(TokenType.Red, 4);
-        p1.addTokens(tokensToUse);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("01", tokensToUse));
-        ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result);
-        assertThat(ActionResult.VALID_ACTION).isIn(result2);
-        assertThat(game.getWinner().size()).isEqualTo(1);
-        assertThat(game.getWinner().get(0)).isEqualTo(p1);
-        assertThat(game.isGameOver()).isTrue();
-    }
-
-    @DisplayName("Ensure end of game is marked at end of round when >1 player reaches 15 prestige points.")
-    @Test
-    void testEndOfRound_TwoPotentialWinners() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        p1.addPrestigePoints(14);
-        HashMap<TokenType, Integer> tokensToUse = new HashMap<>();
-        tokensToUse.put(TokenType.Red, 4);
-        p1.addTokens(tokensToUse);
-
-        Player p2 = game.getPlayerFromName("Player2");
-        p2.addPrestigePoints(17);
-
-        ArrayList<ActionResult> result1 = game.takeAction(p1.getName(), new BuyCardAction("01", tokensToUse));
-        ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result1);
-        assertThat(ActionResult.VALID_ACTION).isIn(result2);
-        assertThat(game.getWinner().size()).isEqualTo(1);
-        assertThat(game.getWinner().get(0)).isEqualTo(p2);
-        assertThat(game.isGameOver()).isTrue();
-    }
-
-    @DisplayName("Ensure end of game is marked at end of round when a tie occurs.")
-    @Test
-    void testEndOfRound_Tie() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        p1.addPrestigePoints(15);
-
-        Player p2 = game.getPlayerFromName("Player2");
-        p2.addPrestigePoints(15);
-
-        ArrayList<ActionResult> result1 = game.takeAction(p1.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-        ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result1);
-        assertThat(ActionResult.VALID_ACTION).isIn(result2);
-        assertThat(game.getWinner().contains(p1)).isTrue();
-        assertThat(game.getWinner().contains(p2)).isTrue();
-        assertThat(game.getWinner().size()).isEqualTo(2);
-        assertThat(game.isGameOver()).isTrue();
-    }
-
-    @DisplayName("Ensure end of game is marked at end of round when a tie occurs.")
-    @Test
-    void testEndOfRound_ThreeWayTie() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 3);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        p1.addPrestigePoints(15);
-
-        Player p2 = game.getPlayerFromName("Player2");
-        p2.addPrestigePoints(15);
-
-        Player p3 = game.getPlayerFromName("Player3");
-        p3.addPrestigePoints(15);
-
-        ArrayList<ActionResult> result1 = game.takeAction(p1.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-        ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-        ArrayList<ActionResult> result3 = game.takeAction(p3.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result1);
-        assertThat(ActionResult.VALID_ACTION).isIn(result2);
-        assertThat(ActionResult.VALID_ACTION).isIn(result3);
-        assertThat(game.getWinner().contains(p1)).isTrue();
-        assertThat(game.getWinner().contains(p2)).isTrue();
-        assertThat(game.getWinner().contains(p3)).isTrue();
-        assertThat(game.getWinner().size()).isEqualTo(3);
-        assertThat(game.isGameOver()).isTrue();
-    }
-
-    @DisplayName("Ensure end of game is NOT marked at end of round where no player has 15 prestige points.")
-    @Test
-    void testEndOfRound_NoWinner() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 2);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-        Player p2 = game.getPlayerFromName("Player2");
-
-        HashMap<TokenType, Integer> tokensToUse = new HashMap<>();
-        tokensToUse.put(TokenType.Red, 4);
-        p1.addTokens(tokensToUse);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("01", tokensToUse));
-        ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
-
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result);
-        assertThat(ActionResult.VALID_ACTION).isIn(result2);
-        assertThat(game.getWinner().size()).isEqualTo(0);
-        assertThat(game.isGameOver()).isFalse();
-    }
-
-}
+        ArrayList<ActionRßn5¶‰žËkºwµç@€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÜˆ°…‘¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡ÀÉQ½­•¹Ì°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÈ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÀˆ¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÀˆ°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•áÁ•Ñ•‘	½¹ÕÍ•Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì4(€€€€€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡ÑåÁ”°€À¤ì4(€€€€€€€ô4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€È¤ì4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ä¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÄ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÈ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•Ñ	½¹ÕÍ•Ì ¤¤¹¥ÍÅÕ…±Q¼¡•áÁ•Ñ•‘	½¹ÕÍ•Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÄ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÈ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á±…å•ÉÌ…¸‰ÕÉ¸„‰½¹ÕÌ…É…¹±½Ý•ÍÐÁÉ•ÍÑ¥”Á½¥¹Ð…É‘ÌÑ…­”ÁÉ¥½É¥Ñä¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ	ÕÉ¹½Õ‰±•	½¹ÕÍ…É‘=ÁÑ¥µ…±¡½¥” ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€È¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€È¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø…‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€…‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡…‘¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡…‘¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÀÉQ½­•¹Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€ÀÉQ½­•¹Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€Ä¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÄ€ô…µ”¹•Ñ…É‘É½µ% ˆÀÌˆ¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÌˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡ÀÉQ½­•¹Ì°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÈˆ°…‘¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡ÀÉQ½­•¹Ì°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÌˆ°…‘¤¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜI•Í•ÉÙ•9½‰±•Ñ¥½¸ ˆääˆ¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡ÀÉQ½­•¹Ì°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÈ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÀˆ¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÀˆ°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•áÁ•Ñ•‘	½¹ÕÍ•Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì4(€€€€€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡ÑåÁ”°€À¤ì4(€€€€€€€ô4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ä¤ì4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ä¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÄ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÈ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•Ñ	½¹ÕÍ•Ì ¤¤¹¥ÍÅÕ…±Q¼¡•áÁ•Ñ•‘	½¹ÕÍ•Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÄ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÈ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”„Á±…å•È…¸ÁÉ½Á•É±äÕÍ”„…Í…‘”Ñ¥•È€È…É¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ…Í…‘•Q¥•ÈÈ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÄ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÐˆ¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÐˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÈ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÀˆ¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü…Í…‘•Q¥•ÈÉÑ¥½¸ ˆÄÀˆ¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•áÁ•Ñ•‘	½¹ÕÍ•Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì4(€€€€€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡ÑåÁ”°€À¤ì4(€€€€€€€ô4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€Ä¤ì4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ä¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÄ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÈ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•Ñ	½¹ÕÍ•Ì ¤¤¹¥ÍÅÕ…±Q¼¡•áÁ•Ñ•‘	½¹ÕÍ•Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÄ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÈ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”„Á±…å•È…¸ÁÉ½Á•É±äÕÍ”„…Í…‘”Ñ¥•È€Ä…É¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ…Í…‘•Q¥•ÈÄ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÄ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÔˆ¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÔˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÈ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÈˆ¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü…Í…‘•Q¥•ÈÅÑ¥½¸ ˆÄÈˆ¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•áÁ•Ñ•‘	½¹ÕÍ•Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì4(€€€€€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡ÑåÁ”°€À¤ì4(€€€€€€€ô4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€È¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÄ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÈ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•Ñ	½¹ÕÍ•Ì ¤¤¹¥ÍÅÕ…±Q¼¡•áÁ•Ñ•‘	½¹ÕÍ•Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÄ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÈ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”„Á±…å•È…¸ÁÉ½Á•É±äÕÍ”„…Í…‘”Ñ¥•È€Ä…ÉÑ¼Á¥¬„Í…Ñ¡•°ˆ€¬4(€€€€€€€€€€€€ˆ…¹Ñ¡•¸¡½½Í”Ñ¡”½±½È½˜Ñ¡”Í…Ñ¡•°¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ…Í…‘•Q¥•ÈÅQ½M…Ñ¡•° ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÄ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÔˆ¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÄÔˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•‘…ÉÈ€ô…µ”¹•Ñ…É‘É½µ% ˆÄÄˆ¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü…Í…‘•Q¥•ÈÉÑ¥½¸ ˆÄÄˆ¤¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü¡½½Í•Q½­•¹QåÁ•Ñ¥½¸ ˆÄÄˆ°Q½­•¹QåÁ”¹I•¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•áÁ•Ñ•‘	½¹ÕÍ•Ì€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì4(€€€€€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡ÑåÁ”°€À¤ì4(€€€€€€€ô4(€€€€€€€•áÁ•Ñ•‘	½¹ÕÍ•Ì¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€È¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÄ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•‘…ÉÈ¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•Ñ	½¹ÕÍ•Ì ¤¤¹¥ÍÅÕ…±Q¼¡•áÁ•Ñ•‘	½¹ÕÍ•Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÄ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•‘…ÉÈ¤¹¥Í%¸¡ÀÄ¹•Ñ•Ù…É‘Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰Q•ÍÐÉ•Í•ÉÙ”¹½‰±”…Ñ¥½¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑI•Í•ÉÙ•9½‰±” ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü…Í…‘•Q¥•ÈÉÑ¥½¸ ˆÄÌˆ¤¤ì4(4(€€€€€€€…É•áÁ•Ñ•€ô…µ”¹•Ñ…É‘É½µ% ˆääˆ¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜI•Í•ÉÙ•9½‰±•Ñ¥½¸ ˆääˆ¤¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ…É‘É½µ%¡•áÁ•Ñ•¹•Ñ% ¤¤¤¹¥Í9Õ±° ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡•áÁ•Ñ•¤¹¥Í%¸¡ÀÄ¹•ÑI•Í•ÉÙ•‘9½‰±•Ì ¤¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”•¹½˜…µ”¥Ìµ…É­•…Ð•¹½˜É½Õ¹Ý¡•¸Á±…å•ÈÉ•…¡•Ì€ÄÔÁÉ•ÍÑ¥”Á½¥¹ÑÌ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ¹‘=™I½Õ¹‘}=¹•]¥¹¹•È ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(€€€€€€€ÀÄ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÐ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½UÍ”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½UÍ”¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ð¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½UÍ”¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÄˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÈ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼µ…­”ÍÕÉ”…Ñ¥½¸¥ÌÙ…±¥Í¥¹”Á±…å•È…¸…™™½É¥Ð4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹Í¥é” ¤¤¹¥ÍÅÕ…±Q¼ Ä¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹•Ð À¤¤¹¥ÍÅÕ…±Q¼¡ÀÄ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹¥Í…µ•=Ù•È ¤¤¹¥ÍQÉÕ” ¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”•¹½˜…µ”¥Ìµ…É­•…Ð•¹½˜É½Õ¹Ý¡•¸€øÄÁ±…å•ÈÉ•…¡•Ì€ÄÔÁÉ•ÍÑ¥”Á½¥¹ÑÌ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ¹‘=™I½Õ¹‘}QÝ½A½Ñ•¹Ñ¥…±]¥¹¹•ÉÌ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€ÀÄ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÐ¤ì4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½UÍ”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½UÍ”¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ð¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½UÍ”¤ì4(4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(€€€€€€€ÀÈ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÜ¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÄ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÄˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÈ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼µ…­”ÍÕÉ”…Ñ¥½¸¥ÌÙ…±¥Í¥¹”Á±…å•È…¸…™™½É¥Ð4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÄ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹Í¥é” ¤¤¹¥ÍÅÕ…±Q¼ Ä¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹•Ð À¤¤¹¥ÍÅÕ…±Q¼¡ÀÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹¥Í…µ•=Ù•È ¤¤¹¥ÍQÉÕ” ¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”•¹½˜…µ”¥Ìµ…É­•…Ð•¹½˜É½Õ¹Ý¡•¸„Ñ¥”½ÕÉÌ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ¹‘=™I½Õ¹‘}Q¥” ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€ÀÄ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÔ¤ì4(4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(€€€€€€€ÀÈ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÔ¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÄ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÈ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼µ…­”ÍÕÉ”…Ñ¥½¸¥ÌÙ…±¥Í¥¹”Á±…å•È…¸…™™½É¥Ð4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÄ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹½¹Ñ…¥¹Ì¡ÀÄ¤¤¹¥ÍQÉÕ” ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹½¹Ñ…¥¹Ì¡ÀÈ¤¤¹¥ÍQÉÕ” ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹Í¥é” ¤¤¹¥ÍÅÕ…±Q¼ È¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹¥Í…µ•=Ù•È ¤¤¹¥ÍQÉÕ” ¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”•¹½˜…µ”¥Ìµ…É­•…Ð•¹½˜É½Õ¹Ý¡•¸„Ñ¥”½ÕÉÌ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ¹‘=™I½Õ¹‘}Q¡É••]…åQ¥” ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€Ì¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€ÀÄ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÔ¤ì4(4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(€€€€€€€ÀÈ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÔ¤ì4(4(€€€€€€€A±…å•ÈÀÌ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÌˆ¤ì4(€€€€€€€ÀÌ¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÌ ÄÔ¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÄ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÈ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÌ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÌ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼µ…­”ÍÕÉ”…Ñ¥½¸¥ÌÙ…±¥Í¥¹”Á±…å•È…¸…™™½É¥Ð4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÄ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÌ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹½¹Ñ…¥¹Ì¡ÀÄ¤¤¹¥ÍQÉÕ” ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹½¹Ñ…¥¹Ì¡ÀÈ¤¤¹¥ÍQÉÕ” ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹½¹Ñ…¥¹Ì¡ÀÌ¤¤¹¥ÍQÉÕ” ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹Í¥é” ¤¤¹¥ÍÅÕ…±Q¼ Ì¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹¥Í…µ•=Ù•È ¤¤¹¥ÍQÉÕ” ¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”•¹½˜…µ”¥Ì9=Pµ…É­•…Ð•¹½˜É½Õ¹Ý¡•É”¹¼Á±…å•È¡…Ì€ÄÔÁÉ•ÍÑ¥”Á½¥¹ÑÌ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑ¹‘=™I½Õ¹‘}9½]¥¹¹•È ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€=É¥•¹Ñ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•Ý=É¥•¹Ñ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½UÍ”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½UÍ”¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ð¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½UÍ”¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÄˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±ÐÈ€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡¹•Ü!…Í¡5…Àðø ¤°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼µ…­”ÍÕÉ”…Ñ¥½¸¥ÌÙ…±¥Í¥¹”Á±…å•È…¸…™™½É¥Ð4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Y1%}Q%=8¤¹¥Í%¸¡É•ÍÕ±ÐÈ¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•Ñ]¥¹¹•È ¤¹Í¥é” ¤¤¹¥ÍÅÕ…±Q¼ À¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹¥Í…µ•=Ù•È ¤¤¹¥Í…±Í” ¤ì4(€€€ô4(4)ô4

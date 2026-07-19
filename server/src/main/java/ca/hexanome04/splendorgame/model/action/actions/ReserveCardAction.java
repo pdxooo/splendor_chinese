@@ -106,6 +106,7 @@ public class ReserveCardAction extends Action {
         if (!faceDownReservation) {
             game.takeCard(dc);
         }
+        dc.setReservedFaceDown(faceDownReservation);
         player.reserveCard(dc);
 
 

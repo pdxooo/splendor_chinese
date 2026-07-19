@@ -10,6 +10,7 @@ public abstract class DevelopmentCard extends Card {
     private TokenType tokenType;
     private final int bonus;
     private final CardTier cardTier;
+    private Boolean reservedFaceDown = Boolean.TRUE;
 
     /**
      * Creates a development card from the class in which this was called super from.
@@ -58,6 +59,26 @@ public abstract class DevelopmentCard extends Card {
      */
     public int getBonus() {
         return bonus;
+    }
+
+    /**
+     * Whether this card entered a player's reserve from the face-down deck.
+     * Missing values from older saves are treated as hidden to avoid leaking
+     * information that may have been private.
+     *
+     * @return true when only the owner may see the card face
+     */
+    public boolean isReservedFaceDown() {
+        return !Boolean.FALSE.equals(reservedFaceDown);
+    }
+
+    /**
+     * Record whether this reservation came from a face-down deck.
+     *
+     * @param reservedFaceDown true for a blind reservation, false for a public card
+     */
+    public void setReservedFaceDown(boolean reservedFaceDown) {
+        this.reservedFaceDown = reservedFaceDown;
     }
 
 }

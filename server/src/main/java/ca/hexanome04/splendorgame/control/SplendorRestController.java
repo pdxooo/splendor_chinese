@@ -254,9 +254,10 @@ public class SplendorRestController {
     }
 
     /**
-     * Other players may know the tier of a reserved card, but not its face.
-     * Replace every hidden card with a tier-only object so IDs and costs never
-     * reach an unauthorized browser.
+     * Face-up reservations remain public. For blind reservations, other
+     * players may know the tier but not the face. Replace only those hidden
+     * cards with tier-only objects so IDs and costs never reach an
+     * unauthorized browser.
      */
     private void hideReservedCardFaces(JsonArray players, String viewerName) {
         if (players == null) {
@@ -273,8 +274,14 @@ public class SplendorRestController {
             JsonArray reservedCards = player.getAsJsonArray("reservedCards");
             if (reservedCards != null) {
                 for (JsonElement cardElement : reservedCards) {
+                    JsonObject reservedCard = cardElement.getAsJsonObject();
+                    JsonElement faceDown = reservedCard.get("reservedFaceDown");
+                    if (faceDown != null && !faceDown.isJsonNull() && !faceDown.getAsBoolean()) {
+                        hiddenCards.add(reservedCard);
+                        continue;
+                    }
                     JsonObject hiddenCard = new JsonObject();
-                    JsonElement tier = cardElement.getAsJsonObject().get("cardTier");
+                    JsonElement tier = reservedCard.get("cardTier");
                     if (tier != null) {
                         hiddenCard.add("cardTier", tier);
                     }

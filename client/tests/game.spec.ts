@@ -82,5 +82,22 @@ test.describe.parallel("Test orient game", () => {
         expect(imageBox!.x).toBeGreaterThanOrEqual(8);
         expect(imageBox!.x + imageBox!.width).toBeLessThanOrEqual(viewport!.width - 8);
     });
+
+    test("other players show public reservations face-up and blind reservations face-down", async ({ page }) => {
+        const game = createBasicGame();
+        const otherPlayer = game.players.find(player => player.name !== MAIN_USER)!;
+        otherPlayer.reservedCards.push(new DevCard("d1_0", TokenType.Red));
+        otherPlayer.reservedCards.push({ cardTier: "TIER_2" } as DevCard);
+        await mockGameState(page, game);
+        await page.reload();
+
+        const reservedContainer = page.locator(".other-player").first()
+            .locator(".other-inventory-cards-reserved");
+        await expect(reservedContainer.locator(".other-inventory-card-reserved")).toHaveCount(2);
+        await expect(reservedContainer.locator('[card-id="d1_0"] img'))
+            .toHaveAttribute("src", /development-cards\/d1_0\.jpg$/);
+        await expect(reservedContainer.locator('[face-down="true"] img'))
+            .toHaveAttribute("src", /YellowCard\.jpg$/);
+    });
 });
 

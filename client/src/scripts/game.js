@@ -255,23 +255,33 @@ const updateOtherPlayerInfo = (pInfo, order) => {
     updateCards(pInfo.devCards, pNode, ".other-inventory-cards",
                 ".other-inventory-card", "development-cards", "#other-player-dev-card-template");
 
-    // Other players' reserved cards intentionally contain only cardTier.
-    // Render the matching tier back without ever requiring a card ID.
+    // Face-up reservations remain public. Blind reservations intentionally
+    // contain only cardTier and are rendered with the matching card back.
     const reservedCardBacks = {
         "TIER_1": "/images/GreenCard.jpg",
         "TIER_2": "/images/YellowCard.jpg",
         "TIER_3": "/images/BlueCard.jpg"
     };
-    const hiddenReservedCards = (pInfo.reservedCards || []).map((card, index) => {
+    const reservedCards = (pInfo.reservedCards || []).map((card, index) => {
         const node = document.querySelector("#other-player-reserved-card-template").content.cloneNode(true);
         const div = node.querySelector(".other-inventory-card-reserved");
         const image = div.querySelector("img");
-        div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
-        image.setAttribute("src", reservedCardBacks[card.cardTier] || "/images/GreenCard.jpg");
-        image.setAttribute("alt", `Reserved ${card.cardTier || "unknown tier"} card ${index + 1}`);
+        if(card.id) {
+            div.setAttribute("card-id", card.id);
+            div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
+            if(card.tokenCost) div.setAttribute("cost", JSON.stringify(card.tokenCost));
+            if(card.costType) div.setAttribute("cost-type", card.costType);
+            image.setAttribute("src", `/images/development-cards/${card.id}.jpg`);
+            image.setAttribute("alt", `公开预留牌 ${index + 1}`);
+        } else {
+            div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
+            div.setAttribute("face-down", "true");
+            image.setAttribute("src", reservedCardBacks[card.cardTier] || "/images/GreenCard.jpg");
+            image.setAttribute("alt", `暗置预留的${card.cardTier || "未知等级"}卡牌 ${index + 1}`);
+        }
         return node;
     });
-    pNode.querySelector(".other-inventory-cards-reserved").replaceChildren(...hiddenReservedCards);
+    pNode.querySelector(".other-inventory-cards-reserved").replaceChildren(...reservedCards);
 
     // Update nobles
     updateCards(pInfo.nobleCards, pNode, ".other-inventory-noble-cards",
