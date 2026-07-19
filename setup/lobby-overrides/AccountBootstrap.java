@@ -3,16 +3,14 @@ package eu.kartoffelquadrat.ls.accountmanager.config;
 import eu.kartoffelquadrat.ls.accountmanager.model.Player;
 import eu.kartoffelquadrat.ls.accountmanager.model.PlayerRepository;
 import eu.kartoffelquadrat.ls.accountmanager.model.Role;
-import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/** Keeps only the accounts required by this deployment. */
+/** Ensures the deployment's default player accounts exist. */
 @Component
 public class AccountBootstrap implements CommandLineRunner {
 
-    private static final Set<String> ALLOWED_ACCOUNTS = Set.of("lxh", "maex", "qhc", "xox", "xyj");
     private final PlayerRepository playerRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -23,10 +21,6 @@ public class AccountBootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        playerRepository.findAll().stream()
-                .filter(player -> !ALLOWED_ACCOUNTS.contains(player.getName()))
-                .forEach(playerRepository::delete);
-
         savePlayerWithSimplePassword("lxh", "00DD44");
         savePlayerWithSimplePassword("qhc", "2288EE");
         savePlayerWithSimplePassword("xyj", "EE2222");
