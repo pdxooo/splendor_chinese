@@ -82,5 +82,22 @@ test.describe.parallel("Test orient game", () => {
         expect(imageBox!.x).toBeGreaterThanOrEqual(8);
         expect(imageBox!.x + imageBox!.width).toBeLessThanOrEqual(viewport!.width - 8);
     });
+
+    test("completed game shows its winner even when the turn index is no longer active", async ({ page }) => {
+        const game = createBasicGame();
+        const winner = game.getPlayer(MAIN_USER);
+        winner.prestigePoints = 16;
+        (game as any).gameOver = true;
+        (game as any).winners = [winner];
+        game.turnCounter = -10000;
+        await mockGameState(page, game);
+
+        await page.reload();
+
+        await expect(page.locator("#gameover-modal")).toBeVisible();
+        await expect(page.locator("#gameover-modal .winners-text")).toContainText(MAIN_USER);
+        await expect(page.locator("#turn-timer")).toHaveText("游戏已结束");
+    });
 });
+
 
