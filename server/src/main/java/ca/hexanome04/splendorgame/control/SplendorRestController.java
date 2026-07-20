@@ -25,6 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +55,8 @@ public class SplendorRestController {
     private final GameSavesManager gameSavesManager;
     private final long longPollTimeout;
     private final Map<String, ContentWatcher> gameWatcher;
+    private final Set<String> completedGameDeletions;
+    long completedGameRetentionMillis = TimeUnit.MINUTES.toMillis(1);
 
     @Value("${SPLENDOR_INTERNAL_DELETE_TOKEN:}")
     String internalDeleteToken;
@@ -79,6 +85,7 @@ public class SplendorRestController {
         this.gameServiceName = gameServiceName;
         this.longPollTimeout = longPollTimeout;
         this.gameWatcher = new HashMap<>();
+        this.completedGameDeletions = ConcurrentHashMap.newKeySet();
     }
 
     /**
@@ -114,8 +121,10 @@ public class SplendorRestController {
 
         GameSession removed = sessionManager.deleteGameSession(sessionId);
         if (removed == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Game session does not exist.");
+            // Deletion is idempotent: after a game-server restart the lobby may
+            // still ask us to remove a room whose in-memory game is already gone.
+            logger.info("Game session {} was already deleted.", sessionId);
+            return ResponseEntity.status(HttpStatus.OK).body("");
         }
 
         ContentWatcher watcher = gameWatcher.remove(sessionId);
@@ -476,6 +485,9 @@ public class SplendorRestController {
             if (watcher != null) {
                 watcher.markDirty();
             }
+            if (game.isGameOver()) {
+                scheduleCompletedGameDeletion(sessionId, gameSession);
+            }
             return ResponseEntity.status(HttpStatus.OK).body("");
         } catch (SplendorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -484,6 +496,36 @@ public class SplendorRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Server ran into an issue while executing an action.");
         }
+    }
+
+    /**
+     * Keep a completed game visible briefly, then ask the lobby service to remove
+     * both the room and its game-server state.
+     *
+     * @param sessionId completed session id
+     * @param completedSession exact completed session instance
+     */
+    void scheduleCompletedGameDeletion(String sessionId, GameSession completedSession) {
+        if (!completedGameDeletions.add(sessionId)) {
+            return;
+        }
+
+        CompletableFuture.delayedExecutor(completedGameRetentionMillis, TimeUnit.MILLISECONDS)
+                .execute(() -> {
+                    try {
+                        GameSession currentSession = sessionManager.getGameSession(sessionId);
+                        if (currentSession == completedSession
+                                && currentSession.getGame() != null
+                                && currentSession.getGame().isGameOver()) {
+                            initializer.deleteGameSession(sessionId);
+                        }
+                    } catch (Exception exception) {
+                        logger.warn("Unable to delete completed game session {}.",
+                                sessionId, exception);
+                    } finally {
+                        completedGameDeletions.remove(sessionId);
+                    }
+                });
     }
 
     /**
