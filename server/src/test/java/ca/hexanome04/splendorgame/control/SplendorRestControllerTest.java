@@ -267,6 +267,41 @@ public class SplendorRestControllerTest {
         Mockito.verify(initializer, Mockito.never()).deleteGameSession(testGameSessionId);
     }
 
+    /**
+     * Verify that a completed room is removed after the result display window.
+     */
+    @Test
+    @DisplayName("Completed session is deleted after its retention window")
+    public void testCompletedSessionDeletesAfterRetentionWindow() {
+        Game game = Mockito.mock(Game.class);
+        Player player = Mockito.mock(Player.class);
+        Initializer initializer = Mockito.mock(Initializer.class);
+        ArrayList<ActionResult> result = new ArrayList<>(List.of(
+                ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED));
+
+        Mockito.when(auth.getNameFromToken("token")).thenReturn("p1");
+        Mockito.when(game.getPlayerFromName("p1")).thenReturn(player);
+        Mockito.when(game.getTurnCurrentPlayer()).thenReturn(player);
+        Mockito.when(player.getName()).thenReturn("p1");
+        Mockito.when(game.getCurValidActions()).thenReturn(List.of(Actions.TAKE_TOKEN));
+        Mockito.when(game.getTurnCounter()).thenReturn(1);
+        Mockito.when(game.takeAction(Mockito.eq("p1"), Mockito.any()))
+                .thenReturn(result);
+        Mockito.when(game.isGameOver()).thenReturn(true);
+
+        restController.initializer = initializer;
+        restController.completedGameRetentionMillis = 10;
+        sessionManager.getGameSession(testGameSessionId).setGame(game);
+
+        ResponseEntity<String> response = restController.putAction(
+                "token", testGameSessionId, "p1", Actions.TAKE_TOKEN,
+                "{\"takeTokens\":{},\"putBackTokens\":{}}");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Mockito.verify(initializer, Mockito.timeout(1000))
+                .deleteGameSession(testGameSessionId);
+    }
+
     @Test
     @DisplayName("Verify previously saved game launches")
     void testLaunchSavedGame() throws FileNotFoundException {
@@ -401,14 +436,14 @@ public class SplendorRestControllerTest {
         assertThat(sessionManager.getGameSession(testGameSessionId)).isNotNull();
     }
 
-    /** A trusted deletion request reports a missing game without side effects. */
+    /** A repeated trusted deletion request succeeds without side effects. */
     @Test
-    @DisplayName("Report missing session deletion")
+    @DisplayName("Missing session deletion is idempotent")
     public void testDeleteMissingSession() {
         ResponseEntity response = restController.deleteSession(
                 "missing", "test-delete-secret");
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
