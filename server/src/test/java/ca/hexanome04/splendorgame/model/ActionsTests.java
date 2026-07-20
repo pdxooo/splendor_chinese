@@ -810,14 +810,19 @@ public class ActionsTests {
         p1.addTokens(tokensToUse);
 
         ArrayList<ActionResult> result = game.takeAction(p1.getName(), new BuyCardAction("01", tokensToUse));
+
+        assertThat(ActionResult.VALID_ACTION).isIn(result);
+        assertThat(game.isGameOver()).isFalse();
+        assertThat(game.getTurnCurrentPlayer()).isEqualTo(p2);
+
         ArrayList<ActionResult> result2 = game.takeAction(p2.getName(), new TakeTokenAction(new HashMap<>(), new HashMap<>()));
 
-        // make sure action is valid since player can afford it
-        assertThat(ActionResult.VALID_ACTION).isIn(result);
+        // The remaining player completes the round before the winner is announced.
         assertThat(ActionResult.VALID_ACTION).isIn(result2);
         assertThat(game.getWinner().size()).isEqualTo(1);
         assertThat(game.getWinner().get(0)).isEqualTo(p1);
         assertThat(game.isGameOver()).isTrue();
+        assertThat(game.getTurnCounter()).isEqualTo(1);
     }
 
     @DisplayName("Ensure end of game is marked at end of round when >1 player reaches 15 prestige points.")
@@ -924,3 +929,4 @@ public class ActionsTests {
     }
 
 }
+
