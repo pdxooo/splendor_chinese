@@ -329,8 +329,18 @@ let serverClockOffset = 0;
 const updateTurnTimer = () => {
     const timer = document.querySelector("#turn-timer");
     if(!timer || !currentState?.players?.length) return;
+    if(currentState.gameOver) {
+        timer.textContent = "游戏已结束";
+        timer.classList.remove("warning");
+        return;
+    }
     const remaining = Math.max(0, Math.ceil((turnDeadline - (Date.now() + serverClockOffset)) / 1000));
     const player = currentState.players[currentState.turnCounter];
+    if(!player) {
+        timer.textContent = "正在同步回合…";
+        timer.classList.remove("warning");
+        return;
+    }
     timer.textContent = remaining > 0 ? `${player.name} · ${remaining} 秒` : "时间到，正在换人…";
     timer.classList.toggle("warning", remaining <= 10);
 };
@@ -464,3 +474,4 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(updateTurnTimer, 250);
     setTimeout(attempUpdate, 1);
 });
+
