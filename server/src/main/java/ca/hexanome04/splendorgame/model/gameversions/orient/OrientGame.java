@@ -415,7 +415,6 @@ public class OrientGame implements Game {
                 && results.size() == 2 && this.getCurValidActions().size() == 0) {
             if (checkForWin() != null) {
                 winners = checkForWin();
-                turnCounter = -10000;
                 curValidActions.clear();
             } else {
                 // increment action also resets current valid actions list
@@ -655,3 +654,4 @@ public class OrientGame implements Game {
     }
 
 }
+
