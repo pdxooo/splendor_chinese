@@ -1,25 +1,18 @@
 package ca.hexanome04.splendorgame.model.gameversions.tradingposts;
 
 import ca.hexanome04.splendorgame.model.TokenType;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that represents the gold token worth two tokens power.
  */
 public class GoldTokenWorthTwoTokensPower extends Power {
 
-    private HashMap<TokenType, Integer> requirements = new HashMap<>() {
-        {
-            put(TokenType.Blue, 3);
-            put(TokenType.Brown, 1);
-        }
-    };
-
     /**
      * Creates a gold token worth two tokens power object.
      */
     public GoldTokenWorthTwoTokensPower() {
-        super();
+        super(Map.of(TokenType.Blue, 3, TokenType.Brown, 1));
     }
 
     /**
@@ -30,7 +23,7 @@ public class GoldTokenWorthTwoTokensPower extends Power {
      */
     @Override
     public boolean conditionMet(TradingPostsPlayer player) {
-        return player.hasBonuses(requirements);
+        return requirementsMet(player);
     }
 
     /**

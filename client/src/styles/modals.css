@@ -419,6 +419,35 @@
   gap: 1.5em;
 }
 
+.virtual-gold-payment {
+  position: relative;
+  padding: 0.15rem 0.5rem;
+  border: 0.1rem dashed goldenrod;
+  border-radius: 0.65rem;
+  background: rgb(218 165 32 / 9%);
+}
+
+.virtual-gold-payment > span {
+  position: absolute;
+  left: 50%;
+  bottom: -1.6rem;
+  transform: translateX(-50%);
+  color: rgb(245 204 101);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+#dev-card-payment-modal .payment-status {
+  min-height: 1.4em;
+  margin: -1rem 0 0.7rem;
+  color: rgb(245 204 101);
+  text-align: center;
+}
+
+#dev-card-payment-modal .payment-status.invalid {
+  color: #ff8a80;
+}
+
 .player-token-count-container {
   display: flex;
   flex-direction: row;

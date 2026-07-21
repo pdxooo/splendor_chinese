@@ -12,6 +12,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -21,6 +25,32 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class TradingPostsTests {
+
+    @DisplayName("Trading-post requirements use every base colour exactly once as a main colour")
+    @Test
+    void testTradingPostRequirementsAreRandomizedWithoutColourCollisions() throws FileNotFoundException {
+        TradingPostsGame game = GameUtils.createNewTradingPostGame(15, 4);
+        TradingPostsPlayer first = (TradingPostsPlayer) game.getPlayers().get(0);
+        TradingPostsPlayer second = (TradingPostsPlayer) game.getPlayers().get(1);
+
+        List<Map<TokenType, Integer>> firstRequirements = first.getPowerRequirements();
+        List<Map<TokenType, Integer>> secondRequirements = second.getPowerRequirements();
+        Set<TokenType> mainColours = new HashSet<>();
+
+        assertThat(firstRequirements).isEqualTo(secondRequirements);
+        for (Map<TokenType, Integer> requirement : firstRequirements) {
+            TokenType main = requirement.entrySet().stream()
+                    .max(Map.Entry.comparingByValue()).orElseThrow().getKey();
+            mainColours.add(main);
+            if (requirement.size() == 2) {
+                assertThat(requirement.keySet().size()).isEqualTo(2);
+            }
+        }
+
+        assertThat(mainColours.size()).isEqualTo(5);
+        assertThat(mainColours.containsAll(Set.of(
+                TokenType.Red, TokenType.Blue, TokenType.Green, TokenType.White, TokenType.Brown))).isTrue();
+    }
 
     @DisplayName("Trading Posts uses only the base development-card decks")
     @Test
@@ -230,6 +260,10 @@ public class TradingPostsTests {
 
         // get first player (name = "Player1")
         Player p1 = game.getPlayerFromName("Player1");
+        TradingPostsPlayer tradingPlayer = (TradingPostsPlayer) p1;
+        disableAllPowers(tradingPlayer);
+        tradingPlayer.addFivePrestigePoints
+                .setRequirements(Map.of(TokenType.Green, 5));
 
         HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
         tokensToAdd.put(TokenType.Green, 1);
@@ -257,6 +291,8 @@ public class TradingPostsTests {
 
         // get first player (name = "Player1")
         Player p1 = game.getPlayerFromName("Player1");
+        ((TradingPostsPlayer) p1).addFivePrestigePoints
+                .setRequirements(Map.of(TokenType.Green, 5));
 
         HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
         tokensToAdd.put(TokenType.Green, 1);
@@ -279,6 +315,10 @@ public class TradingPostsTests {
 
         // get first player (name = "Player1")
         Player p1 = game.getPlayerFromName("Player1");
+        TradingPostsPlayer tradingPlayer = (TradingPostsPlayer) p1;
+        disableAllPowers(tradingPlayer);
+        tradingPlayer.addFivePrestigePoints.setRequirements(Map.of(TokenType.Green, 5));
+        tradingPlayer.addPrestigePointsWithCoatsOfArms.setRequirements(Map.of(TokenType.Brown, 3));
 
         HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
         tokensToAdd.put(TokenType.Green, 1);
@@ -302,6 +342,10 @@ public class TradingPostsTests {
 
         // get first player (name = "Player1")
         Player p1 = game.getPlayerFromName("Player1");
+        TradingPostsPlayer tradingPlayer = (TradingPostsPlayer) p1;
+        disableAllPowers(tradingPlayer);
+        tradingPlayer.addPrestigePointsWithCoatsOfArms
+                .setRequirements(Map.of(TokenType.Brown, 3));
 
         HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
         tokensToAdd.put(TokenType.Green, 1);
@@ -322,6 +366,11 @@ public class TradingPostsTests {
         // get first player (name = "Player1")
         Player p1 = game.getPlayerFromName("Player1");
         Player p2 = game.getPlayerFromName("Player2");
+        TradingPostsPlayer tradingPlayer = (TradingPostsPlayer) p1;
+        disableAllPowers(tradingPlayer);
+        tradingPlayer.extraTokenAfterTakingSameColor.setRequirements(Map.of(TokenType.White, 2));
+        tradingPlayer.addFivePrestigePoints.setRequirements(Map.of(TokenType.Green, 5));
+        tradingPlayer.addPrestigePointsWithCoatsOfArms.setRequirements(Map.of(TokenType.Brown, 3));
 
         HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
         tokensToAdd.put(TokenType.Green, 3);
@@ -350,6 +399,15 @@ public class TradingPostsTests {
 
         // 10 because 3 from noble, 5 from power 4 unlocked, 3 from power 5 unlocked and counting 3 powers
         assertThat(p1.getPrestigePoints()).isEqualTo(11);
+    }
+
+    private static void disableAllPowers(TradingPostsPlayer player) {
+        Map<TokenType, Integer> impossible = Map.of(TokenType.Red, 99);
+        player.extraTokenAfterPurchase.setRequirements(impossible);
+        player.extraTokenAfterTakingSameColor.setRequirements(impossible);
+        player.goldTokenWorthTwoTokens.setRequirements(impossible);
+        player.addFivePrestigePoints.setRequirements(impossible);
+        player.addPrestigePointsWithCoatsOfArms.setRequirements(impossible);
     }
 
 }

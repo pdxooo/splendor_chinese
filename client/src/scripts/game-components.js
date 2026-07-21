@@ -83,6 +83,7 @@ class TokenCounter extends HTMLElement {
             if (countElm.count < this.max) {
                 countElm.setCount(countElm.count + 1);
                 this.checkVisibility();
+                this.dispatchEvent(new Event("change", { bubbles: true }));
             }
         };
     
@@ -91,6 +92,7 @@ class TokenCounter extends HTMLElement {
             if (countElm.count > this.min) {
                 countElm.setCount(countElm.count - 1);
                 this.checkVisibility();
+                this.dispatchEvent(new Event("change", { bubbles: true }));
             }
         };
     }

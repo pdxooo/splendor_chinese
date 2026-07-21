@@ -1,7 +1,7 @@
 package ca.hexanome04.splendorgame.model.gameversions.tradingposts;
 
 import ca.hexanome04.splendorgame.model.TokenType;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that represents the add prestige points according to coat of arms power.
@@ -9,18 +9,12 @@ import java.util.HashMap;
 public class AddPrestigePointsWithCoatsOfArmsPower extends Power {
 
     private int currentAddedPoints = 0;
-    private HashMap<TokenType, Integer> requirements = new HashMap<>() {
-        {
-            put(TokenType.Brown, 3);
-        }
-    };
-
 
     /**
      * Creates a new add prestige according to coat of arms power object.
      */
     public AddPrestigePointsWithCoatsOfArmsPower() {
-        super();
+        super(Map.of(TokenType.Brown, 3));
     }
 
     /**
@@ -31,7 +25,7 @@ public class AddPrestigePointsWithCoatsOfArmsPower extends Power {
      */
     @Override
     public boolean conditionMet(TradingPostsPlayer player) {
-        return player.hasBonuses(requirements);
+        return requirementsMet(player);
     }
 
     /**

@@ -18,6 +18,7 @@ public class BuyCardAction extends Action {
 
     private String buyCardId;
     private HashMap<TokenType, Integer> selectedTokens;
+    private int virtualGoldPieces;
 
     /**
      * Construct a buy card action.
@@ -26,9 +27,22 @@ public class BuyCardAction extends Action {
      * @param selectedTokens tokens that are used to buy the card
      */
     public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens) {
+        this(buyCardId, selectedTokens, -1);
+    }
+
+    /**
+     * Construct a buy-card action with explicit virtual Gold selection.
+     *
+     * @param buyCardId card id
+     * @param selectedTokens real tokens used
+     * @param virtualGoldPieces virtual Gold pieces used, or -1 for legacy automatic selection
+     */
+    public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens,
+                         int virtualGoldPieces) {
         super(Actions.BUY_CARD);
         this.buyCardId = buyCardId;
         this.selectedTokens = selectedTokens;
+        this.virtualGoldPieces = virtualGoldPieces;
     }
 
     /**
@@ -76,12 +90,16 @@ public class BuyCardAction extends Action {
 
         ArrayList<ActionResult> result = new ArrayList<>();
 
-        if (!dc.isPurchasable(player, selectedTokens)) {
+        int virtualGoldPiecesUsed = virtualGoldPieces < 0
+                ? dc.getVirtualGoldPiecesUsed(player, selectedTokens) : virtualGoldPieces;
+        boolean purchasable = virtualGoldPieces < 0
+                ? dc.isPurchasable(player, selectedTokens)
+                : dc.isPurchasable(player, selectedTokens, virtualGoldPiecesUsed);
+        if (!purchasable) {
             result.add(ActionResult.INVALID_TOKENS_GIVEN);
             return result;
         }
 
-        int virtualGoldPiecesUsed = dc.getVirtualGoldPiecesUsed(player, selectedTokens);
         if (virtualGoldPiecesUsed > 0) {
             discardVirtualGoldCards(player, virtualGoldPiecesUsed);
         }
@@ -185,6 +203,8 @@ public class BuyCardAction extends Action {
 
             selectedTokens.put(type, amount);
         }
+        this.virtualGoldPieces = jobj.has("virtualGoldPieces")
+                ? jobj.get("virtualGoldPieces").getAsInt() : -1;
 
         return this;
     }

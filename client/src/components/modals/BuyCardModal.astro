@@ -30,23 +30,30 @@ import ModalLayout from "../../layouts/ModalLayout.astro";
     <div class="token-count-outer-container">
 
         <!-- Red Counter -->
-        <board-token-counter color="red"></board-token-counter>
+        <board-token-counter color="red" data-payment-kind="real"></board-token-counter>
 
         <!-- Blue Counter -->
-        <board-token-counter color="blue"></board-token-counter>
+        <board-token-counter color="blue" data-payment-kind="real"></board-token-counter>
 
         <!-- Green Counter -->
-        <board-token-counter color="green"></board-token-counter>
+        <board-token-counter color="green" data-payment-kind="real"></board-token-counter>
 
         <!-- White Counter -->
-        <board-token-counter color="white"></board-token-counter>
+        <board-token-counter color="white" data-payment-kind="real"></board-token-counter>
 
         <!-- Brown Counter -->
-        <board-token-counter color="brown"></board-token-counter>
+        <board-token-counter color="brown" data-payment-kind="real"></board-token-counter>
 
         <!-- Gold Counter -->
-        <board-token-counter color="gold"></board-token-counter>
+        <board-token-counter color="gold" data-payment-kind="real"></board-token-counter>
+
+        <div class="virtual-gold-payment">
+            <span>虚拟黄金</span>
+            <board-token-counter color="gold" data-payment-kind="virtual"></board-token-counter>
+        </div>
     </div>
+
+    <p class="payment-status" aria-live="polite"></p>
 
     <div class="button-container">
         <button class="buy-card-back-btn" id="purchase-confirm-back-btn"> BACK</button>

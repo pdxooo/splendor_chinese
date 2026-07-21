@@ -15,7 +15,8 @@
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  height: min(66vh, 42rem);
   font-size: 1.6vmin;
   float: left;
 }

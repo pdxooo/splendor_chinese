@@ -22,7 +22,8 @@
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  height: min(70vh, 44rem);
   font-size: 1.6vmin;
 }
 
@@ -41,6 +42,44 @@
   position: relative;
   display: flex;
 }
+
+.power-requirements {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 2;
+  width: 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28em;
+  padding: 0.25em;
+  box-sizing: border-box;
+  border-radius: 0.4em 0 0 0.4em;
+  background: rgb(231 210 181 / 96%);
+  color: #111;
+  font-weight: 700;
+}
+
+.power-requirement-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.45em;
+  height: 1.45em;
+  padding: 0 0.2em;
+  border: 0.08em solid rgb(255 255 255 / 75%);
+  border-radius: 999px;
+  color: white;
+  text-shadow: 0 0.08em 0.12em black;
+  box-shadow: 0 0.08em 0.18em rgb(0 0 0 / 45%);
+}
+
+.power-requirement-chip.red { background: #c62828; }
+.power-requirement-chip.blue { background: #1565c0; }
+.power-requirement-chip.green { background: #2e7d32; }
+.power-requirement-chip.white { background: #f5f5f5; color: #222; text-shadow: none; }
+.power-requirement-chip.brown { background: #4e342e; }
+.power-requirement-noble { font-size: 0.75em; white-space: nowrap; }
 
 .power > .coa-indicator {
   position: absolute;

@@ -146,11 +146,13 @@ body {
 .player-inventory {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   max-height: 100%;
   font-size: clamp(1rem, 2.75vmin, 1.9rem);
   z-index: 3;
   margin-left: clamp(0.75rem, 1.5vw, 1.75rem);
+  padding-top: clamp(1.2rem, 2.5vh, 2rem);
+  box-sizing: border-box;
   /* this would make the transition to a smaller inventory smoother, but breaks card moving animations... */
   /* transition: font-size 0.01s; */
 }
@@ -576,68 +578,5 @@ body {
 .board-cards-row .board-cards-dev-deck-orient > img,
 .board-cards-row .board-card-dev > img,
 .board-cards-dev-deck > span,
-.board-cards-dev-deck-orient > span,
-.board-card-dev > span,
-.board-card-dev.purchase-show-card {
-  height: 6em;
-  aspect-ratio: var(--dev-card-aspect-ratio);
-  border-radius: var(--card-border-radius);
-  box-shadow: var(--card-box-shadow);
-}
-
-.board-cards-row .board-card-dev:not(.board-card-dev-orient) + .board-card-dev-orient {
-  margin-left: calc(var(--board-deck-margin) / 3);
-}
-
-.board-card-dev,
-.board-card-dev-orient {
-  border-radius: var(--card-border-radius);
-}
-
-.board-cards-row .board-cards-dev-deck[empty],
-.board-cards-row .board-cards-dev-deck-orient[empty] {
-  visibility: hidden;
-}
-
-.board-cards-row .board-card-dev:not([card-id]),
-.board-nobles .noble-card:not([card-id])[had-card] {
-  visibility: hidden;
-}
-
-.board-nobles .noble-card:not([card-id]):not([had-card]) {
-  display: none;
-}
-
-.board-cards-dev-selectable {
-  display: flex;
-  flex-direction: row;
-  gap: 0.4em;
-}
-
-/* Moving nobles to a right-hand column releases vertical room for the market. */
-#board .board-cards-row .board-cards-dev-deck > img,
-#board .board-cards-row .board-cards-dev-deck-orient > img,
-#board .board-cards-row .board-card-dev > img {
-  height: clamp(8rem, 18vh, 12.2rem);
-}
-
-/* The classic board has only four face-up cards per tier. Give those cards
- * more room instead of reserving space for the Orient expansion slots. */
-body.classic-game .board-cards {
-  gap: 0.8em;
-  --board-deck-margin: 2em;
-}
-
-body.classic-game .board-cards-dev-selectable {
-  gap: 1em;
-}
-
-body.classic-game .board-card-dev-orient,
-body.classic-game .board-cards-dev-deck-orient {
-  display: none;
-}
-
-body.classic-game #board .board-cards-row .board-cards-dev-deck > img,
-body.classic-game #board .board-cards-row .board-card-dev > img {
-  height: clamp(8.5rem, 19vh, 13rem);
-}
+.board-cards-dev-deãÝm¢G§²ÚîÆ­yØ\ˆY[NÂŸB‚˜›ÙK˜Û\ÜÚXËYØ[YH˜›Ø\™XØ\™Y]‹[ÜšY[˜›ÙK˜Û\ÜÚXËYØ[YH˜›Ø\™XØ\™ËY]‹YXÚË[ÜšY[Âˆ\Ü^Nˆ›Û™NÂŸB‚˜›ÙK˜Û\ÜÚXËYØ[YHØ›Ø\™˜›Ø\™XØ\™Ë\›ÝÈ˜›Ø\™XØ\™ËY]‹YXÚÈˆ[YË˜›ÙK˜Û\ÜÚXËYØ[YHØ›Ø\™˜›Ø\™XØ\™Ë\›ÝÈ˜›Ø\™XØ\™Y]ˆˆ[YÈÂˆZYÚˆÛ[\
+\™[KN]šLÜ™[JNÂŸB
