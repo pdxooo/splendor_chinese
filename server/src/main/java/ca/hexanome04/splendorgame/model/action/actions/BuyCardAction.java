@@ -81,6 +81,11 @@ public class BuyCardAction extends Action {
             return result;
         }
 
+        int virtualGoldPiecesUsed = dc.getVirtualGoldPiecesUsed(player, selectedTokens);
+        if (virtualGoldPiecesUsed > 0) {
+            discardVirtualGoldCards(player, virtualGoldPiecesUsed);
+        }
+
         player.addCard(dc);
         if (wasReserved) {
             player.removeReservedCard(dc);
@@ -140,6 +145,31 @@ public class BuyCardAction extends Action {
         game.clearValidActions();
 
         return result;
+    }
+
+    /**
+     * Discard the Orient card or cards supplying virtual Gold for this purchase.
+     * Each such card supplies two pieces and the whole card is discarded even
+     * when only one of its pieces is required.
+     *
+     * @param player player spending virtual Gold
+     * @param piecesUsed number of virtual Gold pieces required
+     */
+    private void discardVirtualGoldCards(Player player, int piecesUsed) {
+        int cardsToDiscard = (piecesUsed + 1) / 2;
+        HashMap<TokenType, Integer> bonusesToRemove = new HashMap<>();
+        bonusesToRemove.put(TokenType.Gold, cardsToDiscard * 2);
+        player.removeBonuses(bonusesToRemove);
+
+        for (DevelopmentCard card : new ArrayList<>(player.getDevCards())) {
+            if (cardsToDiscard == 0) {
+                break;
+            }
+            if (card.getTokenType() == TokenType.Gold) {
+                player.removeCard(card);
+                cardsToDiscard--;
+            }
+        }
     }
 
     @Override
