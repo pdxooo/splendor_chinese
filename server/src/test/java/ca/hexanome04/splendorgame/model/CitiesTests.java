@@ -24,6 +24,16 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 public class CitiesTests {
 
+    @DisplayName("Cities uses only base development cards and has no nobles.")
+    @Test
+    void testCitiesSetupDoesNotMixOrientCardsOrNobles() throws FileNotFoundException {
+        CitiesGame game = GameUtils.createNewCitiesGame(2);
+
+        assertThat(game.getTier1PurchasableOrientCards().isEmpty()).isTrue();
+        assertThat(game.getTier2PurchasableOrientCards().isEmpty()).isTrue();
+        assertThat(game.getNobles().isEmpty()).isTrue();
+    }
+
     @DisplayName("Ensure end of cities game is marked when player qualifies for 'same bonus' type city card.")
     @Test
     void testEndOfCitiesRound_SameBonusCity() throws FileNotFoundException {
