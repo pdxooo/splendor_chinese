@@ -245,4 +245,3 @@ public abstract class Card {
     }
 
 }
-

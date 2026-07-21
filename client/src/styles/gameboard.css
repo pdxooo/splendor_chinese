@@ -641,4 +641,3 @@ body.classic-game #board .board-cards-row .board-cards-dev-deck > img,
 body.classic-game #board .board-cards-row .board-card-dev > img {
   height: clamp(8.5rem, 19vh, 13rem);
 }
-

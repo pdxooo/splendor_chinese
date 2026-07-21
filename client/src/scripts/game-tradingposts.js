@@ -85,4 +85,3 @@ const updatePlayerTPHistory = (oldState, newState) => {
     }
 };
 registerPlayerUpdater(updatePlayerTPHistory);
-

@@ -479,4 +479,3 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(updateTurnTimer, 250);
     setTimeout(attempUpdate, 1);
 });
-
