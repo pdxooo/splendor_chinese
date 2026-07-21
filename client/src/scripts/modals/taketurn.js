@@ -105,13 +105,14 @@ const calculateMinimumPayment = (cardNode) => {
         payment[color] = coloredPayment;
         goldNeeded += remainingCost - coloredPayment;
     });
-    const realGoldAvailable = Number(tokens.Gold || 0);
-    const realGoldPayment = Math.min(goldNeeded, realGoldAvailable);
-    const virtualGoldNeeded = goldNeeded - realGoldPayment;
-    payment.Gold = realGoldPayment;
+    // Virtual Gold is spent before physical Gold so automatic payment uses
+    // the fewest real tokens. The server discards the supplying Orient card.
+    const virtualGoldUsed = Math.min(goldNeeded, Number(bonuses.Gold || 0));
+    const realGoldNeeded = goldNeeded - virtualGoldUsed;
+    payment.Gold = realGoldNeeded;
 
     return {
-        purchasable: virtualGoldNeeded <= Number(bonuses.Gold || 0),
+        purchasable: realGoldNeeded <= Number(tokens.Gold || 0),
         payment
     };
 };
