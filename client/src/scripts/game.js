@@ -164,6 +164,13 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
             }
         }
     });
+    cards.forEach(cardInfo => {
+        const div = cardContainer.querySelector(`${cardSelector}[card-id="${cardInfo.id}"]`);
+        if(!div) return;
+        if(cardInfo.tokenType) div.setAttribute("token-type", cardInfo.tokenType);
+        div.setAttribute("bonus", Number(cardInfo.bonus || 0));
+        div.setAttribute("prestige-points", Number(cardInfo.prestigePoints || 0));
+    });
 };
 
 const setPlayerIdentity = (container, name, order) => {
@@ -283,13 +290,6 @@ const updateOtherPlayerInfo = (pInfo, order) => {
             image.setAttribute("alt", `暗置预留的${card.cardTier || "未知等级"}卡牌 ${index + 1}`);
         }
         return node;
-    });
-    cards.forEach(cardInfo => {
-        const div = cardContainer.querySelector(`${cardSelector}[card-id="${cardInfo.id}"]`);
-        if(!div) return;
-        if(cardInfo.tokenType) div.setAttribute("token-type", cardInfo.tokenType);
-        div.setAttribute("bonus", Number(cardInfo.bonus || 0));
-        div.setAttribute("prestige-points", Number(cardInfo.prestigePoints || 0));
     });
     pNode.querySelector(".other-inventory-cards-reserved").replaceChildren(...reservedCards);
 
