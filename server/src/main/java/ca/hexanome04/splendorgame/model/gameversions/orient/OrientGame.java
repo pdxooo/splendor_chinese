@@ -142,18 +142,28 @@ public class OrientGame implements Game {
                     case "3" -> tier3Deck.add(new RegDevelopmentCard(CardTier.TIER_3, tokenType, bonusCount,
                             prestigePoints, costType, tokenCost, cardId));
 
-                    case "N" -> nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                    case "N" -> {
+                        if (usesNobles()) {
+                            nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                        }
+                    }
+
+                    case "ON" -> {
+                        if (usesOrientCards() && usesNobles()) {
+                            nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                        }
+                    }
 
                     case "O1" -> {
-                        if (gameVersion != GameVersions.BASE) {
+                        if (usesOrientCards()) {
                             tier1OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_1, tokenType, bonusCount,
                                     CascadeType.None, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
                         }
                     }
 
                     case "O2" -> {
-                        if (gameVersion == GameVersions.BASE) {
-                            // The classic game does not use Orient cards.
+                        if (!usesOrientCards()) {
+                            // This game version does not use Orient cards.
                         } else if (!card[7].isBlank()) {
                             tier2OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_2, tokenType, bonusCount,
                                     CascadeType.Tier1, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
@@ -167,8 +177,8 @@ public class OrientGame implements Game {
                     }
 
                     case "O3" -> {
-                        if (gameVersion == GameVersions.BASE) {
-                            // The classic game does not use Orient cards.
+                        if (!usesOrientCards()) {
+                            // This game version does not use Orient cards.
                         } else if (!card[7].isBlank()) {
                             tier3OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_3, tokenType, bonusCount,
                                     CascadeType.Tier2, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
@@ -195,19 +205,25 @@ public class OrientGame implements Game {
         tier1Deck.shuffle();
         tier2Deck.shuffle();
         tier3Deck.shuffle();
-        tier1OrientDeck.shuffle();
-        tier2OrientDeck.shuffle();
-        tier3OrientDeck.shuffle();
+        if (usesOrientCards()) {
+            tier1OrientDeck.shuffle();
+            tier2OrientDeck.shuffle();
+            tier3OrientDeck.shuffle();
+        }
 
         tier1Deck.drawCards(4);
         tier2Deck.drawCards(4);
         tier3Deck.drawCards(4);
-        tier1OrientDeck.drawCards(2);
-        tier2OrientDeck.drawCards(2);
-        tier3OrientDeck.drawCards(2);
+        if (usesOrientCards()) {
+            tier1OrientDeck.drawCards(2);
+            tier2OrientDeck.drawCards(2);
+            tier3OrientDeck.drawCards(2);
+        }
 
-        nobleDeck.shuffle();
-        nobleDeck.drawCards(players.size() + 1);
+        if (usesNobles()) {
+            nobleDeck.shuffle();
+            nobleDeck.drawCards(players.size() + 1);
+        }
 
         // Now initialize tokens
         int numTokens;
@@ -228,6 +244,25 @@ public class OrientGame implements Game {
 
         tokens.put(Satchel, 0);
         tokens.put(Gold, 5);
+    }
+
+    /**
+     * Whether this mode includes the three Orient development-card decks.
+     * Cities is an independent module and therefore uses base cards only.
+     *
+     * @return true when Orient development cards are part of this game
+     */
+    protected boolean usesOrientCards() {
+        return gameVersion != GameVersions.BASE && gameVersion != GameVersions.BASE_ORIENT_CITIES;
+    }
+
+    /**
+     * Whether this mode includes nobles. Cities replace nobles completely.
+     *
+     * @return true when nobles are part of this game
+     */
+    protected boolean usesNobles() {
+        return gameVersion != GameVersions.BASE_ORIENT_CITIES;
     }
 
     /**
@@ -654,4 +689,3 @@ public class OrientGame implements Game {
     }
 
 }
-
