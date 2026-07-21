@@ -1,3 +1,4 @@
+
 import { SETTINGS } from "./settings.js";
 import { addUpdater } from "./game.js";
 import { registerPlayerUpdater, writeBasicUpdate } from "./history";
@@ -21,6 +22,10 @@ const allPowers = [
 const updatePowers = (data) => {
 
     const curUsername = SETTINGS.getUsername();
+
+    const currentPlayer = data.players.find(player => player.name === curUsername);
+    const goldValue = currentPlayer?.goldTokenWorthTwoTokens?.unlocked ? 2 : 1;
+    document.querySelector("#player-inventory")?.setAttribute("data-gold-token-value", String(goldValue));
 
     data.players.forEach((p, index) => {
         // update the coat of arms images for each player
@@ -81,3 +86,4 @@ const updatePlayerTPHistory = (oldState, newState) => {
     }
 };
 registerPlayerUpdater(updatePlayerTPHistory);
+

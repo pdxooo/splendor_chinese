@@ -1,3 +1,4 @@
+
 import { SETTINGS } from "./settings.js";
 import { startTurn, verifyNoModals, performFollowUpAction, showNextModal } from "./modals/modals.js";
 import { animateMoveToken } from "./animation/tokens";
@@ -399,7 +400,12 @@ const updateGameboard = async () => {
     gameStateHash = newHash;
     console.log("[AS] Update available!");
     const data = JSON.parse(dataText);
-    document.body.classList.toggle("classic-game", data.gameVersion === "BASE");
+    const baseOnlyVersions = new Set([
+        "BASE",
+        "BASE_ORIENT_CITIES",
+        "BASE_ORIENT_TRADE_ROUTES"
+    ]);
+    document.body.classList.toggle("classic-game", baseOnlyVersions.has(data.gameVersion));
     lastState = currentState;
     currentState = data;
     turnDeadline = data.turnDeadlineEpochMillis || 0;

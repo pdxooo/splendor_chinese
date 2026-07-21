@@ -1,3 +1,4 @@
+
 package ca.hexanome04.splendorgame.model;
 
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPlayer;
@@ -223,13 +224,26 @@ public abstract class Card {
 
         int goldValue = player instanceof TradingPostsPlayer tradingPostsPlayer
                 && tradingPostsPlayer.goldTokenWorthTwoTokens.isUnlocked() ? 2 : 1;
-        int realGoldValue = tokensToUse.getOrDefault(TokenType.Gold, 0) * goldValue;
-        int unpaid = remaining.entrySet().stream()
-                .filter(entry -> entry.getKey() != TokenType.Gold && entry.getKey() != TokenType.Satchel)
-                .mapToInt(Map.Entry::getValue)
-                .sum();
-        unpaid = Math.max(0, unpaid - realGoldValue);
-        return (unpaid + goldValue - 1) / goldValue;
+        int realGoldPieces = tokensToUse.getOrDefault(TokenType.Gold, 0);
+        for (int i = 0; i < realGoldPieces; i++) {
+            for (TokenType type : TokenType.values()) {
+                if (type != TokenType.Gold && type != TokenType.Satchel
+                        && remaining.getOrDefault(type, 0) > 0) {
+                    remaining.put(type, Math.max(0, remaining.get(type) - goldValue));
+                    break;
+                }
+            }
+        }
+
+        int virtualPieces = 0;
+        for (TokenType type : TokenType.values()) {
+            if (type != TokenType.Gold && type != TokenType.Satchel) {
+                int unpaidForColour = remaining.getOrDefault(type, 0);
+                virtualPieces += (unpaidForColour + goldValue - 1) / goldValue;
+            }
+        }
+        return virtualPieces;
     }
 
 }
+

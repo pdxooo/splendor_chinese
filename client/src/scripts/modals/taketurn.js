@@ -1,3 +1,4 @@
+
 import { showNextModal, setupSelection, backButton } from "./modals.js";
 import { performAction } from "../actions";
 import { showError } from "../notify.js";
@@ -97,22 +98,35 @@ const calculateMinimumPayment = (cardNode) => {
         return { purchasable, payment };
     }
 
-    let goldNeeded = 0;
+    const goldValue = Number(document.querySelector("#player-inventory")
+        ?.getAttribute("data-gold-token-value")) === 2 ? 2 : 1;
+    let virtualGoldAvailable = Number(bonuses.Gold || 0);
+    let realGoldAvailable = Number(tokens.Gold || 0);
+    let realGoldUsed = 0;
+    let purchasable = true;
 
     paymentColors.forEach(color => {
         const remainingCost = Math.max(0, Number(cost[color] || 0) - Number(bonuses[color] || 0));
         const coloredPayment = Math.min(remainingCost, Number(tokens[color] || 0));
         payment[color] = coloredPayment;
-        goldNeeded += remainingCost - coloredPayment;
+        let unpaid = remainingCost - coloredPayment;
+
+        const virtualForColor = Math.min(virtualGoldAvailable, Math.ceil(unpaid / goldValue));
+        virtualGoldAvailable -= virtualForColor;
+        unpaid = Math.max(0, unpaid - virtualForColor * goldValue);
+
+        const realForColor = Math.min(realGoldAvailable, Math.ceil(unpaid / goldValue));
+        realGoldAvailable -= realForColor;
+        realGoldUsed += realForColor;
+        unpaid = Math.max(0, unpaid - realForColor * goldValue);
+        if(unpaid > 0) purchasable = false;
     });
-    // Virtual Gold is spent before physical Gold so automatic payment uses
-    // the fewest real tokens. The server discards the supplying Orient card.
-    const virtualGoldUsed = Math.min(goldNeeded, Number(bonuses.Gold || 0));
-    const realGoldNeeded = goldNeeded - virtualGoldUsed;
-    payment.Gold = realGoldNeeded;
+    // Each physical or virtual Gold piece covers up to goldValue tokens of
+    // one colour. Virtual Gold is consumed first to minimise real-token use.
+    payment.Gold = realGoldUsed;
 
     return {
-        purchasable: realGoldNeeded <= Number(tokens.Gold || 0),
+        purchasable,
         payment
     };
 };
@@ -438,3 +452,4 @@ const showReservableDevCards = () => {
         }
     };
 };
+

@@ -1,3 +1,4 @@
+
 package ca.hexanome04.splendorgame.model.gameversions.orient;
 
 import static ca.hexanome04.splendorgame.model.TokenType.*;
@@ -248,12 +249,14 @@ public class OrientGame implements Game {
 
     /**
      * Whether this mode includes the three Orient development-card decks.
-     * Cities is an independent module and therefore uses base cards only.
+     * Cities and Trading Posts are independent modules and use base cards only.
      *
      * @return true when Orient development cards are part of this game
      */
     protected boolean usesOrientCards() {
-        return gameVersion != GameVersions.BASE && gameVersion != GameVersions.BASE_ORIENT_CITIES;
+        return gameVersion != GameVersions.BASE
+                && gameVersion != GameVersions.BASE_ORIENT_CITIES
+                && gameVersion != GameVersions.BASE_ORIENT_TRADE_ROUTES;
     }
 
     /**
@@ -516,6 +519,15 @@ public class OrientGame implements Game {
         return this.tier2OrientDeck.getVisibleCards();
     }
 
+    /**
+     * Get the visible tier-three Orient cards.
+     *
+     * @return visible tier-three Orient cards
+     */
+    public List<OrientDevelopmentCard> getTier3PurchasableOrientCards() {
+        return this.tier3OrientDeck.getVisibleCards();
+    }
+
     @Override
     public Player createPlayer(String name, String colour) {
         return new OrientPlayer(name, colour);
@@ -689,3 +701,4 @@ public class OrientGame implements Game {
     }
 
 }
+

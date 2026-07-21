@@ -1,3 +1,4 @@
+
 package ca.hexanome04.splendorgame.model;
 
 import ca.hexanome04.splendorgame.model.action.actions.*;
@@ -21,6 +22,40 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class TradingPostsTests {
+
+    @DisplayName("Trading Posts uses only the base development-card decks")
+    @Test
+    void testTradingPostsDoesNotDealOrientCards() throws FileNotFoundException {
+        TradingPostsGame game = GameUtils.createNewTradingPostGame(15, 4);
+
+        assertThat(game.getTier1PurchasableOrientCards()).asList().isEmpty();
+        assertThat(game.getTier2PurchasableOrientCards()).asList().isEmpty();
+        assertThat(game.getTier3PurchasableOrientCards()).asList().isEmpty();
+    }
+
+    @DisplayName("Double-value virtual gold remains tied to one colour per piece")
+    @Test
+    void testDoubleVirtualGoldPieceCounting() {
+        TradingPostsPlayer player = new TradingPostsPlayer("Player1", "blue");
+        player.goldTokenWorthTwoTokens.unlockPower(player);
+        player.addBonus(TokenType.Gold, 2);
+
+        HashMap<TokenType, Integer> splitCost = new HashMap<>();
+        for (TokenType type : TokenType.values()) {
+            splitCost.put(type, 0);
+        }
+        splitCost.put(TokenType.Red, 1);
+        splitCost.put(TokenType.Blue, 1);
+        RegDevelopmentCard card = new RegDevelopmentCard(CardTier.TIER_1,
+                TokenType.Green, 1, 0, CostType.Token, splitCost, "double-gold-test");
+
+        assertThat(card.isPurchasable(player, new HashMap<>())).isTrue();
+        assertThat(card.getVirtualGoldPiecesUsed(player, new HashMap<>())).isEqualTo(2);
+
+        splitCost.put(TokenType.Red, 4);
+        splitCost.put(TokenType.Blue, 0);
+        assertThat(card.getVirtualGoldPiecesUsed(player, new HashMap<>())).isEqualTo(2);
+    }
 
     @DisplayName("Ensure power 1 makes you choose an extra token after card purchase")
     @Test
@@ -319,3 +354,4 @@ public class TradingPostsTests {
     }
 
 }
+
