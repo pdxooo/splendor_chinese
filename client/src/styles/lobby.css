@@ -640,3 +640,21 @@ tr > th {
   visibility: hidden;
   pointer-events: none;
 }
+.session-search-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: goldenrod;
+}
+
+#session-search {
+  min-width: 22rem;
+  padding: 0.55rem 0.8rem;
+  color: white;
+  background: rgb(5 19 36 / 80%);
+  border: 1px solid goldenrod;
+  border-radius: 0.5rem;
+}
+
+#session-search-empty { padding: 1rem; color: white; }

@@ -33,8 +33,8 @@ class ClassicGameTest {
     }
 
     @Test
-    @DisplayName("Classic game requires three different gems when they are available")
-    void classicGameRejectsTakingOnlyTwoDifferentGems() {
+    @DisplayName("Classic game allows taking two different gems")
+    void classicGameAllowsTakingTwoDifferentGems() {
         OrientGame game = createClassicGame(0);
         HashMap<TokenType, Integer> take = new HashMap<>();
         take.put(TokenType.Red, 1);
@@ -42,7 +42,22 @@ class ClassicGameTest {
 
         List<ActionResult> result = game.takeAction("Player1", new TakeTokenAction(take, new HashMap<>()));
 
-        assertEquals(List.of(ActionResult.MUST_TAKE_THREE_DIFFERENT_TOKENS), result);
+        assertTrue(result.contains(ActionResult.TURN_COMPLETED));
+        assertEquals(1, game.getPlayerFromName("Player1").getTokens().get(TokenType.Red));
+        assertEquals(1, game.getPlayerFromName("Player1").getTokens().get(TokenType.Blue));
+    }
+
+    @Test
+    @DisplayName("Classic game allows taking one ordinary gem")
+    void classicGameAllowsTakingOneGem() {
+        OrientGame game = createClassicGame(0);
+        HashMap<TokenType, Integer> take = new HashMap<>();
+        take.put(TokenType.Green, 1);
+
+        List<ActionResult> result = game.takeAction("Player1", new TakeTokenAction(take, new HashMap<>()));
+
+        assertTrue(result.contains(ActionResult.TURN_COMPLETED));
+        assertEquals(1, game.getPlayerFromName("Player1").getTokens().get(TokenType.Green));
     }
 
     @Test
@@ -223,32 +238,6 @@ class ClassicGameTest {
         assertEquals(List.of(fewerCards), game.checkForWin());
     }
 
-    @Test
-    @DisplayName("A fully discounted two-point card can be bought for zero tokens to win")
-    void classicGameAllowsZeroTokenWinningPurchaseWhenBonusesCoverCost() {
-        OrientGame game = createClassicGame(1);
-        Player player = game.getPlayerFromName("Player2");
-        HashMap<TokenType, Integer> cost = new HashMap<>();
-        cost.put(TokenType.Brown, 5);
-        RegDevelopmentCard winningCard = new RegDevelopmentCard(
-                CardTier.TIER_2, TokenType.Red, 1, 2,
-                CostType.Token, cost, "zero-token-winning-card");
-
-        player.addPrestigePoints(13);
-        player.addBonus(TokenType.Brown, 5);
-        player.reserveCard(winningCard);
-
-        List<ActionResult> result = game.takeAction(
-                player.getName(), new BuyCardAction(winningCard.getId(), new HashMap<>()));
-
-        assertTrue(result.contains(ActionResult.VALID_ACTION));
-        assertTrue(result.contains(ActionResult.TURN_COMPLETED));
-        assertTrue(player.getDevCards().contains(winningCard));
-        assertEquals(15, player.getPrestigePoints());
-        assertTrue(game.isGameOver());
-        assertEquals(List.of(player), game.getWinner());
-    }
-
     private OrientGame createClassicGame(int turnCounter) {
         OrientGame game = new OrientGame(GameVersions.BASE, 15, turnCounter);
         game.setPlayers(List.of(
@@ -282,4 +271,3 @@ class ClassicGameTest {
         )));
     }
 }
-

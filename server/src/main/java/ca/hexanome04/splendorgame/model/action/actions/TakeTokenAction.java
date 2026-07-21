@@ -6,7 +6,6 @@ import ca.hexanome04.splendorgame.model.action.Action;
 import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.Actions;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
-import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPlayer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -114,34 +113,12 @@ public class TakeTokenAction extends Action {
             }
         }
 
-        if (game.getGameVersion() == GameVersions.BASE) {
-            int goldTaken = takeTokens.getOrDefault(TokenType.Gold, 0);
-            int satchelTaken = takeTokens.getOrDefault(TokenType.Satchel, 0);
-            if (goldTaken > 0 || satchelTaken > 0) {
-                result.add(ActionResult.CANNOT_TAKE_GOLD_TOKEN);
-                return result;
-            }
-
-            int availableColours = 0;
-            for (TokenType type : List.of(TokenType.White, TokenType.Blue, TokenType.Green,
-                    TokenType.Red, TokenType.Brown)) {
-                if (game.getTokens().getOrDefault(type, 0) > 0) {
-                    availableColours++;
-                }
-            }
-            int requiredUniqueColours = Math.min(3, availableColours);
-            boolean validDifferentColours = doubleTokens == 0 && uniqueTokens == requiredUniqueColours;
-            boolean validSameColour = doubleTokens == 1 && uniqueTokens == 0;
-            if (!validDifferentColours && !validSameColour) {
-                if (doubleTokens > 0 && uniqueTokens > 0) {
-                    result.add(ActionResult.CANNOT_MIX_DOUBLE_AND_SINGLE_TOKENS);
-                } else {
-                    result.add(ActionResult.MUST_TAKE_THREE_DIFFERENT_TOKENS);
-                }
-                return result;
-            }
+        int goldTaken = takeTokens.getOrDefault(TokenType.Gold, 0);
+        int satchelTaken = takeTokens.getOrDefault(TokenType.Satchel, 0);
+        if (goldTaken > 0 || satchelTaken > 0) {
+            result.add(ActionResult.CANNOT_TAKE_GOLD_TOKEN);
+            return result;
         }
-
         // verify either 2 of same token or 3 unique tokens
         // Unless for Trading routes, if player has power 2, can take 1 extra token of different color than doubleToken
         if (player instanceof TradingPostsPlayer tpp && tpp.extraTokenAfterTakingSameColor.isUnlocked()) {

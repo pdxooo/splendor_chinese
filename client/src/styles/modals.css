@@ -427,6 +427,18 @@
   background: rgb(218 165 32 / 9%);
 }
 
+.virtual-gold-payment[hidden] { display: none !important; }
+.burn-card-payment[hidden], .token-count-outer-container[hidden] { display: none !important; }
+.burn-card-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; max-height: 18rem; overflow-y: auto; }
+.burn-card-option { width: 6rem; cursor: pointer; border: 3px solid transparent; border-radius: 0.4rem; }
+.burn-card-option.selected { border-color: #18d66b; box-shadow: 0 0 1rem #18d66b; }
+.extra-token-container .board-token { position: relative; }
+.extra-token-container .bank-count {
+  position: absolute; left: 50%; bottom: -1.5rem; transform: translateX(-50%);
+  color: white; white-space: nowrap; font-size: 0.75rem;
+}
+.extra-token-container .board-token.unavailable { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+
 .virtual-gold-payment > span {
   position: absolute;
   left: 50%;

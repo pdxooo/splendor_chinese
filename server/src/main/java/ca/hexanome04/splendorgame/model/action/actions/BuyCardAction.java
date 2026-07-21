@@ -19,6 +19,7 @@ public class BuyCardAction extends Action {
     private String buyCardId;
     private HashMap<TokenType, Integer> selectedTokens;
     private int virtualGoldPieces;
+    private List<String> burnCardIds;
 
     /**
      * Construct a buy card action.
@@ -43,6 +44,21 @@ public class BuyCardAction extends Action {
         this.buyCardId = buyCardId;
         this.selectedTokens = selectedTokens;
         this.virtualGoldPieces = virtualGoldPieces;
+        this.burnCardIds = null;
+    }
+
+    /**
+     * Construct a buy-card action with an explicit choice of bonus cards to discard.
+     *
+     * @param buyCardId card id
+     * @param selectedTokens real tokens used
+     * @param virtualGoldPieces virtual Gold pieces used
+     * @param burnCardIds purchased card ids selected for an Orient bonus cost
+     */
+    public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens,
+                         int virtualGoldPieces, List<String> burnCardIds) {
+        this(buyCardId, selectedTokens, virtualGoldPieces);
+        this.burnCardIds = burnCardIds == null ? null : new ArrayList<>(burnCardIds);
     }
 
     /**
@@ -90,6 +106,16 @@ public class BuyCardAction extends Action {
 
         ArrayList<ActionResult> result = new ArrayList<>();
 
+        List<DevelopmentCard> selectedBurnCards = null;
+        if (dc instanceof OrientDevelopmentCard orientCard
+                && orientCard.getCostType() == CostType.Bonus && burnCardIds != null) {
+            selectedBurnCards = validateBurnCards(player, orientCard);
+            if (selectedBurnCards == null) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+        }
+
         int virtualGoldPiecesUsed = virtualGoldPieces < 0
                 ? dc.getVirtualGoldPiecesUsed(player, selectedTokens) : virtualGoldPieces;
         boolean purchasable = virtualGoldPieces < 0
@@ -122,7 +148,11 @@ public class BuyCardAction extends Action {
         if (dc.getClass().equals(OrientDevelopmentCard.class)) {
             OrientDevelopmentCard orientCard = (OrientDevelopmentCard) dc;
             if (orientCard.getCostType() == CostType.Bonus) {
-                player.burnBonuses(orientCard.getTokenCost());
+                if (selectedBurnCards == null) {
+                    player.burnBonuses(orientCard.getTokenCost());
+                } else {
+                    discardSelectedBonusCards(player, selectedBurnCards);
+                }
             }
             if (orientCard.getReserveNoble() && game instanceof OrientGame og && og.getNobles().size() > 0) {
                 result.add(ActionResult.MUST_RESERVE_NOBLE);
@@ -190,6 +220,42 @@ public class BuyCardAction extends Action {
         }
     }
 
+    private List<DevelopmentCard> validateBurnCards(Player player, OrientDevelopmentCard card) {
+        if (burnCardIds.isEmpty() || new HashSet<>(burnCardIds).size() != burnCardIds.size()
+                || burnCardIds.size() > 2) {
+            return null;
+        }
+        HashMap<TokenType, Integer> selectedBonuses = new HashMap<>();
+        List<DevelopmentCard> selectedCards = new ArrayList<>();
+        for (String cardId : burnCardIds) {
+            DevelopmentCard selected = player.getPurchasedDevelopmentCard(cardId);
+            if (selected == null || selected.getTokenType() == null
+                    || selected.getTokenType() == TokenType.Gold
+                    || selected.getTokenType() == TokenType.Satchel) {
+                return null;
+            }
+            selectedCards.add(selected);
+            selectedBonuses.merge(selected.getTokenType(), selected.getBonus(), Integer::sum);
+        }
+        for (TokenType type : TokenType.values()) {
+            if (!Objects.equals(selectedBonuses.getOrDefault(type, 0),
+                    card.getTokenCost().getOrDefault(type, 0))) {
+                return null;
+            }
+        }
+        return selectedCards;
+    }
+
+    private void discardSelectedBonusCards(Player player, List<DevelopmentCard> cards) {
+        for (DevelopmentCard card : cards) {
+            HashMap<TokenType, Integer> bonus = new HashMap<>();
+            bonus.put(card.getTokenType(), card.getBonus());
+            player.removeBonuses(bonus);
+            player.addPrestigePoints(-card.getPrestigePoints());
+            player.removeCard(card);
+        }
+    }
+
     @Override
     public Action decodeAction(JsonObject jobj) {
 
@@ -205,6 +271,12 @@ public class BuyCardAction extends Action {
         }
         this.virtualGoldPieces = jobj.has("virtualGoldPieces")
                 ? jobj.get("virtualGoldPieces").getAsInt() : -1;
+        if (jobj.has("burnCardIds")) {
+            this.burnCardIds = new ArrayList<>();
+            for (JsonElement element : jobj.getAsJsonArray("burnCardIds")) {
+                this.burnCardIds.add(element.getAsString());
+            }
+        }
 
         return this;
     }

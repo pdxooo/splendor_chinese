@@ -72,6 +72,25 @@ const formatTurnTime = (seconds) => {
     return `每回合 ${value} 秒`;
 };
 
+const GAME_VERSION_NAMES = {
+    splendor_BASE: "璀璨宝石：经典版",
+    splendor_BASE_ORIENT: "璀璨宝石：东方扩展",
+    splendor_BASE_ORIENT_CITIES: "璀璨宝石：城市扩展",
+    splendor_BASE_ORIENT_TRADE_ROUTES: "璀璨宝石：贸易站"
+};
+
+const applySessionSearch = () => {
+    const query = (document.querySelector("#session-search")?.value || "").trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll(".current-sessions-table tr[session-id]").forEach(row => {
+        const matches = !query || row.textContent.toLowerCase().includes(query);
+        row.hidden = !matches;
+        if(matches) visible++;
+    });
+    const empty = document.querySelector("#session-search-empty");
+    if(empty) empty.hidden = visible !== 0;
+};
+
 /**
  * Attempts to focus on session item if it's already availabe,
  * else it will wait until it gets added to the page.
@@ -88,6 +107,7 @@ export const focusSession = (sesId) => {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#session-search")?.addEventListener("input", applySessionSearch);
     // set user color
     getUserDetail().then((data) => {
         if(data) {
@@ -312,7 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             trNode.querySelector(".session-id").textContent = sesId;
-            trNode.querySelector(".session-game-name").textContent = ses.gameParameters.displayName;
+            trNode.querySelector(".session-game-name").textContent =
+                GAME_VERSION_NAMES[ses.gameParameters.name] || ses.gameParameters.displayName;
             trNode.querySelector(".session-creator-name").textContent = ses.creator;
 
             const sesPlayers = ses.players;
@@ -377,6 +398,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 turnTimeNode.textContent = turnTimeText;
             }
         });
+
+        applySessionSearch();
 
     }
 

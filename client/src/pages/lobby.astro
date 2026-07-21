@@ -42,24 +42,28 @@ import "../styles/lobby.css";
                         <!-- SELECT GAME VERSION -->
                         <div class="game-selection-dropdown">
                             <div class="select">
-                                <span class="create-session-btn">Create Session</span>
+                                <span class="create-session-btn">创建房间</span>
                                 <div class="caret"></div>
                             </div>
                             <ul class="game-options">
-                                <li version="BASE">Splendor Classic</li>
-                                <li version="BASE_ORIENT">Splendor Orient</li>
-                                <li version="BASE_ORIENT_CITIES">Splendor Cities</li>
-                                <li version="BASE_ORIENT_TRADE_ROUTES">Splendor Trading Posts</li>
+                                <li version="BASE">璀璨宝石：经典版</li>
+                                <li version="BASE_ORIENT">璀璨宝石：东方扩展</li>
+                                <li version="BASE_ORIENT_CITIES">璀璨宝石：城市扩展</li>
+                                <li version="BASE_ORIENT_TRADE_ROUTES">璀璨宝石：贸易站</li>
                             </ul>
                         </div>
                     </div>
+                    <label class="session-search-label">查找房间
+                        <input id="session-search" type="search" placeholder="输入房间号、版本、创建者或玩家" autocomplete="off" />
+                    </label>
+                    <p id="session-search-empty" hidden>没有找到符合条件的房间。</p>
                     <table class="current-sessions-table">
                         <tbody>
                             <tr>
                                 <th>房间号</th>
-                                <th>Game Version</th>
-                                <th>Creator</th>
-                                <th>Players</th>
+                                <th>游戏版本</th>
+                                <th>创建者</th>
+                                <th>玩家</th>
                                 <th>回合限时</th>
                                 <th></th>
                             </tr>

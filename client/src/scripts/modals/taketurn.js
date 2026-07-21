@@ -76,4 +76,502 @@ const getPlayerPaymentState = () => {
         tokens[key] = readTokenCount(token);
         bonuses[key] = Number(container.querySelector(".bonus-icon > span")?.textContent) || 0;
     });
-    return { tokens.8çnm¢G§²ÚîÆ­yÑä ¤ì(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•ÑQ¥•ÈÉAÕÉ¡…Í…‰±•=É¥•¹Ñ…É‘Ì ¤¤¹…Í1¥ÍÐ ¤¹¥ÍµÁÑä ¤ì(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…µ”¹•ÑQ¥•ÈÍAÕÉ¡…Í…‰±•=É¥•¹Ñ…É‘Ì ¤¤¹…Í1¥ÍÐ ¤¹¥ÍµÁÑä ¤ì(€€€ô((€€€¥ÍÁ±…å9…µ” ‰½Õ‰±”µÙ…±Õ”Ù¥ÉÑÕ…°½±É•µ…¥¹ÌÑ¥•Ñ¼½¹”½±½ÕÈÁ•ÈÁ¥•”ˆ¤(€€€Q•ÍÐ(€€€Ù½¥Ñ•ÍÑ½Õ‰±•Y¥ÉÑÕ…±½±‘A¥••½Õ¹Ñ¥¹œ ¤ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÁ±…å•È€ô¹•ÜQÉ…‘¥¹A½ÍÑÍA±…å•È ‰A±…å•ÈÄˆ°€‰‰±Õ”ˆ¤ì(€€€€€€€Á±…å•È¹½±‘Q½­•¹]½ÉÑ¡QÝ½Q½­•¹Ì¹Õ¹±½­A½Ý•È¡Á±…å•È¤ì(€€€€€€€Á±…å•È¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹½±°€È¤ì((€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÍÁ±¥Ñ½ÍÐ€ô¹•Ü!…Í¡5…Àðø ¤ì(€€€€€€€™½È€¡Q½­•¹QåÁ”ÑåÁ”€èQ½­•¹QåÁ”¹Ù…±Õ•Ì ¤¤ì(€€€€€€€€€€€ÍÁ±¥Ñ½ÍÐ¹ÁÕÐ¡ÑåÁ”°€À¤ì(€€€€€€€ô(€€€€€€€ÍÁ±¥Ñ½ÍÐ¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ä¤ì(€€€€€€€ÍÁ±¥Ñ½ÍÐ¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€Ä¤ì(€€€€€€€I••Ù•±½Áµ•¹Ñ…É…É€ô¹•ÜI••Ù•±½Áµ•¹Ñ…É¡…É‘Q¥•È¹Q%I|Ä°(€€€€€€€€€€€€€€€Q½­•¹QåÁ”¹É••¸°€Ä°€À°½ÍÑQåÁ”¹Q½­•¸°ÍÁ±¥Ñ½ÍÐ°€‰‘½Õ‰±”µ½±µÑ•ÍÐˆ¤ì((€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…É¹¥ÍAÕÉ¡…Í…‰±”¡Á±…å•È°¹•Ü!…Í¡5…Àðø ¤¤¤¹¥ÍQÉÕ” ¤ì(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…É¹•ÑY¥ÉÑÕ…±½±‘A¥••ÍUÍ•¡Á±…å•È°¹•Ü!…Í¡5…Àðø ¤¤¤¹¥ÍÅÕ…±Q¼ È¤ì((€€€€€€€ÍÁ±¥Ñ½ÍÐ¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ð¤ì(€€€€€€€ÍÁ±¥Ñ½ÍÐ¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡…É¹•ÑY¥ÉÑÕ…±½±‘A¥••ÍUÍ•¡Á±…å•È°¹•Ü!…Í¡5…Àðø ¤¤¤¹¥ÍÅÕ…±Q¼ È¤ì(€€€ô(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Äµ…­•Ìå½Ô¡½½Í”…¸•áÑÉ„Ñ½­•¸…™Ñ•È…ÉÁÕÉ¡…Í”ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¹áÑÉ…Q½­•¹™Ñ•É…É‘AÕÉ¡…Í•A½Ý•ÈÄ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹•áÑÉ…Q½­•¹™Ñ•ÉAÕÉ¡…Í”¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÔˆ°Ñ½­•¹ÍQ½‘¤¤ì4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•áÑÉ…Q½­•¹™Ñ•ÉAÕÉ¡…Í•A½Ý•ÉÑ¥½¸¡Q½­•¹QåÁ”¹É••¸°¹Õ±°¤¤ì4(4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹M…Ñ¡•°°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹]¡¥Ñ”°€À¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑQ½­•¹Ì ¤¤¹¥ÍÅÕ…±Q¼¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Èµ…­•Ìå½Ô¡½½Í”…¸•áÑÉ„Ñ½­•¸…™Ñ•ÈÁ¥­¥¹œ€È½˜Ñ¡”Í…µ”½±½ÕÈˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¹áÑÉ…Q½­•¹A½Ý•ÈÈ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹•áÑÉ…Q½­•¹™Ñ•ÉQ…­¥¹M…µ•½±½È¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€È¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ä¤ì4(4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡Ñ½­•¹ÍQ½‘°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹M…Ñ¡•°°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹]¡¥Ñ”°€À¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑQ½­•¹Ì ¤¤¹¥ÍÅÕ…±Q¼¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”å½Ô…¸¡…Ù”Õ¹±½­•A½Ý•È€È‰ÕÐ¹½Ð¹••ÍÍ…É¥±äÕÍ”¥Ðˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•ÉU¹±½­•‘A½Ý•ÈÉ	ÕÑ½•Í9½ÑUÍ” ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹•áÑÉ…Q½­•¹™Ñ•ÉQ…­¥¹M…µ•½±½È¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€È¤ì4(4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡Ñ½­•¹ÍQ½‘°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹M…Ñ¡•°°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹]¡¥Ñ”°€À¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑQ½­•¹Ì ¤¤¹¥ÍÅÕ…±Q¼¡Ñ½­•¹ÍQ½‘¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”å½Ô…¹¹½ÐÑ…­”…¸•áÑÉ„Ñ½­•¸Ý¥Ñ Á½Ý•È€È¥˜Ñ¡•É”…É”¹½Ð•¹½Õ Ñ½­•¹Ì±•™Ðˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•ÉU¹±½­•‘A½Ý•ÈÉ}Q½½•ÝQ½­•¹Í%¹	…¹¬ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹•áÑÉ…Q½­•¹™Ñ•ÉQ…­¥¹M…µ•½±½È¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€È¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ä¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½I•µ½Ù”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€Ü¤ì4(4(€€€€€€€…µ”¹É•µ½Ù•Q½­•¹Ì¡Ñ½­•¹ÍQ½I•µ½Ù”¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡Ñ½­•¹ÍQ½‘°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹M…Ñ¡•°°€À¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹]¡¥Ñ”°€À¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹Q==}59e}M5}=1=UI}Q=-9L¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”å½Ô…¸‰Õä„…ÉÕÍ¥¹œ½±Ñ½­•¹ÌÝ¥Ñ A½Ý•È€Ìˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•ÉUÍ¥¹A½Ý•ÈÍQ½A…å½É…É ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹½±‘Q½­•¹]½ÉÑ¡QÝ½Q½­•¹Ì¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€Ä¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€Ä¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ä¤ì4(4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÈˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”å½Ô…¸‰Õä„…ÉÉ•Õ±…É±äÝ¡¥±”¡…Ù¥¹œÁ½Ý•È€Ì…¹ÕÍ¥¹œ½±Ñ½­•¹Ìˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É!…Ù¥¹A½Ý•ÈÍU¹±½­•‘	ÕÑ9½ÑUÍ¥¹%Ð ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÀÄ€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì4(4(€€€€€€€ÀÄ¹½±‘Q½­•¹]½ÉÑ¡QÝ½Q½­•¹Ì¹Õ¹±½­A½Ý•È¡ÀÄ¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€È¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€Ä¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ä¤ì4(4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÈˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø•µÁÑä€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹½±°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹	±Õ”°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹	É½Ý¸°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹I•°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹]¡¥Ñ”°€À¤ì4(€€€€€€€•µÁÑä¹ÁÕÐ¡Q½­•¹QåÁ”¹M…Ñ¡•°°€À¤ì4(4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡Ñ¥½¹I•ÍÕ±Ð¹QUI9}=5A1Q¤¹¥Í%¸¡É•ÍÕ±Ð¤ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑQ½­•¹Ì ¤¤¹¥ÍÅÕ…±Q¼¡•µÁÑä¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Ð€¡…‘€ÔA@¤Ý½É­ÌÁÉ½Á•É±ä½¸…ÅÕ¥Í¥Ñ¥½¸½˜„…ÉÑÉ¥•É¥¹œ…¥¹¥¹œ„¹½‰±”ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¸ÕAA=¹9½‰±•ÅÕ¥Í¥Ñ¥½¸ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÑÉ…‘¥¹A±…å•È€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤ÀÄì(€€€€€€€‘¥Í…‰±•±±A½Ý•ÉÌ¡ÑÉ…‘¥¹A±…å•È¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘¥Ù•AÉ•ÍÑ¥•A½¥¹ÑÌ(€€€€€€€€€€€€€€€€¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹É••¸°€Ô¤¤ì(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹	±Õ”°€È¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹I•°€È¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹É••¸°€Ì¤ì4(4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½UÍ”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½UÍ”¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÔˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(4(€€€€€€€ÉÉ…å1¥ÍÐñÑ¥½¹I•ÍÕ±ÐøÉ•ÍÕ±Ð€ô…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü¡½½Í•9½‰±•Ñ¥½¸ ˆääˆ¤¤ì4(4(€€€€€€€€¼¼€à‰•…ÕÍ”Ñ¡”Á½Ý•È…‘‘Ì€Ô°Ñ¡”¹½‰±”…‘‘Ì€Ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ à¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Ð€¡…‘€ÔA@¤Ý½É­ÌÁÉ½Á•É±ä½¸…ÅÕ¥Í¥Ñ¥½¸½˜„¹½‰±”Ñ¡•¸„…Éˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¸ÕAA=¹…É‘ÅÕ¥Í¥Ñ¥½¸ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì(€€€€€€€€ ¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤ÀÄ¤¹…‘‘¥Ù•AÉ•ÍÑ¥•A½¥¹ÑÌ(€€€€€€€€€€€€€€€€¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹É••¸°€Ô¤¤ì(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹É••¸°€Ì¤ì4(€€€€€€€9½‰±•…ÉŒÄ€ô€¡9½‰±•…É¤…µ”¹•Ñ…É‘É½µ% ˆääˆ¤ì4(€€€€€€€ÀÄ¹…‘‘9½‰±”¡ŒÄ¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÔˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(4(€€€€€€€€¼¼€à‰•…ÕÍ”Ñ¡”Á½Ý•È…‘‘Ì€Ô°Ñ¡”¹½‰±”…‘‘Ì€Ì4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ à¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Ô€¡…‘€ÄA@Á•ÈÁ½Ý•ÈÕ¹±½­•¤Ý½É­ÌÁÉ½Á•É±äÝ¡•¸„Á½Ý•ÈÝ…ÌÕ¹±½­•¥¸Ñ¡”Í…µ”ÑÕÉ¸ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¹AA=¹A½Ý•ÈÕU¹±½­]¥Ñ¡=¹•=Ñ¡•ÉA½Ý•È ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÑÉ…‘¥¹A±…å•È€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤ÀÄì(€€€€€€€‘¥Í…‰±•±±A½Ý•ÉÌ¡ÑÉ…‘¥¹A±…å•È¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘¥Ù•AÉ•ÍÑ¥•A½¥¹ÑÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹É••¸°€Ô¤¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÍ]¥Ñ¡½…ÑÍ=™ÉµÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹	É½Ý¸°€Ì¤¤ì(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹É••¸°€Ì¤ì4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹	É½Ý¸°€Ì¤ì4(€€€€€€€9½‰±•…ÉŒÄ€ô€¡9½‰±•…É¤…µ”¹•Ñ…É‘É½µ% ˆääˆ¤ì4(€€€€€€€ÀÄ¹…‘‘9½‰±”¡ŒÄ¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÔˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(4(€€€€€€€€¼¼€à‰•…ÕÍ”Á½Ý•È€Ð…‘‘Ì€Ô°Ñ¡”¹½‰±”…‘‘Ì€Ì°Ñ¡•¸Á½Ý•È€Ô…‘‘Ì€È‰•…ÕÍ”Ñ¡•É”…É”€ÈÁ½Ý•ÉÌÕ¹±½­•¥¸Ñ½Ñ…°4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ ÄÀ¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€Ô€¡…‘€ÄA@Á•ÈÁ½Ý•ÈÕ¹±½­•¤Ý½É­ÌÁÉ½Á•É±äÝ¡•¸Õ¹±½­•…±½¹”ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¹AA=¹A½Ý•ÈÕU¹±½­]¥Ñ¡9½=Ñ¡•ÉA½Ý•È ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€Ð¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÑÉ…‘¥¹A±…å•È€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤ÀÄì(€€€€€€€‘¥Í…‰±•±±A½Ý•ÉÌ¡ÑÉ…‘¥¹A±…å•È¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÍ]¥Ñ¡½…ÑÍ=™ÉµÌ(€€€€€€€€€€€€€€€€¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹	É½Ý¸°€Ì¤¤ì(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀàˆ°Ñ½­•¹ÍQ½‘¤¤ì4(4(4(€€€€€€€€¼¼€Ä‰•…ÕÍ”Á½Ý•È€Ô¥ÌÕ¹±½­•½¸¥ÑÌ½Ý¸°Í¼½¹±ä€ÄÁ½Ý•È4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ Ä¤ì4(€€€ô4(4(€€€¥ÍÁ±…å9…µ” ‰¹ÍÕÉ”Á½Ý•È€ÔÝ½É­ÌÝ¡•¸Õ¹±½­•½¸Í½µ”±…Ñ•ÈÑÕÉ¸…™Ñ•ÈÁ½Ý•ÉÌÝ•É”Õ¹±½­•ˆ¤4(€€€Q•ÍÐ4(€€€Ù½¥Ñ•ÍÑA±…å•É…¥¹AA=¹A½Ý•ÈÕU¹±½­]¥Ñ¡A½Ý•ÉU¹±½­•‘…É±¥•ÉQÕÉ¸ ¤Ñ¡É½ÝÌ¥±•9½Ñ½Õ¹‘á•ÁÑ¥½¸ì4(€€€€€€€QÉ…‘¥¹A½ÍÑÍ…µ”…µ”€ô…µ•UÑ¥±Ì¹É•…Ñ•9•ÝQÉ…‘¥¹A½ÍÑ…µ” ÄÔ°€È¤ì4(4(€€€€€€€€¼¼•Ð™¥ÉÍÐÁ±…å•È€¡¹…µ”€ô€‰A±…å•ÈÄˆ¤4(€€€€€€€A±…å•ÈÀÄ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÄˆ¤ì(€€€€€€€A±…å•ÈÀÈ€ô…µ”¹•ÑA±…å•ÉÉ½µ9…µ” ‰A±…å•ÈÈˆ¤ì(€€€€€€€QÉ…‘¥¹A½ÍÑÍA±…å•ÈÑÉ…‘¥¹A±…å•È€ô€¡QÉ…‘¥¹A½ÍÑÍA±…å•È¤ÀÄì(€€€€€€€‘¥Í…‰±•±±A½Ý•ÉÌ¡ÑÉ…‘¥¹A±…å•È¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹•áÑÉ…Q½­•¹™Ñ•ÉQ…­¥¹M…µ•½±½È¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹]¡¥Ñ”°€È¤¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘¥Ù•AÉ•ÍÑ¥•A½¥¹ÑÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹É••¸°€Ô¤¤ì(€€€€€€€ÑÉ…‘¥¹A±…å•È¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÍ]¥Ñ¡½…ÑÍ=™ÉµÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡5…À¹½˜¡Q½­•¹QåÁ”¹	É½Ý¸°€Ì¤¤ì(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½‘€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½‘¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ì¤ì4(€€€€€€€ÀÄ¹…‘‘Q½­•¹Ì¡Ñ½­•¹ÍQ½‘¤ì4(4(€€€€€€€!…Í¡5…ÀñQ½­•¹QåÁ”°%¹Ñ••ÈøÑ½­•¹ÍQ½UÍ”€ô¹•Ü!…Í¡5…Àðø ¤ì4(€€€€€€€Ñ½­•¹ÍQ½UÍ”¹ÁÕÐ¡Q½­•¹QåÁ”¹É••¸°€Ä¤ì4(4(€€€€€€€ÀÄ¹…‘‘	½¹ÕÌ¡Q½­•¹QåÁ”¹É••¸°€Ì¤ì4(€€€€€€€9½‰±•…ÉŒÄ€ô€¡9½‰±•…É¤…µ”¹•Ñ…É‘É½µ% ˆääˆ¤ì4(€€€€€€€ÀÄ¹…‘‘9½‰±”¡ŒÄ¤ì4(4(€€€€€€€€¼¼U¹±½­ÌÁ½Ý•È€Ð°…‘‘¥¹œ€ÕA@Ñ¼Á±…å•È4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀÔˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(4(€€€€€€€€¼¼%¹É•µ•¹ÐÑÕÉ¸‰…¬Ñ¼Á±…å•È€Ä4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡Ñ½­•¹ÍQ½UÍ”°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼U¹±½­ÌÁ½Ý•È€È4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀäˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÈ¹•Ñ9…µ” ¤°¹•ÜQ…­•Q½­•¹Ñ¥½¸¡Ñ½­•¹ÍQ½UÍ”°¹•Ü!…Í¡5…Àðø ¤¤¤ì4(4(€€€€€€€€¼¼U¹±½­ÌÁ½Ý•È€Ô4(€€€€€€€…µ”¹Ñ…­•Ñ¥½¸¡ÀÄ¹•Ñ9…µ” ¤°¹•Ü	Õå…É‘Ñ¥½¸ ˆÀàˆ°Ñ½­•¹ÍQ½UÍ”¤¤ì4(4(€€€€€€€€¼¼€ÄÀ‰•…ÕÍ”€Ì™É½´¹½‰±”°€Ô™É½´Á½Ý•È€ÐÕ¹±½­•°€Ì™É½´Á½Ý•È€ÔÕ¹±½­•…¹½Õ¹Ñ¥¹œ€ÌÁ½Ý•ÉÌ4(€€€€€€€…ÍÍ•ÉÑQ¡…Ð¡ÀÄ¹•ÑAÉ•ÍÑ¥•A½¥¹ÑÌ ¤¤¹¥ÍÅÕ…±Q¼ ÄÄ¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥ŒÙ½¥‘¥Í…‰±•±±A½Ý•ÉÌ¡QÉ…‘¥¹A½ÍÑÍA±…å•ÈÁ±…å•È¤ì(€€€€€€€5…ÀñQ½­•¹QåÁ”°%¹Ñ••Èø¥µÁ½ÍÍ¥‰±”€ô5…À¹½˜¡Q½­•¹QåÁ”¹I•°€ää¤ì(€€€€€€€Á±…å•È¹•áÑÉ…Q½­•¹™Ñ•ÉAÕÉ¡…Í”¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡¥µÁ½ÍÍ¥‰±”¤ì(€€€€€€€Á±…å•È¹•áÑÉ…Q½­•¹™Ñ•ÉQ…­¥¹M…µ•½±½È¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡¥µÁ½ÍÍ¥‰±”¤ì(€€€€€€€Á±…å•È¹½±‘Q½­•¹]½ÉÑ¡QÝ½Q½­•¹Ì¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡¥µÁ½ÍÍ¥‰±”¤ì(€€€€€€€Á±…å•È¹…‘‘¥Ù•AÉ•ÍÑ¥•A½¥¹ÑÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡¥µÁ½ÍÍ¥‰±”¤ì(€€€€€€€Á±…å•È¹…‘‘AÉ•ÍÑ¥•A½¥¹ÑÍ]¥Ñ¡½…ÑÍ=™ÉµÌ¹Í•ÑI•ÅÕ¥É•µ•¹ÑÌ¡¥µÁ½ÍÍ¥‰±”¤ì(€€€ô()ô
+    return { tokens, bonuses };
+};
+
+const calculateMinimumPayment = (cardNode) => {
+    const rawCost = cardNode.getAttribute("cost");
+    if(!rawCost) return { purchasable: false, payment: {} };
+
+    const cost = JSON.parse(rawCost);
+    const { tokens, bonuses } = getPlayerPaymentState();
+    const payment = {};
+
+    // Some Orient cards are paid by permanently discarding bonuses instead
+    // of spending tokens. They are purchasable only when the bonus cost is met.
+    if(cardNode.getAttribute("cost-type") === "Bonus") {
+        const purchasable = paymentColors.every(color =>
+            Number(bonuses[color] || 0) >= Number(cost[color] || 0));
+        paymentColors.forEach(color => payment[color] = 0);
+        payment.Gold = 0;
+        return { purchasable, payment };
+    }
+
+    const goldValue = Number(document.querySelector("#player-inventory")
+        ?.getAttribute("data-gold-token-value")) === 2 ? 2 : 1;
+    let virtualGoldAvailable = Number(bonuses.Gold || 0);
+    let realGoldAvailable = Number(tokens.Gold || 0);
+    let realGoldUsed = 0;
+    let purchasable = true;
+
+    paymentColors.forEach(color => {
+        const remainingCost = Math.max(0, Number(cost[color] || 0) - Number(bonuses[color] || 0));
+        const coloredPayment = Math.min(remainingCost, Number(tokens[color] || 0));
+        payment[color] = coloredPayment;
+        let unpaid = remainingCost - coloredPayment;
+
+        const virtualForColor = Math.min(virtualGoldAvailable, Math.ceil(unpaid / goldValue));
+        virtualGoldAvailable -= virtualForColor;
+        unpaid = Math.max(0, unpaid - virtualForColor * goldValue);
+
+        const realForColor = Math.min(realGoldAvailable, Math.ceil(unpaid / goldValue));
+        realGoldAvailable -= realForColor;
+        realGoldUsed += realForColor;
+        unpaid = Math.max(0, unpaid - realForColor * goldValue);
+        if(unpaid > 0) purchasable = false;
+    });
+    // Each physical or virtual Gold piece covers up to goldValue tokens of
+    // one colour. Virtual Gold is consumed first to minimise real-token use.
+    payment.Gold = realGoldUsed;
+
+    return {
+        purchasable,
+        payment
+    };
+};
+
+
+// -----------------------------------------------------------------------------------------
+// Setup take token & put back token
+const getTokensBtn = document.getElementById("get-tokens-btn");
+getTokensBtn.onclick = () => {
+    takeTokens();
+    showNextModal("#take-token-modal");
+};
+document.querySelectorAll(".take-token-back-btn").forEach(elm => elm.onclick = backButton);
+document.querySelectorAll(".put-back-token-back-btn").forEach(elm => elm.onclick = backButton);
+
+const takeTokens = () => {
+    // clear previous numbers
+    document.querySelectorAll("#take-token-modal board-token").forEach(elm => {
+        elm.setCount(0);
+    });
+
+    // set min and max for counters, TODO: set max and min values to what tokens the player has
+    document.querySelectorAll("#take-token-modal board-token-counter").forEach(elm => {
+        elm.setMax(10);
+    });
+
+    setBoardTokens("#take-token-modal");
+
+    document.querySelector("#take-token-modal #take-token-confirm-btn").onclick = () => {
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const selectedTotal = countTokens("#take-token-modal board-token-counter board-token .board-token");
+        if(currentTotal + selectedTotal <= 10) {
+            submitTakeTokens();
+        } else {
+            putBackTokens(currentTotal + selectedTotal - 10);
+            showNextModal("#put-back-token-modal");
+        }
+    };
+};
+
+const putBackTokens = (requiredCount) => {
+    const confirmBtn = document.querySelector("#put-back-token-modal .put-back-token-confirm-btn");
+
+    // clear previous numbers
+    document.querySelectorAll("#put-back-token-modal board-token").forEach(elm => {
+        elm.setCount(0);
+    });
+
+    // A player may return tokens already held as well as tokens selected in
+    // this action. Restrict each counter to that actual available amount.
+    document.querySelectorAll("#put-back-token-modal board-token-counter").forEach(elm => {
+        const color = elm.getAttribute("color");
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setMax(held + taken);
+    });
+
+    document.querySelectorAll("#put-back-token-modal .player-token-count-container board-token").forEach(elm => {
+        const color = elm.getAttribute("color");
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setCount(held + taken);
+    });
+
+    confirmBtn.onclick = () => {
+        const selectedCount = countTokens("#put-back-token-modal board-token-counter board-token .board-token");
+        if(selectedCount !== requiredCount) {
+            showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+            return;
+        }
+        confirmBtn.disabled = true;
+        submitTakeTokens(getTokensList("#put-back-token-modal board-token-counter board-token .board-token"))
+            .finally(() => confirmBtn.disabled = false);
+    };
+};
+
+
+// -----------------------------------------------------------------------------------------
+// Set up card purchasing
+const purchaseBtn = document.getElementById("purchase-btn");
+purchaseBtn.onclick = () => {
+    // load the purchase items
+    showPurchasableDevCards();
+    showNextModal("#buy-card-modal");
+};
+document.querySelectorAll(".buy-card-back-btn").forEach(elm => elm.onclick = backButton);
+
+const showPurchasableDevCards = () => {
+    // show reserved cards (from player inv, maybe should pass in data from server instead?)
+    const reservedCardNodes = [];
+    const reservedCards = document.querySelectorAll("#player-inventory .player-inventory-reservedcards .player-inventory-card-reserved");
+    reservedCards.forEach((elm) => {
+        const cid = elm.getAttribute("card-id");
+        const node = document.querySelector("#board-card-dev-template").content.cloneNode(true);
+        const div = node.querySelector("div");
+        const imgUrl = `/images/development-cards/${cid}.jpg`;
+
+        div.setAttribute("card-id", cid);
+        if(elm.hasAttribute("cost")) div.setAttribute("cost", elm.getAttribute("cost"));
+        if(elm.hasAttribute("cost-type")) div.setAttribute("cost-type", elm.getAttribute("cost-type"));
+        div.querySelector("img").setAttribute("src", imgUrl);
+
+        // add to inv
+        reservedCardNodes.push(node);
+    });
+    document.querySelector("#buy-card-modal .reserved-cards").replaceChildren(...reservedCardNodes);
+
+    // literally just duplicate them from the board
+
+    const cardRows = document.querySelectorAll("#board .board-cards .board-cards-row");
+
+    // clear if already has
+    const modalCardRows = document.querySelector("#buy-card-board .modal-board-cards");
+    modalCardRows.innerHTML = "";
+
+    cardRows.forEach((elm) => {
+        const cNode = elm.cloneNode(true);
+        modalCardRows.appendChild(cNode);
+    });
+
+    const cardsSelectionSelector = "#buy-card-modal .board-card-dev";
+
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        const { purchasable } = calculateMinimumPayment(card);
+        card.classList.toggle("purchasable", purchasable);
+        card.classList.toggle("unaffordable", !purchasable);
+    });
+
+    setupSelection(cardsSelectionSelector);
+
+    document.querySelector("#buy-card-modal #buy-card-confirm-btn").onclick = () => {
+        const selectedCard = document.querySelector(`${cardsSelectionSelector}.selected`);
+        if(!selectedCard) {
+            // no card has been selected, error
+            showError("You have not selected a card to purchase!");
+            return;
+        }
+        if(!calculateMinimumPayment(selectedCard).purchasable) {
+            showError("You do not have enough tokens to purchase this card.");
+            return;
+        }
+
+        showPayment(selectedCard);
+        showNextModal("#dev-card-payment-modal");
+    };
+};
+
+const showPayment = (cardNode) => {
+
+    const confirmBtn = document.querySelector("#dev-card-payment-modal .buy-card-confirm-btn");
+
+    // to be used to restrict selection of tokens in the FUTURE
+    // const cost = JSON.parse(cardNode.getAttribute("cost"));
+    const cardId = cardNode.getAttribute("card-id");
+
+    // show card in purchase window
+    const imgSrc = `/images/development-cards/${cardId}.jpg`;
+    document.querySelector("#dev-card-payment-modal .purchase-show-card img").setAttribute("src", imgSrc);
+
+    const modal = document.querySelector("#dev-card-payment-modal");
+    const { tokens, bonuses } = getPlayerPaymentState();
+    const rawCost = JSON.parse(cardNode.getAttribute("cost") || "{}");
+    const isBonusCost = cardNode.getAttribute("cost-type") === "Bonus";
+    const tokenPayment = modal.querySelector(".token-count-outer-container");
+    const burnPayment = modal.querySelector(".burn-card-payment");
+    tokenPayment.hidden = isBonusCost;
+    burnPayment.hidden = !isBonusCost;
+    const burnOptions = modal.querySelector(".burn-card-options");
+    burnOptions.innerHTML = "";
+    if(isBonusCost) {
+        document.querySelectorAll("#player-inventory .player-inventory-card[card-id]").forEach(card => {
+            const color = card.getAttribute("token-type");
+            const bonus = Number(card.getAttribute("bonus") || 0);
+            if(!color || color === "Gold" || color === "Satchel" || Number(rawCost[color] || 0) === 0) return;
+            const image = document.createElement("img");
+            image.className = "burn-card-option";
+            image.src = `/images/development-cards/${card.getAttribute("card-id")}.jpg`;
+            image.setAttribute("card-id", card.getAttribute("card-id"));
+            image.setAttribute("token-type", color);
+            image.setAttribute("bonus", bonus);
+            image.onclick = () => {
+                if(!image.classList.contains("selected")
+                        && burnOptions.querySelectorAll(".selected").length >= 2) {
+                    showError("æœ€å¤šé€‰æ‹©ä¸¤å¼ è¦ç§»é™¤çš„å‘å±•å¡ã€‚");
+                    return;
+                }
+                image.classList.toggle("selected");
+                refreshPaymentStatus();
+            };
+            burnOptions.appendChild(image);
+        });
+    }
+    const defaultPayment = {};
+    let realGoldAvailable = Number(tokens.Gold || 0);
+    let virtualGoldAvailable = Number(bonuses.Gold || 0);
+    let defaultVirtualGold = 0;
+    const goldValue = Number(document.querySelector("#player-inventory")
+        ?.getAttribute("data-gold-token-value")) === 2 ? 2 : 1;
+
+    paymentColors.forEach(color => {
+        const remaining = Math.max(0, Number(rawCost[color] || 0) - Number(bonuses[color] || 0));
+        defaultPayment[color] = Math.min(remaining, Number(tokens[color] || 0));
+        let unpaid = remaining - defaultPayment[color];
+        if(unpaid > 0 && realGoldAvailable > 0) {
+            const used = Math.min(realGoldAvailable, Math.ceil(unpaid / goldValue));
+            realGoldAvailable -= used;
+            defaultPayment.Gold = Number(defaultPayment.Gold || 0) + used;
+            unpaid = Math.max(0, unpaid - used * goldValue);
+        }
+        if(unpaid > 0 && virtualGoldAvailable > 0) {
+            const used = Math.min(virtualGoldAvailable, Math.ceil(unpaid / goldValue));
+            virtualGoldAvailable -= used;
+            defaultVirtualGold += used;
+        }
+    });
+
+    modal.querySelectorAll('board-token-counter[data-payment-kind="real"]').forEach(elm => {
+        const color = elm.getAttribute("color");
+        const key = color.charAt(0).toUpperCase() + color.slice(1);
+        const amount = Number(defaultPayment[key] || 0);
+        elm.querySelector("board-token").setCount(amount);
+        elm.setMin(0);
+        elm.setMax(Number(tokens[key] || 0));
+    });
+
+    const virtualCounter = modal.querySelector('board-token-counter[data-payment-kind="virtual"]');
+    const virtualGoldRow = modal.querySelector(".virtual-gold-payment");
+    const supportsVirtualGold = Number(bonuses.Gold || 0) > 0;
+    virtualGoldRow.hidden = !supportsVirtualGold;
+    virtualCounter.querySelector("board-token").setCount(defaultVirtualGold);
+    virtualCounter.setMin(0);
+    virtualCounter.setMax(supportsVirtualGold ? Number(bonuses.Gold || 0) : 0);
+
+    const exactPaymentIsValid = () => {
+        if(isBonusCost) {
+            const selectedBonuses = {};
+            burnOptions.querySelectorAll(".burn-card-option.selected").forEach(card => {
+                const color = card.getAttribute("token-type");
+                selectedBonuses[color] = Number(selectedBonuses[color] || 0)
+                    + Number(card.getAttribute("bonus") || 0);
+            });
+            return paymentColors.every(color =>
+                Number(selectedBonuses[color] || 0) === Number(rawCost[color] || 0));
+        }
+        const selected = getTokensList(
+            '#dev-card-payment-modal board-token-counter[data-payment-kind="real"] board-token .board-token');
+        const remaining = {};
+        for(const color of paymentColors) {
+            const due = Math.max(0, Number(rawCost[color] || 0) - Number(bonuses[color] || 0));
+            if(Number(selected[color] || 0) > due) return false;
+            remaining[color] = due - Number(selected[color] || 0);
+        }
+        const applyWild = (pieces) => {
+            for(let index = 0; index < pieces; index++) {
+                const color = paymentColors.find(value => remaining[value] > 0);
+                if(!color) return false;
+                remaining[color] = Math.max(0, remaining[color] - goldValue);
+            }
+            return true;
+        };
+        return applyWild(Number(selected.Gold || 0))
+            && applyWild(Number(virtualCounter.querySelector("board-token").count || 0))
+            && paymentColors.every(color => remaining[color] === 0);
+    };
+
+    const refreshPaymentStatus = () => {
+        const virtualUsed = Number(virtualCounter.querySelector("board-token").count || 0);
+        const valid = exactPaymentIsValid();
+        const status = modal.querySelector(".payment-status");
+        status.classList.toggle("invalid", !valid);
+        status.textContent = isBonusCost
+            ? (valid ? "é€‰æ‹©æœ‰æ•ˆï¼›ç¡®è®¤åŽè¿™äº›å‘å±•å¡åŠå…¶åˆ†æ•°ã€æ°¸ä¹…å¥–åŠ±å°†è¢«ç§»é™¤ã€‚"
+                : "è¯·é€‰æ‹©åˆè®¡åˆšå¥½æ»¡è¶³æ°¸ä¹…å¥–åŠ±è´¹ç”¨çš„å‘å±•å¡ï¼ˆæœ€å¤šä¸¤å¼ ï¼‰ã€‚")
+            : valid
+            ? (virtualUsed > 0
+                ? `æ”¯ä»˜æœ‰æ•ˆï¼›å°†å¼ƒç½® ${Math.ceil(virtualUsed / 2)} å¼ åŒè™šæ‹Ÿé»„é‡‘å¡ï¼Œæœªç”¨éƒ¨åˆ†ä½œåºŸã€‚`
+                : "æ”¯ä»˜æœ‰æ•ˆï¼›ä¸ä¼šæ¶ˆè€—è™šæ‹Ÿé»„é‡‘å¡ã€‚")
+            : "è¯·è°ƒæ•´å®žä½“å®çŸ³ä¸Žè™šæ‹Ÿé»„é‡‘ï¼Œç›´åˆ°åˆšå¥½ä»˜æ¸…è´¹ç”¨ã€‚";
+        confirmBtn.disabled = !valid;
+    };
+    modal.querySelectorAll("board-token-counter").forEach(counter => {
+        counter.onchange = refreshPaymentStatus;
+    });
+    refreshPaymentStatus();
+
+    confirmBtn.onclick = () => {
+        if(!exactPaymentIsValid()) {
+            showError("æ”¯ä»˜ç»„åˆä¸èƒ½åˆšå¥½ä»˜æ¸…è¿™å¼ å¡ç‰Œã€‚è¯·é‡æ–°é€‰æ‹©å®žä½“å®çŸ³æˆ–è™šæ‹Ÿé»„é‡‘ã€‚");
+            return;
+        }
+        confirmBtn.disabled = true;
+
+        const dataCallback = () => {
+            return {
+                "cardId": cardId,
+                "tokens": getTokensList(
+                    '#dev-card-payment-modal board-token-counter[data-payment-kind="real"] board-token .board-token'),
+                "virtualGoldPieces": Number(virtualCounter.querySelector("board-token").count || 0),
+                "burnCardIds": [...burnOptions.querySelectorAll(".burn-card-option.selected")]
+                    .map(card => card.getAttribute("card-id"))
+            };
+        };
+
+        performAction("BUY_CARD", dataCallback)
+            .then((resp) => {
+                if(resp.error) {
+                    showError(resp.message);
+                }
+            }).catch((err) => {
+                showError(err.toString());
+            }).finally(() =>  confirmBtn.disabled = false);
+    };
+
+};
+
+
+// -----------------------------------------------------------------------------------------
+// Set up reserving cards
+const reserveBtn = document.getElementById("reserve-btn");
+reserveBtn.onclick = () => {
+    // load the purchase items
+    showReservableDevCards();
+    showNextModal("#reserve-card-modal");
+};
+document.querySelectorAll(".reserve-card-back-btn").forEach(elm => elm.onclick = backButton);
+
+const showReservableDevCards = () => {
+
+    const confirmBtn = document.querySelector("#reserve-card-modal .reserve-card-confirm-btn");
+
+    // literally just duplicate them from the board
+    const cardRows = document.querySelectorAll("#board .board-cards .board-cards-row");
+
+    // clear if already has
+    const modalCardRows = document.querySelector("#reserve-card-board .modal-board-cards");
+    modalCardRows.innerHTML = "";
+
+    cardRows.forEach((elm) => {
+        const cNode = elm.cloneNode(true);
+        modalCardRows.appendChild(cNode);
+    });
+
+    const deckByRow = {
+        "board-cards-level1": "DECK_TIER_1",
+        "board-cards-level2": "DECK_TIER_2",
+        "board-cards-level3": "DECK_TIER_3"
+    };
+    Object.entries(deckByRow).forEach(([rowClass, deckId]) => {
+        const deck = modalCardRows.querySelector(`.${rowClass} .board-cards-dev-deck`);
+        if(deck) {
+            deck.setAttribute("data-deck-id", deckId);
+            deck.setAttribute("title", `Reserve blindly from ${deckId.replace("DECK_TIER_", "level ")}`);
+        }
+    });
+
+    const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev";
+
+    setupSelection(cardsSelectionSelector);
+
+    let selectedDeckId = null;
+    const deckButtons = document.querySelectorAll("#reserve-card-modal [data-deck-id]");
+    deckButtons.forEach(button => {
+        button.classList.remove("selected");
+        button.onclick = () => {
+            document.querySelectorAll(cardsSelectionSelector).forEach(card => card.classList.remove("selected"));
+            deckButtons.forEach(other => other.classList.remove("selected"));
+            button.classList.add("selected");
+            selectedDeckId = button.getAttribute("data-deck-id");
+        };
+    });
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        card.addEventListener("click", () => {
+            selectedDeckId = null;
+            deckButtons.forEach(button => button.classList.remove("selected"));
+        });
+    });
+
+    const submitReservation = (cardId, putBackTokens = {}) => {
+        confirmBtn.disabled = true;
+        return performAction("RESERVE_CARD", () => ({ cardId, putBackTokens }))
+            .then((resp) => {
+                if(resp.error) showError(resp.message);
+            }).catch((err) => showError(err.toString()))
+            .finally(() => confirmBtn.disabled = false);
+    };
+
+    const requestReservationReturn = (cardId, requiredCount) => {
+        const modalSelector = "#put-back-token-modal";
+        const modal = document.querySelector(modalSelector);
+
+        modal.querySelectorAll("board-token-counter").forEach(counter => {
+            const color = counter.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            const goldReceived = color === "gold" ? 1 : 0;
+            counter.querySelector("board-token").setCount(0);
+            counter.setMin(0);
+            counter.setMax(held + goldReceived);
+        });
+
+        modal.querySelectorAll(".player-token-count-container board-token").forEach(token => {
+            const color = token.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            token.setCount(held + (color === "gold" ? 1 : 0));
+        });
+
+        const returnConfirmBtn = modal.querySelector(".put-back-token-confirm-btn");
+        returnConfirmBtn.onclick = () => {
+            const selectedCount = countTokens(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            if(selectedCount !== requiredCount) {
+                showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+                return;
+            }
+            returnConfirmBtn.disabled = true;
+            const returnedTokens = getTokensList(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            submitReservation(cardId, returnedTokens)
+                .finally(() => returnConfirmBtn.disabled = false);
+        };
+
+        showNextModal(modalSelector);
+    };
+
+    confirmBtn.onclick = () => {
+        const selectedCard = document.querySelector(`${cardsSelectionSelector}.selected`);
+        if(!selectedCard && !selectedDeckId) {
+            // no card has been selected, error
+            showError("You have not selected a card to reserve!");
+            return;
+        }
+
+        const cardId = selectedDeckId ?? selectedCard.getAttribute("card-id");
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const bankGold = readTokenCount(document.querySelector("#board .board-tokens .gold-token"));
+        const requiredReturnCount = Math.max(0, currentTotal + (bankGold > 0 ? 1 : 0) - 10);
+
+        if(requiredReturnCount > 0) {
+            requestReservationReturn(cardId, requiredReturnCount);
+        } else {
+            submitReservation(cardId);
+        }
+    };
+};
