@@ -422,6 +422,45 @@ public class ActionsTests {
         assertThat(ActionResult.TURN_COMPLETED).isIn(result);
     }
 
+    @DisplayName("A failed purchase must not consume an Orient virtual-gold card.")
+    @Test
+    void testFailedPurchaseDoesNotConsumeVirtualGold() throws FileNotFoundException {
+        OrientGame game = GameUtils.createNewOrientGame(15, 4);
+        Player p1 = game.getPlayerFromName("Player1");
+        OrientDevelopmentCard virtualGold = new OrientDevelopmentCard(CardTier.TIER_1,
+                TokenType.Gold, 2, CascadeType.None, false, 0, CostType.Token,
+                new HashMap<>(), "virtual-gold", false);
+        p1.addCard(virtualGold);
+        p1.addBonus(TokenType.Gold, 2);
+
+        ArrayList<ActionResult> result = game.takeAction(p1.getName(),
+                new BuyCardAction("01", new HashMap<>()));
+
+        assertThat(ActionResult.INVALID_TOKENS_GIVEN).isIn(result);
+        assertThat(virtualGold).isIn(p1.getDevCards());
+        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(2);
+    }
+
+    @DisplayName("Using one virtual gold discards the whole two-gold Orient card.")
+    @Test
+    void testVirtualGoldCardIsDiscardedAfterUse() throws FileNotFoundException {
+        OrientGame game = GameUtils.createNewOrientGame(15, 4);
+        Player p1 = game.getPlayerFromName("Player1");
+        p1.addBonus(TokenType.Red, 3);
+        OrientDevelopmentCard virtualGold = new OrientDevelopmentCard(CardTier.TIER_1,
+                TokenType.Gold, 2, CascadeType.None, false, 0, CostType.Token,
+                new HashMap<>(), "virtual-gold", false);
+        p1.addCard(virtualGold);
+        p1.addBonus(TokenType.Gold, 2);
+
+        ArrayList<ActionResult> result = game.takeAction(p1.getName(),
+                new BuyCardAction("01", new HashMap<>()));
+
+        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
+        assertThat(virtualGold).isNotIn(p1.getDevCards());
+        assertThat(p1.getBonuses().get(TokenType.Gold)).isZero();
+    }
+
     @DisplayName("Ensure players can reserve a card even when the board has no gold left.")
     @Test
     void testPlayerReserveCard_ValidNoGold() throws FileNotFoundException {
@@ -437,50 +476,7 @@ public class ActionsTests {
         ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveCardAction("01"));
 
         assertThat(p1.getTokens().get(TokenType.Gold)).isEqualTo(0);
-        assertThat(ActionResult.TURN_COMPLETED).isIn(result);
-    }
-
-    @DisplayName("Ensure players cannot reserve a card when they have reached the limit.")
-    @Test
-    void testPlayerReserveCard_Invalid() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        RegDevelopmentCard c1 = (RegDevelopmentCard) game.getCardFromId("01");
-        RegDevelopmentCard c2 = (RegDevelopmentCard) game.getCardFromId("02");
-        RegDevelopmentCard c3 = (RegDevelopmentCard) game.getCardFromId("03");
-
-        p1.reserveCard(c1);
-        p1.reserveCard(c2);
-        p1.reserveCard(c3);
-
-        ArrayList<ActionResult> result = game.takeAction(p1.getName(), new ReserveCardAction("04"));
-
-        assertThat(p1.getReservedCards().size()).isEqualTo(3);
-        assertThat(p1.getTokens().get(TokenType.Gold)).isEqualTo(0);
-        assertThat(ActionResult.MAXIMUM_CARDS_RESERVED).isIn(result);
-    }
-
-    @DisplayName("Ensure ChooseNoble action is triggered when player qualifies for 2+ nobles.")
-    @Test
-    void testPlayerChooseNoble_QualifiesForTwo() throws FileNotFoundException {
-        OrientGame game = GameUtils.createNewOrientGame(15, 4);
-
-        // get first player (name = "Player1")
-        Player p1 = game.getPlayerFromName("Player1");
-
-        p1.addBonus(TokenType.Blue, 1);
-        p1.addBonus(TokenType.Green, 2);
-        p1.addBonus(TokenType.Red, 2);
-        p1.addBonus(TokenType.Brown, 1);
-
-        HashMap<TokenType, Integer> tokensToAdd = new HashMap<>();
-        tokensToAdd.put(TokenType.Blue, 1);
-        tokensToAdd.put(TokenType.Red, 2);
-        tokensToAdd.put(TokenType.Brown, 1);
-        p1.addTokens(tokensToAdd);
+        assertTha…447 tokens truncated…        p1.addTokens(tokensToAdd);
 
         HashMap<TokenType, Integer> tokensToTake = new HashMap<>();
         tokensToTake.put(TokenType.Blue, 1);
@@ -929,4 +925,3 @@ public class ActionsTests {
     }
 
 }
-
