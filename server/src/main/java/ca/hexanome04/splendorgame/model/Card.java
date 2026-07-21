@@ -168,25 +168,6 @@ public abstract class Card {
                         purchasable = false;
                     }
                 }
-
-                HashMap<TokenType, Integer> toRemove = new HashMap<>();
-
-                // Getting the amount of double gold token cards to remove, rounding up if you wasted one by using half
-                if (doubleGoldTokensUsed % 2 == 1) {
-                    doubleGoldTokensUsed++;
-                }
-                toRemove.put(TokenType.Gold, doubleGoldTokensUsed);
-                player.removeBonuses(toRemove);
-                doubleGoldTokensUsed = doubleGoldTokensUsed / 2;
-
-                for (int i = 0; i < doubleGoldTokensUsed; i++) {
-                    for (DevelopmentCard c : player.getDevCards()) {
-                        if (c.getTokenType() == TokenType.Gold) {
-                            player.removeCard(c);
-                            break;
-                        }
-                    }
-                }
             }
 
             // Final check for any remaining tokens in cost, if there are, then it's not purchasable
@@ -213,6 +194,42 @@ public abstract class Card {
         }
 
         return purchasable;
+    }
+
+    /**
+     * Calculate how many virtual Gold pieces are required after applying the
+     * selected real tokens and permanent colored bonuses. This method never
+     * mutates the player and is intended to be called only for a successful
+     * token-cost purchase.
+     *
+     * @param player player buying this card
+     * @param tokensToUse real tokens selected for payment
+     * @return number of virtual Gold pieces used
+     */
+    public int getVirtualGoldPiecesUsed(Player player, HashMap<TokenType, Integer> tokensToUse) {
+        if (costType != CostType.Token) {
+            return 0;
+        }
+
+        HashMap<TokenType, Integer> remaining = new HashMap<>(tokenCost);
+        Map<TokenType, Integer> bonuses = player.getBonuses();
+        for (TokenType type : remaining.keySet()) {
+            if (type != TokenType.Gold && type != TokenType.Satchel) {
+                int value = remaining.get(type) - bonuses.getOrDefault(type, 0)
+                        - tokensToUse.getOrDefault(type, 0);
+                remaining.put(type, Math.max(0, value));
+            }
+        }
+
+        int goldValue = player instanceof TradingPostsPlayer tradingPostsPlayer
+                && tradingPostsPlayer.goldTokenWorthTwoTokens.isUnlocked() ? 2 : 1;
+        int realGoldValue = tokensToUse.getOrDefault(TokenType.Gold, 0) * goldValue;
+        int unpaid = remaining.entrySet().stream()
+                .filter(entry -> entry.getKey() != TokenType.Gold && entry.getKey() != TokenType.Satchel)
+                .mapToInt(Map.Entry::getValue)
+                .sum();
+        unpaid = Math.max(0, unpaid - realGoldValue);
+        return (unpaid + goldValue - 1) / goldValue;
     }
 
 }
