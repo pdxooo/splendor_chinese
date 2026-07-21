@@ -1,4 +1,3 @@
-
 import { test, expect, Locator, type Page } from "@playwright/test";
 import { Actions, DevCard, OrientDevCard, TokenType } from "./util/game.js";
 import { mockGetUsername } from "./util/ls-mock.js";

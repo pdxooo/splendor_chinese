@@ -1,4 +1,3 @@
-
 import { showNextModal, setupSelection, backButton } from "./modals.js";
 import { performAction } from "../actions";
 import { showError } from "../notify.js";

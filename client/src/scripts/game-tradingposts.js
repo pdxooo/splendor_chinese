@@ -1,4 +1,3 @@
-
 import { SETTINGS } from "./settings.js";
 import { addUpdater } from "./game.js";
 import { registerPlayerUpdater, writeBasicUpdate } from "./history";

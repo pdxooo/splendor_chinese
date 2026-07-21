@@ -1,4 +1,3 @@
-
 package ca.hexanome04.splendorgame.model.gameversions.orient;
 
 import static ca.hexanome04.splendorgame.model.TokenType.*;

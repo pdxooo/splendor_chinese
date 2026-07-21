@@ -1,4 +1,3 @@
-
 import { SETTINGS } from "./settings.js";
 import { startTurn, verifyNoModals, performFollowUpAction, showNextModal } from "./modals/modals.js";
 import { animateMoveToken } from "./animation/tokens";

@@ -1,4 +1,3 @@
-
 package ca.hexanome04.splendorgame.model;
 
 import ca.hexanome04.splendorgame.model.action.actions.*;
