@@ -105,10 +105,13 @@ const calculateMinimumPayment = (cardNode) => {
         payment[color] = coloredPayment;
         goldNeeded += remainingCost - coloredPayment;
     });
-    payment.Gold = goldNeeded;
+    const realGoldAvailable = Number(tokens.Gold || 0);
+    const realGoldPayment = Math.min(goldNeeded, realGoldAvailable);
+    const virtualGoldNeeded = goldNeeded - realGoldPayment;
+    payment.Gold = realGoldPayment;
 
     return {
-        purchasable: goldNeeded <= Number(tokens.Gold || 0),
+        purchasable: virtualGoldNeeded <= Number(bonuses.Gold || 0),
         payment
     };
 };
