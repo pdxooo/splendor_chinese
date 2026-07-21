@@ -178,7 +178,8 @@ public class CardTest {
 
         // Make sure tokens added to player are successfully retrieved by getter
         assertThat(dummyReg.isPurchasable(p1, tokens)).isEqualTo(true);
-        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(0);
+        // Affordability checks are pure; spending happens only after an action succeeds.
+        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(2);
     }
 
 
@@ -202,7 +203,7 @@ public class CardTest {
 
         // Make sure tokens added to player are successfully retrieved by getter
         assertThat(dummyReg.isPurchasable(p1, tokens)).isEqualTo(true);
-        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(0);
+        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(2);
     }
 
     /**
@@ -225,7 +226,7 @@ public class CardTest {
 
         // Make sure tokens added to player are successfully retrieved by getter
         assertThat(dummyReg.isPurchasable(p1, tokens)).isEqualTo(true);
-        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(0);
+        assertThat(p1.getBonuses().get(TokenType.Gold)).isEqualTo(2);
     }
 
 }
