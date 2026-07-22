@@ -29,17 +29,26 @@ export const showStrongholdAction = (data) => {
     let mode = "place";
     let sourceCardId = null;
     let targetCardId = null;
+    const confirmButton = modal.querySelector(".stronghold-confirm-btn");
 
     const refresh = () => {
         container.replaceChildren();
         const available = Number(player?.availableStrongholds ?? 0);
-        status.textContent = mode === "remove"
-            ? "请选择一张带有对手要塞的卡牌；只拆除其中一个。"
-            : available > 0
-                ? `你还有 ${available} 个未放置要塞，请选择目标卡牌。`
+        status.classList.toggle("ready", Boolean(targetCardId));
+        status.textContent = targetCardId
+            ? mode === "remove"
+                ? "✓ 已选择目标，点击“确认执行”拆除对手的一个要塞。"
                 : sourceCardId
-                    ? "已选择要移动的要塞，请选择目标卡牌。"
-                    : "三个要塞均已放置，请先选择一个自己的来源卡牌。";
+                    ? "✓ 来源和目标均已选择，点击“确认执行”移动要塞。"
+                    : "✓ 已选择目标，点击“确认执行”放置要塞。"
+            : mode === "remove"
+                ? "请选择一张带有对手要塞的卡牌；每次只拆除一个。"
+                : available > 0
+                    ? `你还有 ${available} 个未放置要塞，请选择目标卡牌。`
+                    : sourceCardId
+                        ? "已选择要移动的要塞，请继续选择目标卡牌。"
+                        : "三个要塞均已放置，请先选择一个自己的来源卡牌。";
+        confirmButton.disabled = !targetCardId;
 
         visibleBoardCards().forEach(card => {
             const owner = card.getAttribute("stronghold-owner");
@@ -88,8 +97,9 @@ export const showStrongholdAction = (data) => {
             refresh();
         };
     });
-    modal.querySelector('[data-mode="place"]').classList.add("active");
-    modal.querySelector(".stronghold-confirm-btn").onclick = () => {
+    modal.querySelectorAll("[data-mode]").forEach(button =>
+        button.classList.toggle("active", button.getAttribute("data-mode") === "place"));
+    confirmButton.onclick = () => {
         if(!targetCardId) {
             showError("请先完成要塞卡牌选择。");
             return;

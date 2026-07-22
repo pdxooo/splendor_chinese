@@ -37,8 +37,6 @@ const showHistoryCardPreview = (thumbnail: HTMLImageElement): void => {
 
 const enableHistoryCardPreview = (thumbnail: HTMLImageElement): void => {
     thumbnail.classList.add("history-card-thumbnail");
-    thumbnail.addEventListener("mouseenter", () => showHistoryCardPreview(thumbnail));
-    thumbnail.addEventListener("mouseleave", hideHistoryCardPreview);
 };
 
 /**
@@ -177,6 +175,16 @@ const checkTokens = (oldTokens: any, newTokens: any) => {
 };
 
 const historyContainer = document.querySelector("#history .drawer");
+historyContainer.addEventListener("mouseover", (event: MouseEvent) => {
+    const target = event.target as Element;
+    const thumbnail = target.closest(".history-card-thumbnail") as HTMLImageElement;
+    if(thumbnail) showHistoryCardPreview(thumbnail);
+});
+historyContainer.addEventListener("mouseout", (event: MouseEvent) => {
+    const target = event.target as Element;
+    if(target.closest(".history-card-thumbnail")) hideHistoryCardPreview();
+});
+
 export const focusLastEvent = () => {
     const lastEventContainer = historyContainer.querySelector(".event-container:last-child");
     if(lastEventContainer) {

@@ -8,9 +8,9 @@ import ModalLayout from "../../layouts/ModalLayout.astro";
         <button type="button" data-mode="place">放置/移动自己的要塞</button>
         <button type="button" data-mode="remove">拆除对手一个要塞</button>
     </div>
-    <p class="stronghold-selection-status" aria-live="polite"></p>
     <div class="stronghold-card-options"></div>
-    <div class="button-container">
-        <button type="button" class="stronghold-confirm-btn">确认</button>
+    <div class="stronghold-action-footer">
+        <p class="stronghold-selection-status" aria-live="polite"></p>
+        <button type="button" class="stronghold-confirm-btn" disabled>确认执行</button>
     </div>
 </ModalLayout>

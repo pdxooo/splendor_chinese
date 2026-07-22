@@ -10,6 +10,24 @@ import { initGameOver } from "./modals/gameover.js";
 // eslint-disable-next-line no-undef
 var MD5 = CryptoJS.MD5;
 
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const createStrongholdIcon = (extraClass = "") => {
+    const icon = document.createElementNS(SVG_NAMESPACE, "svg");
+    icon.setAttribute("viewBox", "0 0 32 32");
+    icon.setAttribute("aria-hidden", "true");
+    icon.classList.add("stronghold-icon");
+    if(extraClass) icon.classList.add(extraClass);
+
+    const shield = document.createElementNS(SVG_NAMESPACE, "path");
+    shield.setAttribute("class", "stronghold-shield");
+    shield.setAttribute("d", "M3 4h26v12c0 7.2-5.2 11.4-13 14-7.8-2.6-13-6.8-13-14V4Z");
+    const castle = document.createElementNS(SVG_NAMESPACE, "path");
+    castle.setAttribute("class", "stronghold-castle");
+    castle.setAttribute("d", "M7 23V11h4V7h4v4h3V7h4v4h3v12h-5v-6h-8v6H7Zm7 0v-4h4v4h-4Z");
+    icon.append(shield, castle);
+    return icon;
+};
+
 const updateTokensCount = (parentSelector, tokenInfo, bonusInfo = null) => {
     const parentNode = document.querySelector(parentSelector);
 
@@ -59,8 +77,10 @@ const updateStrongholdMarkers = (element, cardInfo, players) => {
         : `该卡被 ${owner} 的要塞占领`;
     const markers = document.createElement("span");
     markers.className = "stronghold-markers";
-    markers.textContent = "♜".repeat(count);
     markers.setAttribute("aria-label", `${owner} 的 ${count} 个要塞`);
+    for(let index = 0; index < count; index++) {
+        markers.appendChild(createStrongholdIcon("stronghold-on-card"));
+    }
     element.appendChild(markers);
 };
 
@@ -213,18 +233,28 @@ const setPlayerIdentity = (container, name, order) => {
     }
 };
 
-const updateAvailableStrongholds = (container, available) => {
+const updateAvailableStrongholds = (container, available, colour) => {
     let label = container.querySelector(".available-strongholds-label");
     if(available === undefined || available === null) {
         label?.remove();
         return;
     }
     if(!label) {
-        label = document.createElement("span");
+        label = document.createElement("div");
         label.className = "available-strongholds-label";
         container.appendChild(label);
     }
-    label.textContent = `可用要塞：${available}`;
+    const availableCount = Math.max(0, Math.min(3, Number(available)));
+    label.replaceChildren();
+    label.style.setProperty("--stronghold-player-color", colour || "#f2bd21");
+    label.title = `可用要塞：${availableCount} / 3`;
+    label.setAttribute("aria-label", label.title);
+    for(let index = 0; index < 3; index++) {
+        const icon = createStrongholdIcon("stronghold-inventory-icon");
+        icon.classList.toggle("available", index < availableCount);
+        icon.classList.toggle("deployed", index >= availableCount);
+        label.appendChild(icon);
+    }
 };
 
 const updateMainPlayerInfo = (playerInfo, order) => {
@@ -234,7 +264,7 @@ const updateMainPlayerInfo = (playerInfo, order) => {
         String(playerInfo.availableStrongholds ?? 0));
     setPlayerIdentity(playerInv.querySelector(".player-identity"), playerInfo.name, order);
     updateAvailableStrongholds(playerInv.querySelector(".player-identity"),
-        playerInfo.availableStrongholds);
+        playerInfo.availableStrongholds, playerInfo.colour);
 
 
     // update prestige points
@@ -304,7 +334,7 @@ const updateOtherPlayerInfo = (pInfo, order) => {
     }
     setPlayerIdentity(pNode.querySelector(".other-player-profile"), pInfo.name, order);
     updateAvailableStrongholds(pNode.querySelector(".other-player-profile"),
-        pInfo.availableStrongholds);
+        pInfo.availableStrongholds, pInfo.colour);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;
