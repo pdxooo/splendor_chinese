@@ -25,6 +25,21 @@ public enum ActionResult {
      */
     INVALID_TOKENS_GIVEN("The tokens chosen are invalid."),
 
+    /** Too many tokens of one colour were selected. */
+    TOO_MANY_SAME_COLOUR_TOKENS("You cannot take three or more tokens of the same colour."),
+
+    /** Taking a pair requires a sufficiently large bank pile. */
+    DOUBLE_TOKENS_REQUIRE_FOUR("You may take two tokens of one colour only when at least four remain."),
+
+    /** The classic different-colour option requires three colours when available. */
+    MUST_TAKE_THREE_DIFFERENT_TOKENS("You must take three tokens of different colours when three colours are available."),
+
+    /** Gold is obtained by reserving, not by taking tokens. */
+    CANNOT_TAKE_GOLD_TOKEN("Gold tokens cannot be taken directly; reserve a card to receive one."),
+
+    /** A pair cannot be combined with another colour. */
+    CANNOT_MIX_DOUBLE_AND_SINGLE_TOKENS("You cannot combine two tokens of one colour with tokens of another colour."),
+
     /**
      * Invalid token chosen for satchel card assignment.
      */
@@ -43,7 +58,7 @@ public enum ActionResult {
     /**
      * Player has hit maximum token threshold in inventory.
      */
-    MAXIMUM_TOKENS_IN_INVENTORY("You have the maximum amount of tokens in your inventory!"),
+    MAXIMUM_TOKENS_IN_INVENTORY("You must return enough tokens to keep no more than 10."),
 
     /**
      * Player does not have enough tokens in inventory.
@@ -83,7 +98,22 @@ public enum ActionResult {
     /**
      * Player has qualified for 2+ cities and must choose city.
      */
-    MUST_CHOOSE_CITY;
+    MUST_CHOOSE_CITY,
+
+    /** A successful purchase requires a stronghold action. */
+    MUST_CHOOSE_STRONGHOLD_ACTION,
+
+    /** A card with three strongholds may now be conquered or skipped. */
+    MUST_CHOOSE_CONQUEST,
+
+    /** The selected card is protected by another player's strongholds. */
+    CARD_OCCUPIED_BY_OTHER_STRONGHOLD("该卡牌已被其他玩家要塞占领"),
+
+    /** The requested placement, move, or removal is illegal. */
+    INVALID_STRONGHOLD_ACTION("该要塞操作不合法。"),
+
+    /** The requested conquest is unavailable or invalid. */
+    INVALID_CONQUEST("当前不能征服这张卡牌。");
 
 
     private final String description;

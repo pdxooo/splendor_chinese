@@ -19,7 +19,8 @@ export const createNewSession = async (gameVersion, saveId="") => {
     const postData = {
         "creator": SETTINGS.getUsername(),
         "game": gameVersion,
-        "savegame": saveId
+        "savegame": saveId,
+        "turnTimeSeconds": Number(document.querySelector("#turn-time-limit")?.value || 120)
     };
 
     const url = new URL(`${SETTINGS.getLS_API()}/api/sessions`);
@@ -65,6 +66,31 @@ const showLoadGameTab = () => {
 // for focusing on a session
 const toFocusList = [];
 
+const formatTurnTime = (seconds) => {
+    const value = Number(seconds) || 120;
+    if(value > 120 && value % 60 === 0) return `每回合 ${value / 60} 分钟`;
+    return `每回合 ${value} 秒`;
+};
+
+const GAME_VERSION_NAMES = {
+    splendor_BASE: "璀璨宝石：经典版",
+    splendor_BASE_ORIENT: "璀璨宝石：东方扩展",
+    splendor_BASE_ORIENT_CITIES: "璀璨宝石：城市扩展",
+    splendor_BASE_ORIENT_TRADE_ROUTES: "璀璨宝石：贸易站"
+};
+
+const applySessionSearch = () => {
+    const query = (document.querySelector("#session-search")?.value || "").trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll(".current-sessions-table tr[session-id]").forEach(row => {
+        const matches = !query || row.textContent.toLowerCase().includes(query);
+        row.hidden = !matches;
+        if(matches) visible++;
+    });
+    const empty = document.querySelector("#session-search-empty");
+    if(empty) empty.hidden = visible !== 0;
+};
+
 /**
  * Attempts to focus on session item if it's already availabe,
  * else it will wait until it gets added to the page.
@@ -81,6 +107,7 @@ export const focusSession = (sesId) => {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#session-search")?.addEventListener("input", applySessionSearch);
     // set user color
     getUserDetail().then((data) => {
         if(data) {
@@ -278,10 +305,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     node.removeAttribute("launchable");
                 }
+            } else {
+                node.removeAttribute("created");
+                node.removeAttribute("launchable");
             }
 
             if(ses.launched) {
                 node.setAttribute("started", "true");
+            } else {
+                node.removeAttribute("started");
             }
         };
 
@@ -299,13 +331,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 trNode.setAttribute("save-id", ses.savegameid);
             }
 
-            trNode.querySelector(".session-game-name").textContent = ses.gameParameters.displayName;
+            trNode.querySelector(".session-id").textContent = sesId;
+            trNode.querySelector(".session-game-name").textContent =
+                GAME_VERSION_NAMES[ses.gameParameters.name] || ses.gameParameters.displayName;
             trNode.querySelector(".session-creator-name").textContent = ses.creator;
 
             const sesPlayers = ses.players;
             const curP = ses.players.length;
             const maxP = ses.gameParameters.maxSessionPlayers;
             trNode.querySelector(".session-players-info").textContent = `[${curP}/${maxP}]: ${sesPlayers.join(", ")}`;
+            trNode.querySelector(".session-turn-time").textContent = formatTurnTime(ses.turnTimeSeconds);
 
             setAttributes(ses, trNode);
 
@@ -349,13 +384,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const trNode = document.querySelector(`tr[session-id="${sesId}"]`);
 
             setAttributes(ses, trNode);
+            trNode.querySelector(".session-id").textContent = sesId;
 
             const node = document.querySelector(`${tableSel} tr[session-id="${sesId}"] .session-players-info`);
             const newText = `[${curP}/${maxP}]: ${sesPlayers.join(", ")}`;
             if(node.textContent !== newText) {
                 node.textContent = newText;
             }
+
+            const turnTimeNode = trNode.querySelector(".session-turn-time");
+            const turnTimeText = formatTurnTime(ses.turnTimeSeconds);
+            if(turnTimeNode.textContent !== turnTimeText) {
+                turnTimeNode.textContent = turnTimeText;
+            }
         });
+
+        applySessionSearch();
 
     }
 

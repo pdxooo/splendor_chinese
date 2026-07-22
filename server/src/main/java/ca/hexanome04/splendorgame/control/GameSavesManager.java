@@ -7,6 +7,7 @@ import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
 import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -165,9 +166,11 @@ public class GameSavesManager {
         try {
             GameVersions gameVer = GameVersions.valueOf(jsonObject.get("gameVersion").getAsString());
             return switch (gameVer) {
+                case BASE -> gson.fromJson(jsonObject, OrientGame.class);
                 case BASE_ORIENT -> gson.fromJson(jsonObject, OrientGame.class);
                 case BASE_ORIENT_CITIES -> gson.fromJson(jsonObject, CitiesGame.class);
                 case BASE_ORIENT_TRADE_ROUTES -> gson.fromJson(jsonObject, TradingPostsGame.class);
+                case BASE_STRONGHOLDS -> gson.fromJson(jsonObject, StrongholdsGame.class);
             };
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);

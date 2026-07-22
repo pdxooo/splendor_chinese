@@ -1,6 +1,8 @@
 package ca.hexanome04.splendorgame.model.gameversions.tradingposts;
 
-import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPlayer;
+import ca.hexanome04.splendorgame.model.TokenType;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that represents a power.
@@ -8,12 +10,51 @@ import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPl
 public abstract class Power {
 
     private boolean unlocked;
+    private HashMap<TokenType, Integer> requirements;
 
     /**
      * Construct a power.
      */
     public Power() {
+        this(new HashMap<>());
+    }
+
+    /**
+     * Construct a power with its development-card requirements.
+     *
+     * @param requirements coloured bonuses needed to unlock the power
+     */
+    public Power(Map<TokenType, Integer> requirements) {
         this.unlocked = false;
+        this.requirements = new HashMap<>(requirements);
+    }
+
+    /**
+     * Get a safe copy of the requirements displayed to every player.
+     *
+     * @return requirements for this power
+     */
+    public HashMap<TokenType, Integer> getRequirements() {
+        return new HashMap<>(requirements);
+    }
+
+    /**
+     * Apply the requirements generated once for this game session.
+     *
+     * @param requirements new requirements
+     */
+    public void setRequirements(Map<TokenType, Integer> requirements) {
+        this.requirements = new HashMap<>(requirements);
+    }
+
+    /**
+     * Check the common coloured-bonus requirement.
+     *
+     * @param player player being checked
+     * @return whether the player owns the required bonuses
+     */
+    protected boolean requirementsMet(TradingPostsPlayer player) {
+        return player.hasBonuses(requirements);
     }
 
     /**

@@ -71,6 +71,17 @@ export function performFollowUpAction(data) {
         case "CHOOSE_CITY":
             initChooseCity(data);
             modalSelector = "#choose-city-modal";
+            break;
+        case "PLACE_OR_MOVE_STRONGHOLD":
+        case "REMOVE_STRONGHOLD":
+            window.splendorStrongholds?.showStrongholdAction(data);
+            modalSelector = "#stronghold-action-modal";
+            break;
+        case "CONQUER_CARD":
+        case "SKIP_CONQUEST":
+            window.splendorStrongholds?.showConquest(data);
+            modalSelector = "#conquest-modal";
+            break;
         default:
             // its fine
     }
@@ -90,7 +101,14 @@ const showModal = (selector) => {
 };
 
 const closeModal = (selector) => {
-    document.querySelector(selector).classList.remove("show");
+    const modal = document.querySelector(selector);
+    modal.classList.remove("show", "collapsed");
+    const toggle = modal.querySelector(".turn-modal-toggle");
+    if(toggle) {
+        toggle.textContent = "−";
+        toggle.setAttribute("aria-label", "收起操作框");
+        toggle.setAttribute("aria-expanded", "true");
+    }
 };
 
 export const showNextModal = (selector) => {

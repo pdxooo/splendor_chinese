@@ -246,7 +246,9 @@ export const SETTINGS = {
  * Maps the game version enum from the backend to the corresponding board.
  */
 export const GAME_VERSION_TO_BOARD = {
+    "BASE": "gameboard",
     "BASE_ORIENT": "gameboard",
     "BASE_ORIENT_CITIES": "gameboard-cities",
-    "BASE_ORIENT_TRADE_ROUTES": "gameboard-tradingposts"
+    "BASE_ORIENT_TRADE_ROUTES": "gameboard-tradingposts",
+    "BASE_STRONGHOLDS": "gameboard-strongholds"
 };

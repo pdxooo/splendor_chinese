@@ -35,6 +35,32 @@
   z-index: 4;
 }
 
+.turn-modal-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 5;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(239 200 93 / 70%);
+  border-radius: 0.45rem;
+  color: #efc85d;
+  background: rgb(8 17 29 / 72%);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.turn-modal-toggle:hover,
+.turn-modal-toggle:focus-visible {
+  color: white;
+  border-color: #efc85d;
+  outline: none;
+}
+
 /* Removes invisible if present (used for animation purposes and should not take effect here) */
 .modal img.invisible {
   visibility: visible;
@@ -133,6 +159,39 @@
 
 /* YOUR TURN MODAL */
 
+#your-turn-modal.collapsed {
+  align-items: flex-start;
+  background: transparent;
+  pointer-events: none;
+}
+
+#your-turn-modal.collapsed .modal-container {
+  width: min(22rem, calc(100vw - 2rem));
+  min-height: 0;
+  margin: 7.25rem auto 0;
+  pointer-events: auto;
+}
+
+#your-turn-modal.collapsed .modal-content {
+  min-height: 3.4rem;
+  padding: 0.55rem 3.8rem 0.55rem 1rem;
+}
+
+#your-turn-modal.collapsed .modal-content > :not(h1) {
+  display: none;
+}
+
+#your-turn-modal.collapsed .modal-content h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+#your-turn-modal.collapsed .turn-modal-toggle {
+  top: 0.6rem;
+  right: 0.65rem;
+}
+
 .turn-button-container {
   display: flex;
   flex-direction: column;
@@ -181,6 +240,33 @@
   width: 100%;
 }
 
+#buy-card-modal .modal-container,
+#reserve-card-modal .modal-container {
+  width: min(84vw, 78rem);
+  min-height: auto;
+}
+
+#buy-card-modal .modal-content,
+#reserve-card-modal .modal-content {
+  min-height: min(90vh, 58rem);
+  padding: 1.2rem 1.5rem;
+}
+
+#buy-card-modal .modal-content h1,
+#reserve-card-modal .modal-content h1 {
+  font-size: clamp(2.7rem, 6vh, 4rem);
+}
+
+#reserve-card-board {
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+#reserve-card-board > p {
+  padding: 0;
+}
+
 #buy-card-board .reserved-cards {
   display: flex;
   flex-direction: column;
@@ -202,11 +288,38 @@
   box-shadow: rgb(0 0 0 / 83%) 0 2px 4px, rgb(0 0 0 / 65%) 0 7px 13px -3px, rgb(0 0 0 / 78%) 0 -3px 0 inset;
 }
 
+#buy-card-modal .board-cards-row .board-card-dev > img,
+#reserve-card-modal .board-cards-row .board-card-dev > img,
+#reserve-card-modal .board-cards-row .board-cards-dev-deck > img,
+#buy-card-modal .reserved-cards .board-card-dev > img {
+  height: clamp(7.5rem, 16vh, 10.5rem);
+}
+
+#buy-card-modal .modal-board-cards,
+#reserve-card-modal .modal-board-cards {
+  gap: 0.7rem;
+}
+
+#buy-card-modal .board-cards-dev-selectable,
+#reserve-card-modal .board-cards-dev-selectable {
+  gap: 0.7rem;
+}
+
 #buy-card-board .board-card-dev:hover,
 .modal-board-cards .board-card-dev:hover,
 .purchase-show-card.board-card-dev:hover {
-  transform: scale(2.4);
-  z-index: 3;
+  transform: scale(1.45);
+  z-index: 20;
+}
+
+#buy-card-modal .button-container,
+#reserve-card-modal .button-container {
+  padding-top: 0.7rem;
+}
+
+#buy-card-modal .button-container button,
+#reserve-card-modal .button-container button {
+  padding: 0.7rem 1.3rem;
 }
 
 .button-container {
@@ -306,6 +419,47 @@
   gap: 1.5em;
 }
 
+.virtual-gold-payment {
+  position: relative;
+  padding: 0.15rem 0.5rem;
+  border: 0.1rem dashed goldenrod;
+  border-radius: 0.65rem;
+  background: rgb(218 165 32 / 9%);
+}
+
+.virtual-gold-payment[hidden] { display: none !important; }
+.burn-card-payment[hidden], .token-count-outer-container[hidden] { display: none !important; }
+.burn-card-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; max-height: 18rem; overflow-y: auto; }
+.burn-card-option { width: 6rem; cursor: pointer; border: 3px solid transparent; border-radius: 0.4rem; }
+.burn-card-option.selected { border-color: #18d66b; box-shadow: 0 0 1rem #18d66b; }
+.extra-token-container .board-token { position: relative; }
+.extra-token-container .bank-count {
+  position: absolute; left: 50%; bottom: -1.5rem; transform: translateX(-50%);
+  color: white; white-space: nowrap; font-size: 0.75rem;
+}
+.extra-token-container .board-token.unavailable { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+
+.virtual-gold-payment > span {
+  position: absolute;
+  left: 50%;
+  bottom: -1.6rem;
+  transform: translateX(-50%);
+  color: rgb(245 204 101);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+#dev-card-payment-modal .payment-status {
+  min-height: 1.4em;
+  margin: -1rem 0 0.7rem;
+  color: rgb(245 204 101);
+  text-align: center;
+}
+
+#dev-card-payment-modal .payment-status.invalid {
+  color: #ff8a80;
+}
+
 .player-token-count-container {
   display: flex;
   flex-direction: row;
@@ -396,14 +550,41 @@
   outline: 0.2rem solid goldenrod;
 }
 
+#buy-card-modal .board-card-dev.purchasable {
+  outline: 0.18rem solid #68f58a;
+  box-shadow: 0 0 18px 3px rgb(104 245 138 / 70%);
+}
+
+#buy-card-modal .board-card-dev.unaffordable {
+  filter: brightness(55%) grayscale(30%);
+  opacity: 0.7;
+}
+
+#buy-card-modal .board-card-dev.selected {
+  outline-color: goldenrod;
+  filter: none;
+  opacity: 1;
+}
+
 /* Unnecessary to show in modal */
 #buy-card-modal .board-cards-row .board-cards-dev-deck,
 #buy-card-modal .board-cards-row .board-cards-dev-deck-orient,
-#reserve-card-modal .board-cards-row .board-cards-dev-deck,
 #reserve-card-modal .board-cards-row .board-cards-dev-deck-orient,
 #cascade-modal .board-cards-row .board-cards-dev-deck,
 #cascade-modal .board-cards-row .board-cards-dev-deck-orient {
   display: none;
+}
+
+#reserve-card-modal .board-cards-dev-deck {
+  cursor: pointer;
+  margin-right: 1.2em;
+}
+
+#reserve-card-modal .board-cards-dev-deck:hover,
+#reserve-card-modal .board-cards-dev-deck.selected {
+  outline: 0.2rem solid goldenrod;
+  border-radius: var(--card-border-radius);
+  transform: scale(1.08);
 }
 
 .cascade-board {

@@ -30,7 +30,7 @@ body {
       rgb(35 52 84)
     );
   margin: auto;
-  width: 30%;
+  width: min(92%, 34rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,8 +120,10 @@ form .txt-field {
 }
 
 .button-area {
-  padding: 15%;
+  padding: 15% 0 5%;
   display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
   justify-content: center;
 }
 
@@ -141,4 +143,40 @@ form .txt-field {
   color: #f2d675;
   border-color: #f2d675;
   cursor: pointer;
+}
+
+.secondary-button {
+  padding: 0.65rem 1rem;
+  border: 1px solid rgb(218 165 32 / 70%);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #e3b238;
+  font: 1rem Judson, serif;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  color: #f2d675;
+  border-color: #f2d675;
+}
+
+.colour-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: goldenrod;
+  font: 1.1rem Judson, serif;
+}
+
+.colour-field input {
+  width: 4rem;
+  height: 2.4rem;
+  border: 1px solid goldenrod;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
 }

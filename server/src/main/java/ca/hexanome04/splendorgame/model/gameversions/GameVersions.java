@@ -6,6 +6,11 @@ package ca.hexanome04.splendorgame.model.gameversions;
 public enum GameVersions {
 
     /**
+     * Classic base game without expansions.
+     */
+    BASE,
+
+    /**
      * Base game + Orient expansion.
      */
     BASE_ORIENT,
@@ -19,5 +24,8 @@ public enum GameVersions {
      * Base game + Orient and Trade Routes expansions.
      */
     BASE_ORIENT_TRADE_ROUTES,
+
+    /** Base game with nobles and the Strongholds module. */
+    BASE_STRONGHOLDS,
 
 }

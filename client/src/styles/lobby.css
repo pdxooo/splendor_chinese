@@ -392,6 +392,29 @@ tr > th {
   box-sizing: border-box;
 }
 
+.turn-time-setting {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  color: rgb(227 178 56);
+  font-family: Charm, cursive;
+  font-size: 0.72em;
+  font-weight: normal;
+}
+
+.turn-time-setting select {
+  border: 1px solid goldenrod;
+  border-radius: 0.45em;
+  padding: 0.45em 0.65em;
+  color: white;
+  background: #142033;
+}
+
+.turn-time-setting + .game-selection-dropdown {
+  margin-left: 1em;
+}
+
 #section-loadgame .game-selection-dropdown {
   visibility: hidden;
 }
@@ -571,9 +594,17 @@ tr > th {
 .is-admin .saved-games-table tr .del-btn,
 .is-service .current-sessions-table tr .del-btn,
 .is-service .saved-games-table tr .del-btn,
-.current-sessions-table tr:not([started]):is([created]) .del-btn,
+.current-sessions-table tr:is([created]) .del-btn,
 .saved-games-table tr:not([started]):is([created]) .del-btn {
   display: block;
+}
+
+.current-sessions-table .session-id {
+  max-width: 12rem;
+  overflow-wrap: anywhere;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.95em;
+  user-select: all;
 }
 
 /* Add play button to join a launched session */
@@ -609,3 +640,21 @@ tr > th {
   visibility: hidden;
   pointer-events: none;
 }
+.session-search-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: goldenrod;
+}
+
+#session-search {
+  min-width: 22rem;
+  padding: 0.55rem 0.8rem;
+  color: white;
+  background: rgb(5 19 36 / 80%);
+  border: 1px solid goldenrod;
+  border-radius: 0.5rem;
+}
+
+#session-search-empty { padding: 1rem; color: white; }

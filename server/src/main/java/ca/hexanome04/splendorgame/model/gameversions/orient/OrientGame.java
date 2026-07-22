@@ -142,13 +142,29 @@ public class OrientGame implements Game {
                     case "3" -> tier3Deck.add(new RegDevelopmentCard(CardTier.TIER_3, tokenType, bonusCount,
                             prestigePoints, costType, tokenCost, cardId));
 
-                    case "N" -> nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                    case "N" -> {
+                        if (usesNobles()) {
+                            nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                        }
+                    }
 
-                    case "O1" -> tier1OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_1, tokenType, bonusCount,
-                            CascadeType.None, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
+                    case "ON" -> {
+                        if (usesOrientCards() && usesNobles()) {
+                            nobleDeck.add(new NobleCard(prestigePoints, costType, tokenCost, cardId));
+                        }
+                    }
+
+                    case "O1" -> {
+                        if (usesOrientCards()) {
+                            tier1OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_1, tokenType, bonusCount,
+                                    CascadeType.None, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
+                        }
+                    }
 
                     case "O2" -> {
-                        if (!card[7].isBlank()) {
+                        if (!usesOrientCards()) {
+                            // This game version does not use Orient cards.
+                        } else if (!card[7].isBlank()) {
                             tier2OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_2, tokenType, bonusCount,
                                     CascadeType.Tier1, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
                         } else if (!card[8].isBlank()) {
@@ -161,7 +177,9 @@ public class OrientGame implements Game {
                     }
 
                     case "O3" -> {
-                        if (!card[7].isBlank()) {
+                        if (!usesOrientCards()) {
+                            // This game version does not use Orient cards.
+                        } else if (!card[7].isBlank()) {
                             tier3OrientDeck.add(new OrientDevelopmentCard(CardTier.TIER_3, tokenType, bonusCount,
                                     CascadeType.Tier2, false, prestigePoints, costType, tokenCost, cardId, isSatchel));
                         } else {
@@ -187,19 +205,25 @@ public class OrientGame implements Game {
         tier1Deck.shuffle();
         tier2Deck.shuffle();
         tier3Deck.shuffle();
-        tier1OrientDeck.shuffle();
-        tier2OrientDeck.shuffle();
-        tier3OrientDeck.shuffle();
+        if (usesOrientCards()) {
+            tier1OrientDeck.shuffle();
+            tier2OrientDeck.shuffle();
+            tier3OrientDeck.shuffle();
+        }
 
         tier1Deck.drawCards(4);
         tier2Deck.drawCards(4);
         tier3Deck.drawCards(4);
-        tier1OrientDeck.drawCards(2);
-        tier2OrientDeck.drawCards(2);
-        tier3OrientDeck.drawCards(2);
+        if (usesOrientCards()) {
+            tier1OrientDeck.drawCards(2);
+            tier2OrientDeck.drawCards(2);
+            tier3OrientDeck.drawCards(2);
+        }
 
-        nobleDeck.shuffle();
-        nobleDeck.drawCards(players.size() + 1);
+        if (usesNobles()) {
+            nobleDeck.shuffle();
+            nobleDeck.drawCards(players.size() + 1);
+        }
 
         // Now initialize tokens
         int numTokens;
@@ -220,6 +244,27 @@ public class OrientGame implements Game {
 
         tokens.put(Satchel, 0);
         tokens.put(Gold, 5);
+    }
+
+    /**
+     * Whether this mode includes the three Orient development-card decks.
+     * Cities and Trading Posts are independent modules and use base cards only.
+     *
+     * @return true when Orient development cards are part of this game
+     */
+    protected boolean usesOrientCards() {
+        return gameVersion != GameVersions.BASE
+                && gameVersion != GameVersions.BASE_ORIENT_CITIES
+                && gameVersion != GameVersions.BASE_ORIENT_TRADE_ROUTES;
+    }
+
+    /**
+     * Whether this mode includes nobles. Cities replace nobles completely.
+     *
+     * @return true when nobles are part of this game
+     */
+    protected boolean usesNobles() {
+        return gameVersion != GameVersions.BASE_ORIENT_CITIES;
     }
 
     /**
@@ -316,6 +361,49 @@ public class OrientGame implements Game {
     }
 
     /**
+     * Remove a visible regular card without revealing its replacement.
+     *
+     * @param card visible regular card
+     * @return whether the card was removed
+     */
+    public boolean takeCardWithoutRefill(DevelopmentCard card) {
+        Card takenCard = null;
+        if (card instanceof RegDevelopmentCard regular) {
+            takenCard = tier1Deck.takeWithoutRefill(regular);
+            if (takenCard == null) {
+                takenCard = tier2Deck.takeWithoutRefill(regular);
+            }
+            if (takenCard == null) {
+                takenCard = tier3Deck.takeWithoutRefill(regular);
+            }
+        }
+        return takenCard != null;
+    }
+
+    /**
+     * Reveal one replacement regular card after a delayed module action.
+     *
+     * @param tier tier whose empty slot is refilled
+     */
+    public void refillDevelopmentCard(CardTier tier) {
+        switch (tier) {
+            case TIER_1 -> tier1Deck.drawCards(1);
+            case TIER_2 -> tier2Deck.drawCards(1);
+            case TIER_3 -> tier3Deck.drawCards(1);
+            default -> throw new IllegalArgumentException("Unsupported development-card tier.");
+        }
+    }
+
+    @Override
+    public DevelopmentCard takeTopDevelopmentCard(CardTier tier) {
+        return switch (tier) {
+            case TIER_1 -> this.tier1Deck.takeTopCard();
+            case TIER_2 -> this.tier2Deck.takeTopCard();
+            case TIER_3 -> this.tier3Deck.takeTopCard();
+        };
+    }
+
+    /**
      * Check if player has the right bonuses to qualify for any nobles.
      *
      * @param player Player to check
@@ -366,6 +454,7 @@ public class OrientGame implements Game {
 
         List<ActionResult> ar = action.execute(this, p);
         results.addAll(ar);
+        results = transformActionResults(p, action, results);
 
         // Check if player qualifies for noble card at end of turn
         ArrayList<NobleCard> nobleCards = qualifiesForNoble(p);
@@ -398,7 +487,6 @@ public class OrientGame implements Game {
                 && results.size() == 2 && this.getCurValidActions().size() == 0) {
             if (checkForWin() != null) {
                 winners = checkForWin();
-                turnCounter = -10000;
                 curValidActions.clear();
             } else {
                 // increment action also resets current valid actions list
@@ -413,6 +501,11 @@ public class OrientGame implements Game {
                     case MUST_CHOOSE_CASCADE_CARD_TIER_2 -> this.addValidAction(Actions.CASCADE_2);
                     case MUST_CHOOSE_TOKEN_TYPE -> this.addValidAction(Actions.CHOOSE_SATCHEL_TOKEN);
                     case MUST_RESERVE_NOBLE -> this.addValidAction(Actions.RESERVE_NOBLE);
+                    case MUST_CHOOSE_STRONGHOLD_ACTION -> {
+                        this.addValidAction(Actions.PLACE_OR_MOVE_STRONGHOLD);
+                        this.addValidAction(Actions.REMOVE_STRONGHOLD);
+                    }
+                    case MUST_CHOOSE_CONQUEST -> { /* StrongholdsGame already installs both choices. */ }
                     default -> {
                         continue;
                     }
@@ -463,6 +556,15 @@ public class OrientGame implements Game {
     @Override
     public List<OrientDevelopmentCard> getTier2PurchasableOrientCards() {
         return this.tier2OrientDeck.getVisibleCards();
+    }
+
+    /**
+     * Get the visible tier-three Orient cards.
+     *
+     * @return visible tier-three Orient cards
+     */
+    public List<OrientDevelopmentCard> getTier3PurchasableOrientCards() {
+        return this.tier3OrientDeck.getVisibleCards();
     }
 
     @Override
@@ -589,26 +691,25 @@ public class OrientGame implements Game {
 
     @Override
     public List<Player> checkForWin() {
-        if (playersWhoCanWin.size() > 0 && turnCounter != 0 && turnCounter % (players.size() - 1) == 0) {
-            List<Player> tmpWinners = new ArrayList<>(winners);
-            tmpWinners.add(playersWhoCanWin.get(0));
-
-            for (Player p : playersWhoCanWin) {
-                Player currentWinner = tmpWinners.get(0);
-                if (p.getDevCards().size() < currentWinner.getDevCards().size()) {
-                    tmpWinners.clear();
-                    tmpWinners.add(p);
-                } else if (p != currentWinner && p.getDevCards().size() == currentWinner.getDevCards().size()) {
-                    if (!tmpWinners.contains(currentWinner)) {
-                        tmpWinners.add(currentWinner);
-                    }
-                    if (!tmpWinners.contains(p)) {
-                        tmpWinners.add(p);
-                    }
-                }
-            }
+        // Everyone must receive the same number of turns. Player 0 starts, so
+        // the round is complete only after the last player has acted.
+        if (playersWhoCanWin.size() > 0 && turnCounter == players.size() - 1) {
+            int highestPrestige = players.stream()
+                    .mapToInt(Player::getPrestigePoints)
+                    .max()
+                    .orElse(0);
+            List<Player> highestScorers = players.stream()
+                    .filter(player -> player.getPrestigePoints() == highestPrestige)
+                    .toList();
+            int fewestDevelopmentCards = highestScorers.stream()
+                    .mapToInt(player -> player.getDevCards().size())
+                    .min()
+                    .orElse(0);
+            List<Player> tmpWinners = highestScorers.stream()
+                    .filter(player -> player.getDevCards().size() == fewestDevelopmentCards)
+                    .toList();
             gameOver = true;
-            return tmpWinners;
+            return new ArrayList<>(tmpWinners);
         }
         return null;
     }

@@ -10,6 +10,35 @@ import { initGameOver } from "./modals/gameover.js";
 // eslint-disable-next-line no-undef
 var MD5 = CryptoJS.MD5;
 
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const STRONGHOLD_FALLBACK_COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#a855f7"];
+
+const getStrongholdColourByOrder = (order) =>
+    STRONGHOLD_FALLBACK_COLORS[(Math.max(1, Number(order) || 1) - 1)
+        % STRONGHOLD_FALLBACK_COLORS.length];
+
+const getStrongholdColourByOwner = (owner, players) => {
+    const ownerIndex = players.findIndex(player => player.name === owner);
+    return getStrongholdColourByOrder(ownerIndex + 1);
+};
+
+const createStrongholdIcon = (extraClass = "") => {
+    const icon = document.createElementNS(SVG_NAMESPACE, "svg");
+    icon.setAttribute("viewBox", "0 0 32 32");
+    icon.setAttribute("aria-hidden", "true");
+    icon.classList.add("stronghold-icon");
+    if(extraClass) icon.classList.add(extraClass);
+
+    const shield = document.createElementNS(SVG_NAMESPACE, "path");
+    shield.setAttribute("class", "stronghold-shield");
+    shield.setAttribute("d", "M3 4h26v12c0 7.2-5.2 11.4-13 14-7.8-2.6-13-6.8-13-14V4Z");
+    const castle = document.createElementNS(SVG_NAMESPACE, "path");
+    castle.setAttribute("class", "stronghold-castle");
+    castle.setAttribute("d", "M7 23V11h4V7h4v4h3V7h4v4h3v12h-5v-6h-8v6H7Zm7 0v-4h4v4h-4Z");
+    icon.append(shield, castle);
+    return icon;
+};
+
 const updateTokensCount = (parentSelector, tokenInfo, bonusInfo = null) => {
     const parentNode = document.querySelector(parentSelector);
 
@@ -40,7 +69,32 @@ const updateTokensCount = (parentSelector, tokenInfo, bonusInfo = null) => {
     });
 };
 
-const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
+const updateStrongholdMarkers = (element, cardInfo, players) => {
+    element.querySelector(".stronghold-markers")?.remove();
+    element.classList.remove("conquerable", "stronghold-blocked");
+    element.removeAttribute("stronghold-owner");
+    element.removeAttribute("stronghold-count");
+    const count = Number(cardInfo.strongholdCount || 0);
+    const owner = cardInfo.strongholdOwner;
+    if(!owner || count <= 0) return;
+    element.setAttribute("stronghold-owner", owner);
+    element.setAttribute("stronghold-count", String(count));
+    element.style.setProperty("--stronghold-color", getStrongholdColourByOwner(owner, players));
+    element.classList.toggle("conquerable", count === 3);
+    element.classList.toggle("stronghold-blocked", owner !== SETTINGS.getUsername());
+    element.title = owner === SETTINGS.getUsername()
+        ? `你的要塞：${count}${count === 3 ? "（可征服）" : ""}`
+        : `该卡被 ${owner} 的要塞占领`;
+    const markers = document.createElement("span");
+    markers.className = "stronghold-markers";
+    markers.setAttribute("aria-label", `${owner} 的 ${count} 个要塞`);
+    for(let index = 0; index < count; index++) {
+        markers.appendChild(createStrongholdIcon("stronghold-on-card"));
+    }
+    element.appendChild(markers);
+};
+
+const updateTierRow = (selector, devCardsDeck, orientCardsDeck, players = []) => {
     const devCards = devCardsDeck.visibleCards;
     const orientCards = orientCardsDeck.visibleCards;
     const row = document.querySelector(selector);
@@ -48,6 +102,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
     const updateCardElement = (deckSelector, cardSelector, freeCardElm, cardInfo) => {
         const cardId = cardInfo["id"];
         const cost = cardInfo["tokenCost"];
+        const costType = cardInfo["costType"];
 
         const imgUrl = `/images/development-cards/${cardId}.jpg`;
         const imgElm = freeCardElm.querySelector("img");
@@ -57,6 +112,8 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
         // add additional info
         freeCardElm.setAttribute("card-id", cardId);
         freeCardElm.setAttribute("cost", JSON.stringify(cost));
+        freeCardElm.setAttribute("cost-type", costType);
+        updateStrongholdMarkers(freeCardElm, cardInfo, players);
 
         // slight timeout to ensure no content shift
         // only delay if deck is not invisible
@@ -76,6 +133,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
             const oldElm = row.querySelector(`${selector} ${cardSelector}[card-id="${cid}"]`);
             oldElm.removeAttribute("card-id");
             oldElm.removeAttribute("cost");
+            oldElm.removeAttribute("cost-type");
             oldElm.querySelector("img").removeAttribute("src");
         });
 
@@ -88,6 +146,11 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
     };
     clearIfNeeded(devCards, ".board-card-dev:not(.board-card-dev-orient)", ".board-cards-dev-deck");
     clearIfNeeded(orientCards, ".board-card-dev.board-card-dev-orient", ".board-cards-dev-deck-orient");
+
+    [...devCards, ...orientCards].forEach(cardInfo => {
+        const element = row.querySelector(`.board-card-dev[card-id="${cardInfo.id}"]`);
+        if(element) updateStrongholdMarkers(element, cardInfo, players);
+    });
 
     // mark deck as empty if needed
     const setEmptyIfNeeded = (deckSelector, canDraw) => {
@@ -132,6 +195,12 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
         const imgUrl = `/images/${imageFolder}/${cid}.jpg`;
 
         div.setAttribute("card-id", cid);
+        const cardInfo = cards.find(card => card.id === cid);
+        if(cardInfo?.tokenCost) div.setAttribute("cost", JSON.stringify(cardInfo.tokenCost));
+        if(cardInfo?.costType) div.setAttribute("cost-type", cardInfo.costType);
+        if(cardInfo?.tokenType) div.setAttribute("token-type", cardInfo.tokenType);
+        div.setAttribute("bonus", Number(cardInfo?.bonus || 0));
+        div.setAttribute("prestige-points", Number(cardInfo?.prestigePoints || 0));
         const imgElm = div.querySelector("img");
         imgElm.setAttribute("src", imgUrl);
 
@@ -155,11 +224,57 @@ export const updateCards = (cards, baseElement, containerSelector, cardSelector,
             }
         }
     });
+    cards.forEach(cardInfo => {
+        const div = cardContainer.querySelector(`${cardSelector}[card-id="${cardInfo.id}"]`);
+        if(!div) return;
+        if(cardInfo.tokenType) div.setAttribute("token-type", cardInfo.tokenType);
+        div.setAttribute("bonus", Number(cardInfo.bonus || 0));
+        div.setAttribute("prestige-points", Number(cardInfo.prestigePoints || 0));
+    });
 };
 
-const updateMainPlayerInfo = (playerInfo) => {
+const setPlayerIdentity = (container, name, order) => {
+    const nameNode = container.querySelector(".player-name");
+    const orderNode = container.querySelector(".turn-order-label");
+    if(nameNode) nameNode.textContent = name;
+    if(orderNode) {
+        orderNode.textContent = `第 ${order} 位`;
+        orderNode.title = `行动顺序：第 ${order} 位`;
+    }
+};
+
+const updateAvailableStrongholds = (container, available, order) => {
+    let label = container.querySelector(".available-strongholds-label");
+    if(available === undefined || available === null) {
+        label?.remove();
+        return;
+    }
+    if(!label) {
+        label = document.createElement("div");
+        label.className = "available-strongholds-label";
+        container.appendChild(label);
+    }
+    const availableCount = Math.max(0, Math.min(3, Number(available)));
+    label.replaceChildren();
+    label.style.setProperty("--stronghold-player-color", getStrongholdColourByOrder(order));
+    label.title = `可用要塞：${availableCount} / 3`;
+    label.setAttribute("aria-label", label.title);
+    for(let index = 0; index < 3; index++) {
+        const icon = createStrongholdIcon("stronghold-inventory-icon");
+        icon.classList.toggle("available", index < availableCount);
+        icon.classList.toggle("deployed", index >= availableCount);
+        label.appendChild(icon);
+    }
+};
+
+const updateMainPlayerInfo = (playerInfo, order) => {
 
     const playerInv = document.querySelector("#player-inventory");
+    playerInv.setAttribute("data-available-strongholds",
+        String(playerInfo.availableStrongholds ?? 0));
+    setPlayerIdentity(playerInv.querySelector(".player-identity"), playerInfo.name, order);
+    updateAvailableStrongholds(playerInv.querySelector(".player-identity"),
+        playerInfo.availableStrongholds, order);
 
 
     // update prestige points
@@ -210,7 +325,7 @@ const updateMainPlayerInfo = (playerInfo) => {
     }
 };
 
-const updateOtherPlayerInfo = (pInfo) => {
+const updateOtherPlayerInfo = (pInfo, order) => {
     const selector = `.other-players .other-player[pname="${pInfo.name}"]`;
     let pNode = document.querySelector(selector);
 
@@ -227,6 +342,9 @@ const updateOtherPlayerInfo = (pInfo) => {
         // now reget the node
         pNode = document.querySelector(selector);
     }
+    setPlayerIdentity(pNode.querySelector(".other-player-profile"), pInfo.name, order);
+    updateAvailableStrongholds(pNode.querySelector(".other-player-profile"),
+        pInfo.availableStrongholds, order);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;
@@ -237,9 +355,33 @@ const updateOtherPlayerInfo = (pInfo) => {
     updateCards(pInfo.devCards, pNode, ".other-inventory-cards",
                 ".other-inventory-card", "development-cards", "#other-player-dev-card-template");
 
-    // UPDATE RESERVED CARDS IN OTHER PLAYER INVENTORIES
-    updateCards(pInfo.reservedCards, pNode, ".other-inventory-cards-reserved",
-                ".other-inventory-card-reserved", "development-cards", "#other-player-reserved-card-template");
+    // Face-up reservations remain public. Blind reservations intentionally
+    // contain only cardTier and are rendered with the matching card back.
+    const reservedCardBacks = {
+        "TIER_1": "/images/GreenCard.jpg",
+        "TIER_2": "/images/YellowCard.jpg",
+        "TIER_3": "/images/BlueCard.jpg"
+    };
+    const reservedCards = (pInfo.reservedCards || []).map((card, index) => {
+        const node = document.querySelector("#other-player-reserved-card-template").content.cloneNode(true);
+        const div = node.querySelector(".other-inventory-card-reserved");
+        const image = div.querySelector("img");
+        if(card.id) {
+            div.setAttribute("card-id", card.id);
+            div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
+            if(card.tokenCost) div.setAttribute("cost", JSON.stringify(card.tokenCost));
+            if(card.costType) div.setAttribute("cost-type", card.costType);
+            image.setAttribute("src", `/images/development-cards/${card.id}.jpg`);
+            image.setAttribute("alt", `公开预留牌 ${index + 1}`);
+        } else {
+            div.setAttribute("card-tier", card.cardTier || "UNKNOWN");
+            div.setAttribute("face-down", "true");
+            image.setAttribute("src", reservedCardBacks[card.cardTier] || "/images/GreenCard.jpg");
+            image.setAttribute("alt", `暗置预留的${card.cardTier || "未知等级"}卡牌 ${index + 1}`);
+        }
+        return node;
+    });
+    pNode.querySelector(".other-inventory-cards-reserved").replaceChildren(...reservedCards);
 
     // Update nobles
     updateCards(pInfo.nobleCards, pNode, ".other-inventory-noble-cards",
@@ -281,6 +423,27 @@ const updateNoblesBoard = async (cards) => {
 let gameStateHash = "-";
 let lastState = null;
 let currentState = null;
+let turnDeadline = 0;
+let serverClockOffset = 0;
+
+const updateTurnTimer = () => {
+    const timer = document.querySelector("#turn-timer");
+    if(!timer || !currentState?.players?.length) return;
+    if(currentState.gameOver) {
+        timer.textContent = "游戏已结束";
+        timer.classList.remove("warning");
+        return;
+    }
+    const remaining = Math.max(0, Math.ceil((turnDeadline - (Date.now() + serverClockOffset)) / 1000));
+    const player = currentState.players[currentState.turnCounter];
+    if(!player) {
+        timer.textContent = "正在同步回合…";
+        timer.classList.remove("warning");
+        return;
+    }
+    timer.textContent = remaining > 0 ? `${player.name} · ${remaining} 秒` : "时间到，正在换人…";
+    timer.classList.toggle("warning", remaining <= 10);
+};
 
 const attempUpdate = () => {
     let nextCallTime = 1;
@@ -304,7 +467,8 @@ const updateGameboard = async () => {
     const windowParams = (new URL(document.location)).searchParams;
     const sessionId = windowParams.get("sessionId");
     const params = {
-        "hash": gameStateHash
+        "hash": gameStateHash,
+        "access_token": SETTINGS.getAccessToken()
     };
 
     const url = new URL(`${SETTINGS.getGS_API()}/api/sessions/${sessionId}`);
@@ -335,8 +499,19 @@ const updateGameboard = async () => {
     gameStateHash = newHash;
     console.log("[AS] Update available!");
     const data = JSON.parse(dataText);
+    const baseOnlyVersions = new Set([
+        "BASE",
+        "BASE_ORIENT_CITIES",
+        "BASE_ORIENT_TRADE_ROUTES",
+        "BASE_STRONGHOLDS"
+    ]);
+    document.body.classList.toggle("classic-game", baseOnlyVersions.has(data.gameVersion));
     lastState = currentState;
     currentState = data;
+    turnDeadline = data.turnDeadlineEpochMillis || 0;
+    serverClockOffset = (data.serverTimeEpochMillis || Date.now()) - Date.now();
+    updateTurnTimer();
+    window.dispatchEvent(new CustomEvent("splendor-state-update", {detail: data}));
     writeUpdate(lastState, currentState);
 
     // tokens update
@@ -347,12 +522,12 @@ const updateGameboard = async () => {
 
     const playersData = data.players;
     let amPlaying = false;
-    playersData.forEach((pInfo) => {
+    playersData.forEach((pInfo, index) => {
         if(pInfo.name === curUsername) {
-            updateMainPlayerInfo(pInfo);
+            updateMainPlayerInfo(pInfo, index + 1);
             amPlaying = true;
         } else {
-            updateOtherPlayerInfo(pInfo);
+            updateOtherPlayerInfo(pInfo, index + 1);
         }
     });
     const playerInv = document.querySelector("#player-inventory");
@@ -364,9 +539,9 @@ const updateGameboard = async () => {
     }
 
     updateNoblesBoard(data.nobleDeck.visibleCards);
-    updateTierRow(".board-cards-row.board-cards-level1", data.tier1Deck, data.tier1OrientDeck);
-    updateTierRow(".board-cards-row.board-cards-level2", data.tier2Deck, data.tier2OrientDeck);
-    updateTierRow(".board-cards-row.board-cards-level3", data.tier3Deck, data.tier3OrientDeck);
+    updateTierRow(".board-cards-row.board-cards-level1", data.tier1Deck, data.tier1OrientDeck, data.players);
+    updateTierRow(".board-cards-row.board-cards-level2", data.tier2Deck, data.tier2OrientDeck, data.players);
+    updateTierRow(".board-cards-row.board-cards-level3", data.tier3Deck, data.tier3OrientDeck, data.players);
 
     furtherUpdates.forEach((func) => func(data));
 
@@ -397,6 +572,11 @@ export const addUpdater = (func) => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-
+    const timer = document.createElement("div");
+    timer.id = "turn-timer";
+    timer.className = "turn-timer";
+    timer.textContent = "等待游戏状态…";
+    document.body.appendChild(timer);
+    setInterval(updateTurnTimer, 250);
     setTimeout(attempUpdate, 1);
 });

@@ -23,10 +23,12 @@ import ChooseNobleModal from "../components/modals/ChooseNobleModal.astro";
 
 import Animations from "../components/anime/Animations.astro";
 import History from "../components/History.astro";
+import GameChat from "../components/GameChat.astro";
 ---
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Splendor Trading Posts</title>
         <link rel="icon" type="image/png" href="/images/SplendorFavicon.png">
@@ -43,6 +45,7 @@ import History from "../components/History.astro";
 
     <body>
         <History></History>
+        <GameChat></GameChat>
         <ToastContainer client:load />
         <Animations></Animations>
         <GameNavMenu title=" Splendor "></GameNavMenu>
@@ -51,6 +54,10 @@ import History from "../components/History.astro";
                 <div class="player-inventory-container">
                     <div class="player-prestige-points-container">
                         <span>0</span>
+                    </div>
+                    <div class="player-identity">
+                        <p class="player-name"></p>
+                        <span class="turn-order-label"></span>
                     </div>
                     <div class="player-coat-of-arms">
                         <img>
@@ -348,7 +355,8 @@ import History from "../components/History.astro";
                             <div class="op-coa-image-container">
                                 <img>
                             </div>
-                            <p class="other-player-name">NAME</p>
+                            <p class="other-player-name player-name">NAME</p>
+                            <span class="turn-order-label"></span>
                         </div>
                     </div>
                     <div class="other-player-inventory">
@@ -433,6 +441,7 @@ import History from "../components/History.astro";
         <script src="../scripts/game.js"></script>
         <script src="../scripts/game-tradingposts.js"></script>
         <script src="../scripts/modals/modals.js"></script>
+        <script>import "../scripts/i18n-zh.js";</script>
 
     </body>
 </html>

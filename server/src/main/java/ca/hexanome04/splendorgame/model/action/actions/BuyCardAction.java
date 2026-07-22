@@ -16,8 +16,14 @@ import java.util.*;
  */
 public class BuyCardAction extends Action {
 
-    private String buyCardId;
-    private HashMap<TokenType, Integer> selectedTokens;
+    /** Identifier of the card selected for purchase. */
+    protected String buyCardId;
+    /** Real tokens selected as payment. */
+    protected HashMap<TokenType, Integer> selectedTokens;
+    /** Virtual Gold pieces selected as payment. */
+    protected int virtualGoldPieces;
+    /** Purchased cards selected for an Orient bonus-card cost. */
+    protected List<String> burnCardIds;
 
     /**
      * Construct a buy card action.
@@ -26,9 +32,37 @@ public class BuyCardAction extends Action {
      * @param selectedTokens tokens that are used to buy the card
      */
     public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens) {
+        this(buyCardId, selectedTokens, -1);
+    }
+
+    /**
+     * Construct a buy-card action with explicit virtual Gold selection.
+     *
+     * @param buyCardId card id
+     * @param selectedTokens real tokens used
+     * @param virtualGoldPieces virtual Gold pieces used, or -1 for legacy automatic selection
+     */
+    public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens,
+                         int virtualGoldPieces) {
         super(Actions.BUY_CARD);
         this.buyCardId = buyCardId;
         this.selectedTokens = selectedTokens;
+        this.virtualGoldPieces = virtualGoldPieces;
+        this.burnCardIds = null;
+    }
+
+    /**
+     * Construct a buy-card action with an explicit choice of bonus cards to discard.
+     *
+     * @param buyCardId card id
+     * @param selectedTokens real tokens used
+     * @param virtualGoldPieces virtual Gold pieces used
+     * @param burnCardIds purchased card ids selected for an Orient bonus cost
+     */
+    public BuyCardAction(String buyCardId, HashMap<TokenType, Integer> selectedTokens,
+                         int virtualGoldPieces, List<String> burnCardIds) {
+        this(buyCardId, selectedTokens, virtualGoldPieces);
+        this.burnCardIds = burnCardIds == null ? null : new ArrayList<>(burnCardIds);
     }
 
     /**
@@ -36,6 +70,24 @@ public class BuyCardAction extends Action {
      */
     public BuyCardAction() {
         this("", new HashMap<>());
+    }
+
+    /**
+     * Obtain the action identifier required by this purchase.
+     *
+     * @return buy-card action identifier
+     */
+    protected Actions requiredAction() {
+        return Actions.BUY_CARD;
+    }
+
+    /**
+     * Identify whether this purchase is a Strongholds conquest.
+     *
+     * @return false for a normal purchase
+     */
+    protected boolean isConquestPurchase() {
+        return false;
     }
 
     @Override
@@ -54,6 +106,13 @@ public class BuyCardAction extends Action {
 
         if (dc == null) {
             throw new SplendorException("Card with id '" + this.buyCardId + "' does not exist.");
+        }
+
+        if (!wasReserved) {
+            ActionResult accessError = game.validateDevelopmentCardAccess(player, dc);
+            if (accessError != null) {
+                return new ArrayList<>(List.of(accessError));
+            }
         }
 
         // for orient, can only buy satchel if you own another card with a bonus
@@ -76,16 +135,38 @@ public class BuyCardAction extends Action {
 
         ArrayList<ActionResult> result = new ArrayList<>();
 
-        if (!dc.isPurchasable(player, selectedTokens)) {
+        List<DevelopmentCard> selectedBurnCards = null;
+        if (dc instanceof OrientDevelopmentCard orientCard
+                && orientCard.getCostType() == CostType.Bonus && burnCardIds != null) {
+            selectedBurnCards = validateBurnCards(player, orientCard);
+            if (selectedBurnCards == null) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+        }
+
+        int virtualGoldPiecesUsed = virtualGoldPieces < 0
+                ? dc.getVirtualGoldPiecesUsed(player, selectedTokens) : virtualGoldPieces;
+        boolean purchasable = virtualGoldPieces < 0
+                ? dc.isPurchasable(player, selectedTokens)
+                : dc.isPurchasable(player, selectedTokens, virtualGoldPiecesUsed);
+        if (!purchasable) {
             result.add(ActionResult.INVALID_TOKENS_GIVEN);
             return result;
         }
 
+        if (virtualGoldPiecesUsed > 0) {
+            discardVirtualGoldCards(player, virtualGoldPiecesUsed);
+        }
+
+        if (!wasReserved) {
+            game.beforeDevelopmentCardLeavesBoard(player, dc);
+        }
         player.addCard(dc);
         if (wasReserved) {
             player.removeReservedCard(dc);
         } else {
-            game.takeCard(dc);
+            game.takePurchasedDevelopmentCard(dc);
         }
 
         if (dc.getTokenType() != TokenType.Satchel) {
@@ -99,7 +180,11 @@ public class BuyCardAction extends Action {
         if (dc.getClass().equals(OrientDevelopmentCard.class)) {
             OrientDevelopmentCard orientCard = (OrientDevelopmentCard) dc;
             if (orientCard.getCostType() == CostType.Bonus) {
-                player.burnBonuses(orientCard.getTokenCost());
+                if (selectedBurnCards == null) {
+                    player.burnBonuses(orientCard.getTokenCost());
+                } else {
+                    discardSelectedBonusCards(player, selectedBurnCards);
+                }
             }
             if (orientCard.getReserveNoble() && game instanceof OrientGame og && og.getNobles().size() > 0) {
                 result.add(ActionResult.MUST_RESERVE_NOBLE);
@@ -128,11 +213,17 @@ public class BuyCardAction extends Action {
             }
         }
 
-        if (result.size() == 0) {
+        boolean actionWasValid = game.getCurValidActions().contains(requiredAction());
+        boolean mandatoryStrongholdAction = game.getGameVersion()
+                == ca.hexanome04.splendorgame.model.gameversions.GameVersions.BASE_STRONGHOLDS;
+        if (mandatoryStrongholdAction) {
+            game.beginMandatoryStrongholdAction(player, dc, !wasReserved, isConquestPurchase());
+            result.add(ActionResult.MUST_CHOOSE_STRONGHOLD_ACTION);
+        } else if (result.size() == 0) {
             result.add(ActionResult.TURN_COMPLETED);
         }
 
-        if (game.getCurValidActions().contains(Actions.BUY_CARD)) {
+        if (actionWasValid) {
             result.add(ActionResult.VALID_ACTION);
         }
 
@@ -140,6 +231,67 @@ public class BuyCardAction extends Action {
         game.clearValidActions();
 
         return result;
+    }
+
+    /**
+     * Discard the Orient card or cards supplying virtual Gold for this purchase.
+     * Each such card supplies two pieces and the whole card is discarded even
+     * when only one of its pieces is required.
+     *
+     * @param player player spending virtual Gold
+     * @param piecesUsed number of virtual Gold pieces required
+     */
+    private void discardVirtualGoldCards(Player player, int piecesUsed) {
+        int cardsToDiscard = (piecesUsed + 1) / 2;
+        HashMap<TokenType, Integer> bonusesToRemove = new HashMap<>();
+        bonusesToRemove.put(TokenType.Gold, cardsToDiscard * 2);
+        player.removeBonuses(bonusesToRemove);
+
+        for (DevelopmentCard card : new ArrayList<>(player.getDevCards())) {
+            if (cardsToDiscard == 0) {
+                break;
+            }
+            if (card.getTokenType() == TokenType.Gold) {
+                player.removeCard(card);
+                cardsToDiscard--;
+            }
+        }
+    }
+
+    private List<DevelopmentCard> validateBurnCards(Player player, OrientDevelopmentCard card) {
+        if (burnCardIds.isEmpty() || new HashSet<>(burnCardIds).size() != burnCardIds.size()
+                || burnCardIds.size() > 2) {
+            return null;
+        }
+        HashMap<TokenType, Integer> selectedBonuses = new HashMap<>();
+        List<DevelopmentCard> selectedCards = new ArrayList<>();
+        for (String cardId : burnCardIds) {
+            DevelopmentCard selected = player.getPurchasedDevelopmentCard(cardId);
+            if (selected == null || selected.getTokenType() == null
+                    || selected.getTokenType() == TokenType.Gold
+                    || selected.getTokenType() == TokenType.Satchel) {
+                return null;
+            }
+            selectedCards.add(selected);
+            selectedBonuses.merge(selected.getTokenType(), selected.getBonus(), Integer::sum);
+        }
+        for (TokenType type : TokenType.values()) {
+            if (!Objects.equals(selectedBonuses.getOrDefault(type, 0),
+                    card.getTokenCost().getOrDefault(type, 0))) {
+                return null;
+            }
+        }
+        return selectedCards;
+    }
+
+    private void discardSelectedBonusCards(Player player, List<DevelopmentCard> cards) {
+        for (DevelopmentCard card : cards) {
+            HashMap<TokenType, Integer> bonus = new HashMap<>();
+            bonus.put(card.getTokenType(), card.getBonus());
+            player.removeBonuses(bonus);
+            player.addPrestigePoints(-card.getPrestigePoints());
+            player.removeCard(card);
+        }
     }
 
     @Override
@@ -154,6 +306,14 @@ public class BuyCardAction extends Action {
             int amount = entry.getValue().getAsInt();
 
             selectedTokens.put(type, amount);
+        }
+        this.virtualGoldPieces = jobj.has("virtualGoldPieces")
+                ? jobj.get("virtualGoldPieces").getAsInt() : -1;
+        if (jobj.has("burnCardIds")) {
+            this.burnCardIds = new ArrayList<>();
+            for (JsonElement element : jobj.getAsJsonArray("burnCardIds")) {
+                this.burnCardIds.add(element.getAsString());
+            }
         }
 
         return this;

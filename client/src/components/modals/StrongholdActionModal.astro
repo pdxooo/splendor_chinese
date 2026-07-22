@@ -1,0 +1,16 @@
+---
+import ModalLayout from "../../layouts/ModalLayout.astro";
+---
+<ModalLayout id="stronghold-action-modal" hasHover={false}>
+    <h1>请选择要塞行动</h1>
+    <p class="stronghold-instruction">购买完成后必须放置、移动或拆除一个要塞。</p>
+    <div class="stronghold-mode-buttons">
+        <button type="button" data-mode="place">放置/移动自己的要塞</button>
+        <button type="button" data-mode="remove">拆除对手一个要塞</button>
+    </div>
+    <div class="stronghold-card-options"></div>
+    <div class="stronghold-action-footer">
+        <p class="stronghold-selection-status" aria-live="polite"></p>
+        <button type="button" class="stronghold-confirm-btn" disabled>确认执行</button>
+    </div>
+</ModalLayout>

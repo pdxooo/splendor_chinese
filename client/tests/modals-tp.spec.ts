@@ -53,5 +53,26 @@ test.describe.parallel("Test trading posts modals", () => {
         await verifyModalCloses(page, game, putModal);
     });
 
+    test("one gold pays two of one colour after the trading-post power unlocks", async ({ page }) => {
+        const game = createBasicGame();
+        const player = game.getPlayer(MAIN_USER) as any;
+        player.tokens[TokenType.Gold] = 1;
+        player.goldTokenWorthTwoTokens = { unlocked: true };
+        const card = game.tier1Deck.getOne();
+        card.tokenCost[TokenType.Red] = 2;
+        mockGameState(page, game);
+        await page.reload();
+
+        await page.locator("#purchase-btn").click();
+        const selectable = page.locator(`#buy-card-modal .board-card-dev[card-id="${card.id}"]`);
+        await expect(selectable).toHaveClass(/purchasable/);
+        await selectable.click();
+        await page.locator("#buy-card-confirm-btn").click();
+
+        const goldPayment = page.locator(
+            '#dev-card-payment-modal board-token-counter[color="gold"] board-token .board-token span');
+        await expect(goldPayment).toHaveText("1");
+    });
+
 });
 

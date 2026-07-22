@@ -5,8 +5,10 @@ import ca.hexanome04.splendorgame.model.*;
 import ca.hexanome04.splendorgame.model.gameversions.*;
 import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -25,7 +27,7 @@ public class SessionManager {
      */
     @Autowired
     public SessionManager() {
-        this.gameSessions = new HashMap<>();
+        this.gameSessions = new ConcurrentHashMap<>();
     }
 
     /**
@@ -51,6 +53,16 @@ public class SessionManager {
     }
 
     /**
+     * Remove a live game and all state owned by its game session.
+     *
+     * @param sessionId session id to remove
+     * @return removed session, or null if no session used that id
+     */
+    public @Nullable GameSession deleteGameSession(String sessionId) {
+        return gameSessions.remove(sessionId);
+    }
+
+    /**
      * Creates and adds a new session to the session manager.
      *
      * @param sessionId session id
@@ -64,6 +76,24 @@ public class SessionManager {
     public GameSession createNewSession(String sessionId, List<PlayerInfo> players,
                                         String creatorName, String sessionName,
                                         GameVersions version) throws SplendorException {
+        return createNewSession(sessionId, players, creatorName, sessionName, version, 120);
+    }
+
+    /**
+     * Create and add a session with a turn time limit.
+     *
+     * @param sessionId session id
+     * @param players players in the session
+     * @param creatorName creator name
+     * @param sessionName session name
+     * @param version game version
+     * @param turnTimeSeconds maximum thinking time for one turn
+     * @return created game session
+     * @throws SplendorException if the session cannot be created
+     */
+    public GameSession createNewSession(String sessionId, List<PlayerInfo> players,
+                                        String creatorName, String sessionName,
+                                        GameVersions version, int turnTimeSeconds) throws SplendorException {
         // Refuse creation if session with this ID already exists
         if (gameSessions.containsKey(sessionId)) {
             throw new SplendorException("Game can not be created, the requested ID " + sessionId
@@ -74,7 +104,7 @@ public class SessionManager {
             throw new SplendorException("Game can not be created, 2-4 players required");
         }
 
-        GameSession session = new GameSession(sessionId, creatorName, sessionName);
+        GameSession session = new GameSession(sessionId, creatorName, sessionName, turnTimeSeconds);
         session.setGame(this.launchNewGame(version, players));
 
         gameSessions.put(sessionId, session);
@@ -142,7 +172,8 @@ public class SessionManager {
             p.setColour(pi.colour());
         }
 
-        GameSession session = new GameSession(sessionId, launchSessionInfo.creator(), launchSessionInfo.savegame());
+        GameSession session = new GameSession(sessionId, launchSessionInfo.creator(),
+                launchSessionInfo.savegame(), launchSessionInfo.normalizedTurnTimeSeconds());
         session.setGame(game);
 
         gameSessions.put(sessionId, session);
@@ -159,9 +190,11 @@ public class SessionManager {
     public Game launchNewGame(GameVersions version, List<PlayerInfo> players) {
 
         Game game = switch (version) {
+            case BASE -> new OrientGame(GameVersions.BASE, 15, 0);
             case BASE_ORIENT -> new OrientGame(15, 0);
             case BASE_ORIENT_CITIES -> new CitiesGame(0);
             case BASE_ORIENT_TRADE_ROUTES -> new TradingPostsGame(15, 0);
+            case BASE_STRONGHOLDS -> new StrongholdsGame(0);
         };
 
         List<Player> playerList = new ArrayList<>();
@@ -169,11 +202,21 @@ public class SessionManager {
             Player newPlayer = game.createPlayer(p.name(), p.colour());
             playerList.add(newPlayer);
         }
+        Collections.shuffle(playerList);
         game.setPlayers(playerList);
         game.createSplendorBoard();
         game.initBoard();
 
         return game;
+    }
+
+    /**
+     * Get a stable copy of all active sessions.
+     *
+     * @return active game sessions
+     */
+    public Collection<GameSession> getGameSessions() {
+        return new ArrayList<>(gameSessions.values());
     }
 
 

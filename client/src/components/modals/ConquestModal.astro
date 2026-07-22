@@ -1,0 +1,12 @@
+---
+import ModalLayout from "../../layouts/ModalLayout.astro";
+---
+<ModalLayout id="conquest-modal" hasHover={false}>
+    <h1>是否发动征服？</h1>
+    <p>带有自己三个要塞的卡牌可以额外购买，但仍须完整支付费用。</p>
+    <div class="conquest-card-options"></div>
+    <div class="button-container">
+        <button type="button" class="conquest-skip-btn">跳过</button>
+        <button type="button" class="conquest-confirm-btn">发动征服</button>
+    </div>
+</ModalLayout>

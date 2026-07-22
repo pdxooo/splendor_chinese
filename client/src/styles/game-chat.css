@@ -1,0 +1,139 @@
+.game-chat {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(22rem, calc(100vw - 2rem));
+  z-index: 20;
+  color: white;
+  border: 1px solid goldenrod;
+  border-radius: 0.7rem;
+  background: rgb(8 17 29 / 94%);
+  box-shadow: 0 0.4rem 1.3rem rgb(0 0 0 / 55%);
+  overflow: hidden;
+}
+
+.chat-header {
+  min-height: 2.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.55rem 0.45rem 0.9rem;
+  background: rgb(29 48 77 / 96%);
+}
+
+.chat-header h2 {
+  margin: 0;
+  color: #efc85d;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.chat-toggle {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid rgb(239 200 93 / 65%);
+  border-radius: 0.45rem;
+  color: #efc85d;
+  background: rgb(8 17 29 / 58%);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chat-toggle:hover,
+.chat-toggle:focus-visible {
+  color: white;
+  border-color: #efc85d;
+  outline: none;
+}
+
+.game-chat.collapsed .chat-panel { display: none; }
+.game-chat.collapsed { width: 11rem; }
+.chat-panel { padding: 0.65rem; }
+.chat-messages {
+  height: 12rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+.chat-message { overflow-wrap: anywhere; }
+.chat-message strong { color: #efc85d; margin-right: 0.35rem; }
+.chat-form { display: flex; gap: 0.4rem; }
+.chat-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #98751e;
+  border-radius: 0.35rem;
+  color: white;
+  background: #0f1a2a;
+}
+.chat-form button {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid goldenrod;
+  border-radius: 0.35rem;
+  color: #efc85d;
+  background: #172840;
+  cursor: pointer;
+}
+
+.turn-timer {
+  position: fixed;
+  top: 4.1rem;
+  left: 50%;
+  z-index: 12;
+  transform: translateX(-50%);
+  padding: 0.45rem 0.9rem;
+  border: 1px solid goldenrod;
+  border-radius: 999px;
+  color: white;
+  background: rgb(8 17 29 / 88%);
+  pointer-events: none;
+}
+.turn-timer.warning { color: #ff8b78; border-color: #ff6554; }
+.player-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  color: white;
+}
+
+.player-identity .player-name {
+  max-width: 8rem;
+  margin: 0;
+  overflow: hidden;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turn-order-label {
+  display: inline-flex;
+  min-height: 1.45rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid goldenrod;
+  border-radius: 999px;
+  color: #f5cc65;
+  background: rgb(19 34 58 / 94%);
+  font-size: 0.72rem;
+  font-weight: bold;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 70%);
+  white-space: nowrap;
+}
+
+.other-player-profile .turn-order-label {
+  align-self: center;
+}

@@ -1,5 +1,6 @@
 package ca.hexanome04.splendorgame.model.action.actions;
 
+import ca.hexanome04.splendorgame.model.CardTier;
 import ca.hexanome04.splendorgame.model.DevelopmentCard;
 import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.SplendorException;
@@ -8,6 +9,7 @@ import ca.hexanome04.splendorgame.model.action.Action;
 import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.Actions;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class ReserveCardAction extends Action {
 
     private String reserveCardId;
+    private HashMap<TokenType, Integer> putBackTokens;
 
     /**
      * Construct a reserve card action.
@@ -27,8 +30,19 @@ public class ReserveCardAction extends Action {
      * @param reserveCardId card id to be reserved from game
      */
     public ReserveCardAction(String reserveCardId) {
+        this(reserveCardId, new HashMap<>());
+    }
+
+    /**
+     * Construct a reserve action with tokens returned after receiving gold.
+     *
+     * @param reserveCardId card id, or a DECK_TIER_* id for a blind reservation
+     * @param putBackTokens tokens returned so the player finishes with at most ten
+     */
+    public ReserveCardAction(String reserveCardId, HashMap<TokenType, Integer> putBackTokens) {
         super(Actions.RESERVE_CARD);
         this.reserveCardId = reserveCardId;
+        this.putBackTokens = putBackTokens;
     }
 
     /**
@@ -43,37 +57,76 @@ public class ReserveCardAction extends Action {
 
         ArrayList<ActionResult> result = new ArrayList<>();
 
-        // get card from board
-        DevelopmentCard dc = (DevelopmentCard) game.getCardFromId(this.reserveCardId);
-        if (dc == null) {
-            throw new SplendorException("Card with id '" + this.reserveCardId + "' does not exist.");
-        }
-
         if (player.getReservedCards().size() >= 3) {
             result.add(ActionResult.MAXIMUM_CARDS_RESERVED);
             return result;
         }
 
+        int playerTokenCount = player.getTokens().values().stream().mapToInt(Integer::intValue).sum();
+        boolean goldAvailable = game.getTokens().getOrDefault(TokenType.Gold, 0) > 0;
+        int goldToReceive = goldAvailable ? 1 : 0;
+        int requiredReturnCount = Math.max(0, playerTokenCount + goldToReceive - 10);
+        int requestedReturnCount = 0;
+
+        for (Map.Entry<TokenType, Integer> entry : putBackTokens.entrySet()) {
+            int amount = entry.getValue();
+            if (amount < 0) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+            requestedReturnCount += amount;
+            int availableToReturn = player.getTokens().getOrDefault(entry.getKey(), 0);
+            if (entry.getKey() == TokenType.Gold) {
+                availableToReturn += goldToReceive;
+            }
+            if (amount > availableToReturn) {
+                result.add(ActionResult.NOT_ENOUGH_TOKENS_IN_INVENTORY);
+                return result;
+            }
+        }
+
+        if (requestedReturnCount != requiredReturnCount) {
+            result.add(ActionResult.MAXIMUM_TOKENS_IN_INVENTORY);
+            return result;
+        }
+
+        boolean faceDownReservation = this.reserveCardId.startsWith("DECK_TIER_");
+        DevelopmentCard dc;
+        if (faceDownReservation) {
+            CardTier tier = CardTier.valueOf(this.reserveCardId.substring("DECK_".length()));
+            dc = game.takeTopDevelopmentCard(tier);
+        } else {
+            dc = (DevelopmentCard) game.getCardFromId(this.reserveCardId);
+        }
+        if (dc == null) {
+            throw new SplendorException("Card with id '" + this.reserveCardId + "' does not exist.");
+        }
+
+        if (!faceDownReservation) {
+            ActionResult accessError = game.validateDevelopmentCardAccess(player, dc);
+            if (accessError != null) {
+                return new ArrayList<>(List.of(accessError));
+            }
+            game.beforeDevelopmentCardLeavesBoard(player, dc);
+        }
+
         // no error handling
-        game.takeCard(dc);
+        if (!faceDownReservation) {
+            game.takeCard(dc);
+        }
+        dc.setReservedFaceDown(faceDownReservation);
         player.reserveCard(dc);
 
 
-        // only give player gold token if they don't have 10 tokens already
-        int playerTokenCount = 0;
-        for (Map.Entry<TokenType, Integer> entry : player.getTokens().entrySet()) {
-            playerTokenCount += entry.getValue();
-        }
-        if (playerTokenCount < 10) {
-            // removes one gold token from board (if there is a gold token to take)
+        if (goldAvailable) {
             HashMap<TokenType, Integer> goldToken = new HashMap<>();
             goldToken.put(TokenType.Gold, 1);
-            boolean removeTokensResults = game.removeTokens(goldToken);
-
-            // give player gold token if there were any left
-            if (removeTokensResults) {
-                player.addTokens(goldToken);
-            }
+            game.removeTokens(goldToken);
+            player.addTokens(goldToken);
+        }
+        if (!putBackTokens.isEmpty()) {
+            player.removeTokens(putBackTokens);
+            game.addTokens(putBackTokens);
         }
 
 
@@ -93,6 +146,13 @@ public class ReserveCardAction extends Action {
 
         // if missing data, throw exception
         this.reserveCardId = jobj.get("cardId").getAsString();
+        if (jobj.has("putBackTokens") && jobj.get("putBackTokens").isJsonObject()) {
+            for (Map.Entry<String, JsonElement> entry
+                    : jobj.getAsJsonObject("putBackTokens").entrySet()) {
+                TokenType type = TokenType.valueOf(entry.getKey());
+                putBackTokens.put(type, entry.getValue().getAsInt());
+            }
+        }
         return this;
 
     }

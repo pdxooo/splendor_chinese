@@ -146,16 +146,19 @@ body {
 .player-inventory {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   max-height: 100%;
-  font-size: 2.5vmin;
+  font-size: clamp(1rem, 2.75vmin, 1.9rem);
   z-index: 3;
+  margin-left: clamp(0.75rem, 1.5vw, 1.75rem);
+  padding-top: clamp(1.2rem, 2.5vh, 2rem);
+  box-sizing: border-box;
   /* this would make the transition to a smaller inventory smoother, but breaks card moving animations... */
   /* transition: font-size 0.01s; */
 }
 
 .player-inventory.shrink {
-  font-size: 2.15vmin;
+  font-size: clamp(0.95rem, 2.4vmin, 1.65rem);
 }
 
 .player-inventory.hide {
@@ -171,10 +174,8 @@ body {
   align-items: center;
   gap: 1em;
   background: rgba(104 105 119 / 25%);
-  padding: 1em 0.7em;
-  border-top-right-radius: 1em;
-  border-bottom-right-radius: 1em;
-  border-left: none;
+  padding: 1.1em 1em;
+  border-radius: 1em;
   box-shadow: rgb(0 0 0 / 24%) 0 3px 8px;
 
   --player-inv-card-height: 6em;
@@ -183,7 +184,7 @@ body {
 .player-inventory-container > .player-prestige-points-container {
   position: absolute;
   right: -1em;
-  top: -1em;
+  top: 0.35em;
   background-image: url("/images/bluebackground.jpg");
   background-size: contain;
   border: 0.2rem solid goldenrod;
@@ -278,15 +279,20 @@ body {
 .player-inventory-reservedcards {
   position: relative;
   display: flex;
-  max-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
+  align-items: center;
+  width: var(--player-inv-card-height);
+  min-height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
+  z-index: 5;
+  overflow: visible;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved {
-  /* position: absolute; */
-  max-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  min-width: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  aspect-ratio: calc(1 / (var(--dev-card-aspect-ratio)));
+  position: relative;
+  width: var(--player-inv-card-height);
+  min-width: var(--player-inv-card-height);
+  height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
   transition: margin-left 0.3s;
+  z-index: 5;
 }
 
 .player-inventory-reservedcards .player-inventory-card-reserved:not(:first-child) {
@@ -300,12 +306,25 @@ body {
 
 .player-inventory-reservedcards .player-inventory-card-reserved > img {
   position: absolute;
-  height: calc(var(--player-inv-card-height) * var(--dev-card-aspect-ratio));
-  aspect-ratio: calc((var(--dev-card-aspect-ratio)));
+  top: 50%;
+  left: 50%;
+  height: var(--player-inv-card-height);
+  aspect-ratio: var(--dev-card-aspect-ratio);
   border-radius: var(--card-border-radius);
-  rotate: 90deg;
   box-shadow: rgba(0 0 0 / 10%) 0 4px 12px;
-  transform-origin: calc((var(--player-inv-card-height) * var(--dev-card-aspect-ratio)) / 2);
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+  transition: left 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+.player-inventory-reservedcards .player-inventory-card-reserved:hover {
+  z-index: 50;
+}
+
+.player-inventory-reservedcards .player-inventory-card-reserved:hover > img {
+  left: calc(50% + 1.5em);
+  transform: translate(-50%, -50%) rotate(90deg) scale(1.55);
+  filter: drop-shadow(0 0.4em 0.5em rgb(0 0 0 / 80%));
 }
 
 .player-inventory-nobles {
@@ -348,11 +367,15 @@ body {
 
 .board {
   flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+    "tokens tokens"
+    "cards nobles";
+  align-content: center;
   justify-content: center;
-  gap: 5%;
+  align-items: start;
+  gap: 1em 1.6em;
   font-size: 2.8vmin;
 }
 
@@ -465,6 +488,7 @@ body {
 
 /* Board tokens */
 .board-tokens {
+  grid-area: tokens;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -502,9 +526,11 @@ body {
 
 /* Board nobles */
 .board-nobles {
+  grid-area: nobles;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0.7em;
+  align-self: start;
 }
 
 .noble-card img {
@@ -513,12 +539,13 @@ body {
 }
 
 .board-nobles .noble-card img {
-  height: 4em;
+  height: clamp(4.5rem, 8.5vh, 6.3rem);
   box-shadow: var(--card-box-shadow);
 }
 
 /* Board development cards */
 .board-cards {
+  grid-area: cards;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -551,40 +578,5 @@ body {
 .board-cards-row .board-cards-dev-deck-orient > img,
 .board-cards-row .board-card-dev > img,
 .board-cards-dev-deck > span,
-.board-cards-dev-deck-orient > span,
-.board-card-dev > span,
-.board-card-dev.purchase-show-card {
-  height: 6em;
-  aspect-ratio: var(--dev-card-aspect-ratio);
-  border-radius: var(--card-border-radius);
-  box-shadow: var(--card-box-shadow);
-}
-
-.board-cards-row .board-card-dev:not(.board-card-dev-orient) + .board-card-dev-orient {
-  margin-left: calc(var(--board-deck-margin) / 3);
-}
-
-.board-card-dev,
-.board-card-dev-orient {
-  border-radius: var(--card-border-radius);
-}
-
-.board-cards-row .board-cards-dev-deck[empty],
-.board-cards-row .board-cards-dev-deck-orient[empty] {
-  visibility: hidden;
-}
-
-.board-cards-row .board-card-dev:not([card-id]),
-.board-nobles .noble-card:not([card-id])[had-card] {
-  visibility: hidden;
-}
-
-.board-nobles .noble-card:not([card-id]):not([had-card]) {
-  display: none;
-}
-
-.board-cards-dev-selectable {
-  display: flex;
-  flex-direction: row;
-  gap: 0.4em;
-}
+.board-cards-dev-deãİm¢G§²ÚîÆ­yØ\ˆY[NÂŸB‚˜›ÙK˜Û\ÜÚXËYØ[YH˜›Ø\™XØ\™Y]‹[ÜšY[˜›ÙK˜Û\ÜÚXËYØ[YH˜›Ø\™XØ\™ËY]‹YXÚË[ÜšY[Âˆ\Ü^Nˆ›Û™NÂŸB‚˜›ÙK˜Û\ÜÚXËYØ[YHØ›Ø\™˜›Ø\™XØ\™Ë\›İÈ˜›Ø\™XØ\™ËY]‹YXÚÈˆ[YË˜›ÙK˜Û\ÜÚXËYØ[YHØ›Ø\™˜›Ø\™XØ\™Ë\›İÈ˜›Ø\™XØ\™Y]ˆˆ[YÈÂˆZYÚˆÛ[\
+\™[KN]šLÜ™[JNÂŸB

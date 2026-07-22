@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -46,6 +47,7 @@ public class CitiesGame extends OrientGame {
 
         String line = "";
         citiesDeck = new Deck<>();
+        List<CityCard> cityFaces = new ArrayList<>();
 
         try (InputStream inputStream = ResourceUtils.getURL(cityCardsFilename).openStream();
              BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
@@ -77,7 +79,7 @@ public class CitiesGame extends OrientGame {
                 String cardId = card[6];
 
                 switch (card[5]) {
-                    case "C" -> citiesDeck.add(new CityCard(prestigePoints, tokenCost, cardId, numSameBonuses));
+                    case "C" -> cityFaces.add(new CityCard(prestigePoints, tokenCost, cardId, numSameBonuses));
                     default -> throw new Exception("File not in proper format");
                 }
 
@@ -85,6 +87,18 @@ public class CitiesGame extends OrientGame {
             }
         } catch (Exception e) {
             logger.error("Could not read file"); // Testing
+        }
+
+        // The production set contains seven physical, double-sided tiles.
+        // Select one random face from each tile before choosing the three cities.
+        if (cityFaces.size() == 14) {
+            for (int index = 0; index < cityFaces.size(); index += 2) {
+                int selectedFace = index + (ThreadLocalRandom.current().nextBoolean() ? 1 : 0);
+                citiesDeck.add(cityFaces.get(selectedFace));
+            }
+        } else {
+            // Small test catalogues contain one entry per test city.
+            cityFaces.forEach(citiesDeck::add);
         }
 
     }

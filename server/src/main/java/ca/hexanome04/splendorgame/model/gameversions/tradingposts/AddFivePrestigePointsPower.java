@@ -1,7 +1,7 @@
 package ca.hexanome04.splendorgame.model.gameversions.tradingposts;
 
 import ca.hexanome04.splendorgame.model.TokenType;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that represents the add five prestige points power.
@@ -9,17 +9,12 @@ import java.util.HashMap;
 public class AddFivePrestigePointsPower extends Power {
 
     private boolean isUsed = false;
-    private HashMap<TokenType, Integer> requirements = new HashMap<>() {
-        {
-            put(TokenType.Green, 5);
-        }
-    };
 
     /**
      * Creates a new add five prestige points power object.
      */
     public AddFivePrestigePointsPower() {
-        super();
+        super(Map.of(TokenType.Green, 5));
     }
 
     /**
@@ -30,7 +25,7 @@ public class AddFivePrestigePointsPower extends Power {
      */
     @Override
     public boolean conditionMet(TradingPostsPlayer player) {
-        return (player.hasBonuses(requirements) && player.hasNobles());
+        return requirementsMet(player) && player.hasNobles();
     }
 
     /**

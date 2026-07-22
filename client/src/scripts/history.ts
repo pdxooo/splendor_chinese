@@ -4,6 +4,41 @@ type Card = {
     newTokenType?: string;
 };
 
+const historyCardPreview = document.createElement("img");
+historyCardPreview.classList.add("history-card-preview");
+historyCardPreview.alt = "卡牌放大预览";
+historyCardPreview.hidden = true;
+document.body.appendChild(historyCardPreview);
+
+const hideHistoryCardPreview = (): void => {
+    historyCardPreview.hidden = true;
+};
+
+const showHistoryCardPreview = (thumbnail: HTMLImageElement): void => {
+    historyCardPreview.src = thumbnail.src;
+    historyCardPreview.hidden = false;
+
+    const thumbnailRect = thumbnail.getBoundingClientRect();
+    const previewWidth = Math.min(224, window.innerWidth * 0.22);
+    const previewHeight = previewWidth * 1.4;
+    const gap = 12;
+    let left = thumbnailRect.right + gap;
+    if (left + previewWidth > window.innerWidth - gap) {
+        left = thumbnailRect.left - previewWidth - gap;
+    }
+    const top = Math.max(gap, Math.min(
+        thumbnailRect.top - previewHeight / 3,
+        window.innerHeight - previewHeight - gap,
+    ));
+
+    historyCardPreview.style.left = `${Math.max(gap, left)}px`;
+    historyCardPreview.style.top = `${top}px`;
+};
+
+const enableHistoryCardPreview = (thumbnail: HTMLImageElement): void => {
+    thumbnail.classList.add("history-card-thumbnail");
+};
+
 /**
  * Returns the difference of the two cards list.
  * @param oldCards 
@@ -55,6 +90,8 @@ export const writeCardUpdate = (prefix: string, cards: Card[], imagePath: string
     cards.forEach(c => {
         const img = document.createElement("img");
         img.setAttribute("src", `/images/${imagePath}/${c.id}.jpg`);
+        img.setAttribute("alt", `卡牌 ${c.id}`);
+        enableHistoryCardPreview(img);
         imgContainer.appendChild(img);
     });
 
@@ -64,10 +101,10 @@ export const writeCardUpdate = (prefix: string, cards: Card[], imagePath: string
 const writeSatchelUpdate = (cards: Card[]) => {
     if(cards.length === 0) return;
     const tokenText = document.createElement("div");
-    tokenText.textContent = "is now";
+    tokenText.textContent = "现在是";
     tokenText.appendChild(createToken(cards[0].newTokenType));
 
-    writeCardUpdate("Bonus of", cards, "development-cards", tokenText.innerHTML);
+    writeCardUpdate("宝物袋奖励颜色变更：", cards, "development-cards", tokenText.innerHTML);
 };
 
 // token amount for showing
@@ -98,8 +135,8 @@ const checkTokens = (oldTokens: any, newTokens: any) => {
     };
 
     // initial event content
-    const tookContent = setupDiv("Took ");
-    const putBackContent = setupDiv("Returned ");
+    const tookContent = setupDiv("拿取宝石：");
+    const putBackContent = setupDiv("返还宝石：");
 
     let taken = [];
     let putback = [];
@@ -138,6 +175,16 @@ const checkTokens = (oldTokens: any, newTokens: any) => {
 };
 
 const historyContainer = document.querySelector("#history .drawer");
+historyContainer.addEventListener("mouseover", (event: MouseEvent) => {
+    const target = event.target as Element;
+    const thumbnail = target.closest(".history-card-thumbnail") as HTMLImageElement;
+    if(thumbnail) showHistoryCardPreview(thumbnail);
+});
+historyContainer.addEventListener("mouseout", (event: MouseEvent) => {
+    const target = event.target as Element;
+    if(target.closest(".history-card-thumbnail")) hideHistoryCardPreview();
+});
+
 export const focusLastEvent = () => {
     const lastEventContainer = historyContainer.querySelector(".event-container:last-child");
     if(lastEventContainer) {
@@ -153,7 +200,7 @@ export const focusLastEvent = () => {
 const startEvent = (name: string): void => {
     const tNode = (document.querySelector("#history-event-template") as HTMLTemplateElement)
                    .content.cloneNode(true) as HTMLDivElement;
-    tNode.querySelector(".event-name").textContent = `${name}'${name[name.length - 1].toLowerCase() === "s" ? "" : "s"} turn`;
+    tNode.querySelector(".event-name").textContent = `${name} 的回合`;
 
     historyContainer.appendChild(tNode);
     focusLastEvent();
@@ -187,7 +234,7 @@ const writeCurrentTurn = (last: any, current: any): void => {
 
     if(!last || current.players[current.turnCounter].name !== last.players[last.turnCounter].name) {
         const name = current.players[current.turnCounter].name;
-        console.log(`${name}'s turn`);
+        console.log(`${name} 的回合`);
         startEvent(name);
     }
 };
@@ -198,17 +245,17 @@ const writeGameOver = (data: any): void => {
 
     const overNode = (document.querySelector("#history-event-template") as HTMLTemplateElement)
                    .content.cloneNode(true) as HTMLDivElement;
-    overNode.querySelector(".event-name").textContent = "The game has ended.";
+    overNode.querySelector(".event-name").textContent = "本局游戏结束。";
 
     const winners = data.winners;
 
     if(winners.length > 1) {
         const names = winners.map(p => p.name);
-        const text = names.length == 2 ? names.join(" and ") : names.join(", ");
-        tNode.querySelector(".event-name").textContent = `🎉 ${text} are the winners! 🎉`;
+        const text = names.join("、");
+        tNode.querySelector(".event-name").textContent = `🎉 ${text} 并列获胜！🎉`;
     } else {
         // one person won
-        tNode.querySelector(".event-name").textContent = `🎉 ${winners[0].name} is the winner! 🎉`;
+        tNode.querySelector(".event-name").textContent = `🎉 ${winners[0].name} 获胜！🎉`;
     }
 
     historyContainer.appendChild(overNode);
@@ -246,19 +293,19 @@ export const writeUpdate = (last: any, current: any): void => {
         // dev cards
         {
             const [newCards, oldCards, changedCards] = cardsDiff(oldState.devCards, newState.devCards);
-            writeCardUpdate("Obtained", newCards, "development-cards");
-            writeCardUpdate("Used", oldCards, "development-cards");
+            writeCardUpdate("获得发展卡：", newCards, "development-cards");
+            writeCardUpdate("弃置发展卡：", oldCards, "development-cards");
             writeSatchelUpdate(changedCards);
         }
 
         // reserved dev
-        writeCardUpdate("Reserved", cardsDiff(oldState.reservedCards, newState.reservedCards)[0], "development-cards");
+        writeCardUpdate("预留发展卡：", cardsDiff(oldState.reservedCards, newState.reservedCards)[0], "development-cards");
 
         // nobles
-        writeCardUpdate("Visited by", cardsDiff(oldState.nobleCards, newState.nobleCards)[0], "nobles");
+        writeCardUpdate("获得领主牌：", cardsDiff(oldState.nobleCards, newState.nobleCards)[0], "nobles");
 
         // reserved nobles
-        writeCardUpdate("Reserved", cardsDiff(oldState.reservedNobles, newState.reservedNobles)[0], "nobles");
+        writeCardUpdate("预留领主牌：", cardsDiff(oldState.reservedNobles, newState.reservedNobles)[0], "nobles");
 
         playerUpdaters.forEach(func => func(oldState, newState));
     });

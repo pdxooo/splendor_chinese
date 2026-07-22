@@ -3,11 +3,13 @@ package ca.hexanome04.splendorgame;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Defines Spring Boot Application for Splendor Game.
  */
 @SpringBootApplication(proxyBeanMethods = false)
+@EnableScheduling
 public class SplendorGameApplication {
 
     private static ApplicationContext appCtx;

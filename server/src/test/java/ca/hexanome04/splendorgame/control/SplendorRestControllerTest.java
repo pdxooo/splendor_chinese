@@ -3,10 +3,12 @@ package ca.hexanome04.splendorgame.control;
 import ca.hexanome04.splendorgame.control.templates.LaunchSessionInfo;
 import ca.hexanome04.splendorgame.control.templates.PlayerInfo;
 import ca.hexanome04.splendorgame.model.GameUtils;
+import ca.hexanome04.splendorgame.model.DevelopmentCard;
 import ca.hexanome04.splendorgame.model.Player;
 import ca.hexanome04.splendorgame.model.action.*;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.*;
@@ -59,6 +61,7 @@ public class SplendorRestControllerTest {
         sessionManager = new SessionManager();
         restController = new SplendorRestController(sessionManager, auth,
                 gameSavesManager, gameServiceName, 30000);
+        restController.internalDeleteToken = "test-delete-secret";
 
         LaunchSessionInfo launchSessionInfo = new LaunchSessionInfo(
                 gameServiceName,
@@ -194,7 +197,9 @@ public class SplendorRestControllerTest {
     @Test
     @DisplayName("Verify that the list of possible actions is obtained through the end point")
     public void testApiGetActions() {
-        assertThat(restController.getActions(testGameSessionId, "p1").getStatusCode()).isEqualTo(HttpStatus.OK);
+        String currentPlayer = sessionManager.getGameSession(testGameSessionId)
+                .getGame().getTurnCurrentPlayer().getName();
+        assertThat(restController.getActions(testGameSessionId, currentPlayer).getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     /**
@@ -226,6 +231,75 @@ public class SplendorRestControllerTest {
 
         assertThat(restController.putAction("token", testGameSessionId, "p1", Actions.BUY_CARD, "{}")
                 .getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Verify that a completed game remains available until the room owner deletes it.
+     */
+    @Test
+    @DisplayName("Winning action keeps the completed session available")
+    public void testWinningActionDoesNotDeleteSession() {
+        Game game = Mockito.mock(Game.class);
+        Player player = Mockito.mock(Player.class);
+        Initializer initializer = Mockito.mock(Initializer.class);
+        ArrayList<ActionResult> result = new ArrayList<>(List.of(
+                ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED));
+
+        Mockito.when(auth.getNameFromToken("token")).thenReturn("p1");
+        Mockito.when(game.getPlayerFromName("p1")).thenReturn(player);
+        Mockito.when(game.getTurnCurrentPlayer()).thenReturn(player);
+        Mockito.when(player.getName()).thenReturn("p1");
+        Mockito.when(game.getCurValidActions()).thenReturn(List.of(Actions.TAKE_TOKEN));
+        Mockito.when(game.getTurnCounter()).thenReturn(1);
+        Mockito.when(game.takeAction(Mockito.eq("p1"), Mockito.any()))
+                .thenReturn(result);
+        Mockito.when(game.isGameOver()).thenReturn(true);
+
+        restController.initializer = initializer;
+        sessionManager.getGameSession(testGameSessionId).setGame(game);
+
+        ResponseEntity<String> response = restController.putAction(
+                "token", testGameSessionId, "p1", Actions.TAKE_TOKEN,
+                "{\"takeTokens\":{},\"putBackTokens\":{}}");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNotNull();
+        Mockito.verify(initializer, Mockito.never()).deleteGameSession(testGameSessionId);
+    }
+
+    /**
+     * Verify that a completed room is removed after the result display window.
+     */
+    @Test
+    @DisplayName("Completed session is deleted after its retention window")
+    public void testCompletedSessionDeletesAfterRetentionWindow() {
+        Game game = Mockito.mock(Game.class);
+        Player player = Mockito.mock(Player.class);
+        Initializer initializer = Mockito.mock(Initializer.class);
+        ArrayList<ActionResult> result = new ArrayList<>(List.of(
+                ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED));
+
+        Mockito.when(auth.getNameFromToken("token")).thenReturn("p1");
+        Mockito.when(game.getPlayerFromName("p1")).thenReturn(player);
+        Mockito.when(game.getTurnCurrentPlayer()).thenReturn(player);
+        Mockito.when(player.getName()).thenReturn("p1");
+        Mockito.when(game.getCurValidActions()).thenReturn(List.of(Actions.TAKE_TOKEN));
+        Mockito.when(game.getTurnCounter()).thenReturn(1);
+        Mockito.when(game.takeAction(Mockito.eq("p1"), Mockito.any()))
+                .thenReturn(result);
+        Mockito.when(game.isGameOver()).thenReturn(true);
+
+        restController.initializer = initializer;
+        restController.completedGameRetentionMillis = 10;
+        sessionManager.getGameSession(testGameSessionId).setGame(game);
+
+        ResponseEntity<String> response = restController.putAction(
+                "token", testGameSessionId, "p1", Actions.TAKE_TOKEN,
+                "{\"takeTokens\":{},\"putBackTokens\":{}}");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Mockito.verify(initializer, Mockito.timeout(1000))
+                .deleteGameSession(testGameSessionId);
     }
 
     @Test
@@ -299,4 +373,103 @@ public class SplendorRestControllerTest {
         assertThat(deckObject.has("cards")).isFalse();
         assertThat(deckObject.has("visibleCards")).isTrue();
     }
+
+    @Test
+    @DisplayName("Blind reserved cards expose their tier only to other players")
+    public void testBlindReservedCardsHideFacesFromOtherPlayers() {
+        Game game = sessionManager.getGameSession(testGameSessionId).getGame();
+        Player firstPlayer = game.getPlayerFromName("p1");
+        Player secondPlayer = game.getPlayerFromName("p2");
+        DevelopmentCard ownBlindCard = game.getTier1PurchasableDevelopmentCards().get(0);
+        DevelopmentCard otherBlindCard = game.getTier2PurchasableDevelopmentCards().get(0);
+        ownBlindCard.setReservedFaceDown(true);
+        otherBlindCard.setReservedFaceDown(true);
+        firstPlayer.reserveCard(ownBlindCard);
+        secondPlayer.reserveCard(otherBlindCard);
+        Mockito.when(auth.getNameFromToken("viewer-token")).thenReturn("p1");
+
+        ResponseEntity result = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null, "viewer-token").getResult();
+        JsonArray players = JsonParser.parseString((String) result.getBody())
+                .getAsJsonObject().getAsJsonArray("players");
+        JsonObject ownPlayer = null;
+        JsonObject otherPlayer = null;
+        for (int i = 0; i < players.size(); i++) {
+            JsonObject candidate = players.get(i).getAsJsonObject();
+            if (candidate.get("name").getAsString().equals("p1")) ownPlayer = candidate;
+            if (candidate.get("name").getAsString().equals("p2")) otherPlayer = candidate;
+        }
+        JsonObject ownReservedCard = ownPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+        JsonObject otherReservedCard = otherPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+
+        assertThat(ownReservedCard.has("id")).isTrue();
+        assertThat(ownReservedCard.has("tokenCost")).isTrue();
+        assertThat(otherReservedCard.get("cardTier").getAsString()).isEqualTo("TIER_2");
+        assertThat(otherReservedCard.entrySet().size()).isEqualTo(1);
+        assertThat(otherReservedCard.has("id")).isFalse();
+        assertThat(otherReservedCard.has("tokenCost")).isFalse();
+        assertThat(otherReservedCard.has("prestigePoints")).isFalse();
+    }
+
+    /** A trusted lobby request deletes the game and its public state. */
+    @Test
+    @DisplayName("Verify authenticated session deletion")
+    public void testDeleteSession() {
+        ResponseEntity response = restController.deleteSession(
+                testGameSessionId, "test-delete-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNull();
+        ResponseEntity state = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null).getResult();
+        assertThat(state.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    /** A public caller without the internal secret cannot delete a game. */
+    @Test
+    @DisplayName("Reject unauthenticated session deletion")
+    public void testDeleteSessionRejectsWrongSecret() {
+        ResponseEntity response = restController.deleteSession(
+                testGameSessionId, "wrong-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(sessionManager.getGameSession(testGameSessionId)).isNotNull();
+    }
+
+    /** A repeated trusted deletion request succeeds without side effects. */
+    @Test
+    @DisplayName("Missing session deletion is idempotent")
+    public void testDeleteMissingSession() {
+        ResponseEntity response = restController.deleteSession(
+                "missing", "test-delete-secret");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("Face-up reserved cards remain public to other players")
+    public void testFaceUpReservedCardsRemainVisibleToOtherPlayers() {
+        Game game = sessionManager.getGameSession(testGameSessionId).getGame();
+        Player secondPlayer = game.getPlayerFromName("p2");
+        DevelopmentCard publicCard = game.getTier2PurchasableDevelopmentCards().get(0);
+        publicCard.setReservedFaceDown(false);
+        secondPlayer.reserveCard(publicCard);
+        Mockito.when(auth.getNameFromToken("viewer-token")).thenReturn("p1");
+
+        ResponseEntity result = (ResponseEntity) restController
+                .getGameState(testGameSessionId, null, "viewer-token").getResult();
+        JsonArray players = JsonParser.parseString((String) result.getBody())
+                .getAsJsonObject().getAsJsonArray("players");
+        JsonObject otherPlayer = null;
+        for (int i = 0; i < players.size(); i++) {
+            JsonObject candidate = players.get(i).getAsJsonObject();
+            if (candidate.get("name").getAsString().equals("p2")) otherPlayer = candidate;
+        }
+        JsonObject reservedCard = otherPlayer.getAsJsonArray("reservedCards").get(0).getAsJsonObject();
+
+        assertThat(reservedCard.get("id").getAsString()).isEqualTo(publicCard.getId());
+        assertThat(reservedCard.has("tokenCost")).isTrue();
+        assertThat(reservedCard.has("prestigePoints")).isTrue();
+    }
 }
+

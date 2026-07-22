@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import "../styles/gameboard.css";
 import "../styles/gameboard-otherplayers.css";
 import "../styles/modals.css";
+import "../styles/strongholds.css";
 import GameOverModal from "../components/modals/GameOverModal.astro";
 import TakeTurnModal from "../components/modals/TakeTurnModal.astro";
 import TakeTokenModal from "../components/modals/TakeTokenModal.astro";
@@ -17,13 +18,17 @@ import GameNavMenu from "../components/GameNavMenu.astro";
 import ChooseSatchelModal from "../components/modals/ChooseSatchelModal.astro";
 import ReserveNobleModal from "../components/modals/ReserveNobleModal.astro";
 import ChooseNobleModal from "../components/modals/ChooseNobleModal.astro";
+import StrongholdActionModal from "../components/modals/StrongholdActionModal.astro";
+import ConquestModal from "../components/modals/ConquestModal.astro";
 
 import Animations from "../components/anime/Animations.astro";
 import History from "../components/History.astro";
+import GameChat from "../components/GameChat.astro";
 ---
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Splendor</title>
         <link rel="icon" type="image/png" href="/images/SplendorFavicon.png">
@@ -40,6 +45,7 @@ import History from "../components/History.astro";
 
     <body>
         <History></History>
+        <GameChat></GameChat>
         <ToastContainer client:load />
         <Animations></Animations>
         <GameNavMenu title=" Splendor "></GameNavMenu>
@@ -48,6 +54,10 @@ import History from "../components/History.astro";
                 <div class="player-inventory-container">
                     <div class="player-prestige-points-container">
                         <span>0</span>
+                    </div>
+                    <div class="player-identity">
+                        <p class="player-name"></p>
+                        <span class="turn-order-label"></span>
                     </div>
                     <div class="player-inventory-tokens">
                         <!-- RED -->
@@ -244,6 +254,8 @@ import History from "../components/History.astro";
         <ChooseSatchelModal></ChooseSatchelModal>
         <ReserveNobleModal></ReserveNobleModal>
         <ChooseNobleModal></ChooseNobleModal>
+        <StrongholdActionModal></StrongholdActionModal>
+        <ConquestModal></ConquestModal>
 
         <!-- Templates to be used throughout the game -->
         <template id="board-card-dev-template" card-id>
@@ -281,7 +293,8 @@ import History from "../components/History.astro";
                         <span>15</span>
                     </div>
                     <div class="other-player-profile">
-                        <p class="other-player-name">NAME</p>
+                        <p class="other-player-name player-name">NAME</p>
+                        <span class="turn-order-label"></span>
                     </div>
                     <div class="other-player-inventory">
                         <div class="other-player-tokens">
@@ -364,6 +377,8 @@ import History from "../components/History.astro";
 
         <script src="../scripts/game.js"></script>
         <script  src="../scripts/modals/modals.js"></script>
+        <script src="../scripts/modals/strongholds.js"></script>
+        <script>import "../scripts/i18n-zh.js";</script>
 
     </body>
 </html>

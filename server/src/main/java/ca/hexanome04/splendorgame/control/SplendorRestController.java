@@ -10,22 +10,32 @@ import ca.hexanome04.splendorgame.model.action.ActionResult;
 import ca.hexanome04.splendorgame.model.action.Actions;
 import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dacbiet.simpoll.ContentWatcher;
 import dev.dacbiet.simpoll.Fetcher;
 import dev.dacbiet.simpoll.ResultGenerator;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -45,6 +55,11 @@ public class SplendorRestController {
     private final GameSavesManager gameSavesManager;
     private final long longPollTimeout;
     private final Map<String, ContentWatcher> gameWatcher;
+    private final Set<String> completedGameDeletions;
+    long completedGameRetentionMillis = TimeUnit.MINUTES.toMillis(1);
+
+    @Value("${SPLENDOR_INTERNAL_DELETE_TOKEN:}")
+    String internalDeleteToken;
 
     @Autowired
     Initializer initializer;
@@ -70,6 +85,7 @@ public class SplendorRestController {
         this.gameServiceName = gameServiceName;
         this.longPollTimeout = longPollTimeout;
         this.gameWatcher = new HashMap<>();
+        this.completedGameDeletions = ConcurrentHashMap.newKeySet();
     }
 
     /**
@@ -81,6 +97,51 @@ public class SplendorRestController {
     public String online() {
         return "The server currently has " + sessionManager.getNumSessions() + " sessions created.";
 
+    }
+
+    /**
+     * Delete a live game after authenticating the lobby service.
+     *
+     * @param sessionId session id to delete
+     * @param suppliedToken shared internal service token
+     * @return deletion result
+     */
+    @DeleteMapping(value = "/api/sessions/{sessionId}")
+    public ResponseEntity<String> deleteSession(
+            @PathVariable String sessionId,
+            @RequestHeader(value = "X-Splendor-Internal-Token", required = false)
+            String suppliedToken) {
+        if (internalDeleteToken == null || internalDeleteToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Internal deletion is not configured.");
+        }
+        if (!secureTokenMatches(suppliedToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden.");
+        }
+
+        GameSession removed = sessionManager.deleteGameSession(sessionId);
+        if (removed == null) {
+            // Deletion is idempotent: after a game-server restart the lobby may
+            // still ask us to remove a room whose in-memory game is already gone.
+            logger.info("Game session {} was already deleted.", sessionId);
+            return ResponseEntity.status(HttpStatus.OK).body("");
+        }
+
+        ContentWatcher watcher = gameWatcher.remove(sessionId);
+        if (watcher != null) {
+            watcher.markDirty();
+        }
+        logger.info("Deleted game session: {}", sessionId);
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
+    private boolean secureTokenMatches(String suppliedToken) {
+        if (suppliedToken == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                internalDeleteToken.getBytes(StandardCharsets.UTF_8),
+                suppliedToken.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -154,7 +215,8 @@ public class SplendorRestController {
             sessionManager.createNewSession(sessionId, launchSessionInfo.players(),
                     launchSessionInfo.creator(),
                     launchSessionInfo.savegame(),
-                    gameVersion);
+                    gameVersion,
+                    launchSessionInfo.normalizedTurnTimeSeconds());
         }
         logger.info("Launched new game session: " + sessionId);
         gameWatcher.put(sessionId, new ContentWatcher());
@@ -165,10 +227,13 @@ public class SplendorRestController {
      *
      * @param sessionId session id to get game state of
      * @param hash optional hash from client
+     * @param token access token identifying which player's cards may be shown
      * @return JSON object of game state
      */
     @GetMapping(value = "/api/sessions/{sessionId}", produces = "application/json; charset=utf-8")
-    public DeferredResult getGameState(@PathVariable String sessionId, @RequestParam(required = false) String hash) {
+    public DeferredResult getGameState(@PathVariable String sessionId,
+                                       @RequestParam(required = false) String hash,
+                                       @RequestParam(name = "access_token", required = false) String token) {
         try {
             // Check if session exists
             GameSession game = sessionManager.getGameSession(sessionId);
@@ -177,8 +242,8 @@ public class SplendorRestController {
             }
 
             ContentWatcher watcher = gameWatcher.get(sessionId);
-            // serialize game
-            Fetcher fetcher = () -> SplendorTypeAdapter.newClientGson().toJson(game.getGame());
+            String viewerName = token == null ? "" : auth.getNameFromToken(token);
+            Fetcher fetcher = () -> serializeGameForViewer(game, viewerName);
 
             return ResultGenerator.getStringResult(watcher, fetcher, hash, this.longPollTimeout);
         } catch (SplendorException e) {
@@ -196,6 +261,17 @@ public class SplendorRestController {
     }
 
     /**
+     * Preserve the original two-argument game-state entry point.
+     *
+     * @param sessionId game session id
+     * @param hash hash of the previously observed state
+     * @return deferred game-state response
+     */
+    public DeferredResult getGameState(String sessionId, String hash) {
+        return getGameState(sessionId, hash, null);
+    }
+
+    /**
      * Get players in the specified game session.
      *
      * @param sessionId game session id
@@ -208,8 +284,11 @@ public class SplendorRestController {
                 throw new SplendorException("There is no session associated this session ID: " + sessionId + ".");
             }
 
-            String serializedPlayers = SplendorTypeAdapter.newClientGson()
-                    .toJson(sessionManager.getGameSession(sessionId).getGame().getPlayers());
+            Gson gson = SplendorTypeAdapter.newClientGson();
+            JsonArray players = gson.toJsonTree(
+                    sessionManager.getGameSession(sessionId).getGame().getPlayers()).getAsJsonArray();
+            hideReservedCardFaces(players, "");
+            String serializedPlayers = gson.toJson(players);
             return ResponseEntity.status(HttpStatus.OK).body(serializedPlayers);
         } catch (SplendorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -217,6 +296,56 @@ public class SplendorRestController {
             logger.warn("Issue while retrieving player data: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Server ran into an issue while retrieving player data.");
+        }
+    }
+
+    private String serializeGameForViewer(GameSession session, String viewerName) {
+        Gson gson = SplendorTypeAdapter.newClientGson();
+        Game game = session.getGame();
+        JsonObject gameJson = gson.toJsonTree(game).getAsJsonObject();
+        hideReservedCardFaces(gameJson.getAsJsonArray("players"), viewerName);
+        gameJson.addProperty("turnTimeSeconds", session.getTurnTimeSeconds());
+        gameJson.addProperty("turnDeadlineEpochMillis", session.getTurnDeadlineEpochMillis());
+        gameJson.add("chatMessages", gson.toJsonTree(session.getChatMessages()));
+        return gson.toJson(gameJson);
+    }
+
+    /**
+     * Face-up reservations remain public. For blind reservations, other
+     * players may know the tier but not the face. Replace only those hidden
+     * cards with tier-only objects so IDs and costs never reach an
+     * unauthorized browser.
+     */
+    private void hideReservedCardFaces(JsonArray players, String viewerName) {
+        if (players == null) {
+            return;
+        }
+        for (JsonElement playerElement : players) {
+            JsonObject player = playerElement.getAsJsonObject();
+            String playerName = player.get("name").getAsString();
+            if (playerName.equals(viewerName)) {
+                continue;
+            }
+
+            JsonArray hiddenCards = new JsonArray();
+            JsonArray reservedCards = player.getAsJsonArray("reservedCards");
+            if (reservedCards != null) {
+                for (JsonElement cardElement : reservedCards) {
+                    JsonObject reservedCard = cardElement.getAsJsonObject();
+                    JsonElement faceDown = reservedCard.get("reservedFaceDown");
+                    if (faceDown != null && !faceDown.isJsonNull() && !faceDown.getAsBoolean()) {
+                        hiddenCards.add(reservedCard);
+                        continue;
+                    }
+                    JsonObject hiddenCard = new JsonObject();
+                    JsonElement tier = reservedCard.get("cardTier");
+                    if (tier != null) {
+                        hiddenCard.add("cardTier", tier);
+                    }
+                    hiddenCards.add(hiddenCard);
+                }
+            }
+            player.add("reservedCards", hiddenCards);
         }
     }
 
@@ -236,7 +365,11 @@ public class SplendorRestController {
                 throw new SplendorException("There is no session associated this session ID: " + sessionId + ".");
             }
             // Check if player exists
-            Game game = sessionManager.getGameSession(sessionId).getGame();
+            GameSession gameSession = sessionManager.getGameSession(sessionId);
+            if (gameSession.advanceTurnIfExpired()) {
+                gameWatcher.get(sessionId).markDirty();
+            }
+            Game game = gameSession.getGame();
             Player player = game.getPlayerFromName(playerName);
             if (player == null) {
                 throw new SplendorException("The specified player does not exist in this session.");
@@ -285,7 +418,8 @@ public class SplendorRestController {
             if (sessionManager.getGameSession(sessionId) == null) {
                 throw new SplendorException("There is no session associated this session ID: " + sessionId + ".");
             }
-            Game game = sessionManager.getGameSession(sessionId).getGame();
+            GameSession gameSession = sessionManager.getGameSession(sessionId);
+            Game game = gameSession.getGame();
             Player player = game.getPlayerFromName(playerName);
 
             if (player == null) {
@@ -296,35 +430,47 @@ public class SplendorRestController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token does not match requested players name.");
             }
 
-            List<Actions> validActions = game.getCurValidActions();
+            synchronized (gameSession) {
+                if (gameSession.advanceTurnIfExpired()) {
+                    gameWatcher.get(sessionId).markDirty();
+                }
+                game = gameSession.getGame();
 
-            if (!validActions.contains(actionIdentifier)) {
-                throw new SplendorException("Given action is not valid: " + actionIdentifier);
-            }
+                if (!game.getTurnCurrentPlayer().getName().equals(playerName)) {
+                    throw new SplendorException("思考时间已到，当前回合已经交给下一位玩家。");
+                }
 
-            JsonObject jobj = JsonParser.parseString(bodyData).getAsJsonObject();
+                List<Actions> validActions = game.getCurValidActions();
 
-            logger.info("Valid actions BEFORE turn: " + game.getCurValidActions());
+                if (!validActions.contains(actionIdentifier)) {
+                    throw new SplendorException("Given action is not valid: " + actionIdentifier);
+                }
 
-            ArrayList<ActionResult> actionResult =
-                    game.takeAction(playerName, ActionDecoder.createAction(actionIdentifier.toString(), jobj));
+                JsonObject jobj = JsonParser.parseString(bodyData).getAsJsonObject();
 
-            if (game.isGameOver()) {
-                initializer.deleteGameSession(sessionId);
-            }
+                logger.info("Valid actions BEFORE turn: " + game.getCurValidActions());
 
-            if (!actionResult.contains(ActionResult.VALID_ACTION)) {
-                // This should technically only have the ones that are errors,
-                // not the ones that are because they need to do an extra action.
-                // (Since, the ones that require an additional action have VALID_ACTION)
-                Optional<ActionResult> result = actionResult.stream()
-                        .filter(ar -> ar != ActionResult.TURN_COMPLETED) // idk if necessary
-                        .findFirst();
-                if (result.isPresent() && !result.get().getDescription().isEmpty()) {
-                    String desc = result.get().getDescription();
-                    throw new SplendorException(desc);
-                } else {
-                    throw new SplendorException("Invalid action performed.");
+                int turnBefore = game.getTurnCounter();
+                ArrayList<ActionResult> actionResult =
+                        game.takeAction(playerName, ActionDecoder.createAction(actionIdentifier.toString(), jobj));
+
+                if (!actionResult.contains(ActionResult.VALID_ACTION)) {
+                    // This should technically only have the ones that are errors,
+                    // not the ones that are because they need to do an extra action.
+                    // (Since, the ones that require an additional action have VALID_ACTION)
+                    Optional<ActionResult> result = actionResult.stream()
+                            .filter(ar -> ar != ActionResult.TURN_COMPLETED) // idk if necessary
+                            .findFirst();
+                    if (result.isPresent() && !result.get().getDescription().isEmpty()) {
+                        String desc = result.get().getDescription();
+                        throw new SplendorException(desc);
+                    } else {
+                        throw new SplendorException("Invalid action performed.");
+                    }
+                }
+
+                if (game.getTurnCounter() != turnBefore) {
+                    gameSession.resetTurnDeadline();
                 }
             }
 
@@ -332,7 +478,16 @@ public class SplendorRestController {
 
             // TODO: return what further actions are needed (if any)
             // mark that the game state has changed
-            gameWatcher.get(sessionId).markDirty();
+            // Keep completed games available so every client can retrieve and display
+            // the final result. The creator or an administrator explicitly removes
+            // the room later through the normal room deletion endpoint.
+            ContentWatcher watcher = gameWatcher.get(sessionId);
+            if (watcher != null) {
+                watcher.markDirty();
+            }
+            if (game.isGameOver()) {
+                scheduleCompletedGameDeletion(sessionId, gameSession);
+            }
             return ResponseEntity.status(HttpStatus.OK).body("");
         } catch (SplendorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -340,6 +495,89 @@ public class SplendorRestController {
             logger.warn("Issue while executing action: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Server ran into an issue while executing an action.");
+        }
+    }
+
+    /**
+     * Keep a completed game visible briefly, then ask the lobby service to remove
+     * both the room and its game-server state.
+     *
+     * @param sessionId completed session id
+     * @param completedSession exact completed session instance
+     */
+    void scheduleCompletedGameDeletion(String sessionId, GameSession completedSession) {
+        if (!completedGameDeletions.add(sessionId)) {
+            return;
+        }
+
+        CompletableFuture.delayedExecutor(completedGameRetentionMillis, TimeUnit.MILLISECONDS)
+                .execute(() -> {
+                    try {
+                        GameSession currentSession = sessionManager.getGameSession(sessionId);
+                        if (currentSession == completedSession
+                                && currentSession.getGame() != null
+                                && currentSession.getGame().isGameOver()) {
+                            initializer.deleteGameSession(sessionId);
+                        }
+                    } catch (Exception exception) {
+                        logger.warn("Unable to delete completed game session {}.",
+                                sessionId, exception);
+                    } finally {
+                        completedGameDeletions.remove(sessionId);
+                    }
+                });
+    }
+
+    /**
+     * Send a chat message to players in the current room.
+     *
+     * @param token access token
+     * @param sessionId game session id
+     * @param body request body containing the message text
+     * @return an empty successful response or a localized error
+     */
+    @PostMapping(value = "/api/sessions/{sessionId}/chat",
+            consumes = "application/json; charset=utf-8")
+    public ResponseEntity<String> postChatMessage(@RequestParam("access_token") String token,
+                                                   @PathVariable String sessionId,
+                                                   @RequestBody Map<String, String> body) {
+        try {
+            GameSession session = sessionManager.getGameSession(sessionId);
+            if (session == null) {
+                throw new SplendorException("游戏房间不存在。");
+            }
+            String sender = auth.getNameFromToken(token);
+            if (session.getGame().getPlayerFromName(sender) == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("只有本局玩家可以发送消息。");
+            }
+            String text = body.getOrDefault("text", "").trim();
+            if (text.isEmpty()) {
+                throw new SplendorException("消息不能为空。");
+            }
+            if (text.length() > 300) {
+                throw new SplendorException("消息不能超过 300 个字符。");
+            }
+            session.addChatMessage(sender, text);
+            gameWatcher.get(sessionId).markDirty();
+            return ResponseEntity.status(HttpStatus.OK).body("");
+        } catch (SplendorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            logger.warn("Issue while sending a chat message: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("消息发送失败。");
+        }
+    }
+
+    /** Server-authoritative timeout; clients cannot pause it by closing the browser. */
+    @Scheduled(fixedRate = 500)
+    public void advanceExpiredTurns() {
+        for (GameSession session : sessionManager.getGameSessions()) {
+            if (session.advanceTurnIfExpired()) {
+                ContentWatcher watcher = gameWatcher.get(session.getSessionId());
+                if (watcher != null) {
+                    watcher.markDirty();
+                }
+            }
         }
     }
 
@@ -395,3 +633,4 @@ public class SplendorRestController {
     }
 
 }
+

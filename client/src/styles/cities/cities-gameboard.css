@@ -3,18 +3,26 @@
   position: relative;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   flex: 1 0 auto;
-  padding-left: 5em;
+  padding-left: 0;
 }
   
 .board-container > .cities-container {
-  position: relative;
+  position: absolute;
+  left: clamp(1rem, 3vw, 4rem);
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  height: min(66vh, 42rem);
   font-size: 1.6vmin;
   float: left;
+}
+
+.board-container > .board {
+  flex: 0 1 auto;
 }
 
 .city-card >  img {

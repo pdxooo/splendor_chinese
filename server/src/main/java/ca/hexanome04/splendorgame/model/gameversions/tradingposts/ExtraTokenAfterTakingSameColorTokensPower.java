@@ -1,24 +1,18 @@
 package ca.hexanome04.splendorgame.model.gameversions.tradingposts;
 
 import ca.hexanome04.splendorgame.model.TokenType;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that represents the extra token after taking token of same color power.
  */
 public class ExtraTokenAfterTakingSameColorTokensPower extends Power {
 
-    private HashMap<TokenType, Integer> requirements = new HashMap<>() {
-        {
-            put(TokenType.White, 2);
-        }
-    };
-
     /**
      * Creates an extra token power object.
      */
     public ExtraTokenAfterTakingSameColorTokensPower() {
-        super();
+        super(Map.of(TokenType.White, 2));
     }
 
     /**
@@ -29,7 +23,7 @@ public class ExtraTokenAfterTakingSameColorTokensPower extends Power {
      */
     @Override
     public boolean conditionMet(TradingPostsPlayer player) {
-        return player.hasBonuses(requirements);
+        return requirementsMet(player);
     }
 
     /**

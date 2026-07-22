@@ -1,90 +1,85 @@
-# Splendor
-An online multiplayer web-based implementation of the strategy game Splendor.
+# 璀璨宝石中文联机版
 
-[![Frontend Tests](https://github.com/hexanome-04/splendor/actions/workflows/playwright.yml/badge.svg?branch=master)](https://github.com/hexanome-04/splendor/actions/workflows/playwright.yml)
-![Build with Maven](https://github.com/hexanome-04/splendor/actions/workflows/build-backend.yml/badge.svg?branch=master)
+这是基于 `hexanome-04/splendor` 改造的简体中文多人联机版本，面向家庭、朋友和小型社群部署。
 
-## Features
- * Splendor with Orient Expansion
- * Splendor with Orient Expansion + Trading Routes
- * Splendor with Orient Expansion + Cities
- * Custom Noble and Custom City
- * Online multiplayer experience
- * Game spectator feature
- * Exciting animations
+## 游戏模式
 
-## Getting Started
+- 璀璨宝石：经典版
+- 璀璨宝石：东方扩展
+- 璀璨宝石：城市扩展
+- 璀璨宝石：贸易站
 
-If you wish to only set up the game so that you may play it, see the instructions for setting up [here](#setup).
+不同模式的牌库和规则相互隔离。经典版按基础规则结算；城市版使用城市替代贵族胜利条件；东方扩展包含宝物袋、虚拟黄金、级联和永久奖励费用；贸易站使用五项贸易能力。
 
-See [here](setup/readme.md) if you wish to develop the frontend/backend.
+## 中文版功能
 
-## Setup
+- 简体中文大厅、游戏界面、操作提示和聊天
+- 五位房间号、房间搜索、回合限时和随机起始顺序
+- 创建者可删除自己创建的房间
+- 玩家邀请码自助注册，密码只要求非空
+- 明置预留牌公开，暗置预留牌只对本人显示
+- 服务器强制回合计时，超时取消未完成操作
+- 经典胜利结算：完成当前轮后比较分数，同分时发展卡较少者获胜
+- 游戏结束一分钟后自动清理房间
 
-### Prerequisites
+## Docker 部署
 
-Ensure that you have all the necessary dependencies installed:
-  * [Docker](https://www.docker.com/)
-  * Git
-
-Ensure that the docker engine is up and running.
-
-The LobbyService submodule must be initialized.
-Execute the following commands in the root of the project.
+要求：Git、Docker Engine、Docker Compose 插件。
 
 ```bash
-git submodule init
-git submodule update
+git clone --branch chinese-localization --recurse-submodules \
+  https://github.com/pdxooo/splendor_chinese.git
+cd splendor_chinese/setup/has-server-client
+docker compose up -d --build
 ```
 
-From the root of the project, navigate to the `has-server-client` directory.
+默认访问地址：
+
+```text
+http://服务器IP:36104
+```
+
+当前架构需要开放 TCP `36104`（网页）、`34172`（大厅）和 `33402`（游戏服务）。不要向公网开放 MySQL 端口。
+
+## 环境变量
+
+在 `setup/has-server-client/.env` 中配置：
+
+```dotenv
+SPLENDOR_INVITE_CODE=请替换为足够长的随机邀请码
+SPLENDOR_INTERNAL_DELETE_TOKEN=请替换为至少32位的随机内部令牌
+```
+
+不要把真实邀请码、内部令牌、SSH 私钥或服务器密码提交到 GitHub。
+
+## 更新
+
 ```bash
+cd /root/splendor_chinese
+git pull origin chinese-localization
+git submodule update --init --recursive
 cd setup/has-server-client
+docker compose up -d --build server client
 ```
 
-Start up the services using docker compose.
+不要执行 `docker compose down -v`，否则数据库卷及注册用户可能被删除。仅修改前端时可只重建 `client`；修改游戏规则时重建 `server`。
+
+## 测试
+
+后端：
+
 ```bash
-docker compose up --build
+mvn -f server/pom.xml clean test
 ```
-Note: The “--build” argument is necessary to ensure that the docker containers are up to date.
-Optionally, you may add the “-d” argument to launch all the services detached.
 
-### Playing
+前端：
 
-Once all the services are up and running, you can then navigate to [localhost:36104](http://localhost:36104) to start playing.
+```bash
+cd client
+npm install
+npm run build
+```
 
-## Gameplay
+## 说明
 
-![splendor](https://user-images.githubusercontent.com/17598972/229967618-cb24d268-fe54-40e8-bd1d-9526f44069ca.gif)
-
-Upon startup, you will be greeted by the Splendor title page. Simply click to log in.
-
-You may now log in to one of the preconfigured Lobby Service accounts made by an administrative user.
-
-This will now take you to the lobby screen. You can either start up a brand new game or load a previously saved game. All previously saved games can be loaded by any player and only require the same number of players to launch. The upper righthand corner features the settings and logout buttons.
-
-All players have access to the settings page and will be able to change their colors and passwords here.
-
-Admin accounts will also notice an admin zone button in the upper lefthand corner. The admin zone allows admin accounts to add, delete, or modify user accounts and force unregister game services.
-
-Hovering over the "Create Session" button allows you to choose the game version to play. You will see the newly created game appear once you click on one of the three versions.
-
-The game requires at least two players. Players can click on “Join” to join a game. Notice that only the creator has the permission to delete an unlaunched game.
-
-The creator can launch the game once enough players have gathered.
-
-Every player should click on "Play" to show the game board.
-
-![taketurn](https://user-images.githubusercontent.com/17598972/229967691-fcfe0cb8-6931-40de-8de5-df8660833f57.gif)
-
-During your turn, you may either take tokens according to game rules, purchase a card, or reserve a card. As the game progresses, additional actions may be unlocked and automatically added to your turn.
-
-## Authors
-
- * [Alex Lai](https://github.com/sandpipes)
- * [Alexa Vasilakos](https://github.com/itsAlexa)
- * [Chen Jun Chi](https://github.com/MosinLover)
- * [Jia Lin Sun](https://github.com/Lobo808)
- * [Richard Rassokhine](https://github.com/richardrxn)
- * [Sarah Youinou](https://github.com/syouinou)
-
+本项目用于学习与非商业联机体验。原项目版权归原作者所有；游戏名称、规则和美术素材的相关权利归各自权利人所有。

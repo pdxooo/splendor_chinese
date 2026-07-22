@@ -1,5 +1,6 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 WORKDIR /server
+COPY setup/maven-settings.xml /root/.m2/settings.xml
 COPY ../server /server
 RUN mvn -f /server/pom.xml clean package -P prod
 

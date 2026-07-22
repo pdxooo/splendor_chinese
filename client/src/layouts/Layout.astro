@@ -7,7 +7,7 @@ const { title } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
@@ -16,6 +16,9 @@ const { title } = Astro.props;
     </head>
     <body>
         <slot />
+        <script>
+            import "../scripts/i18n-zh.js";
+        </script>
     </body>
 </html>
 <style is:global>

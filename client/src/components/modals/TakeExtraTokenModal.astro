@@ -5,25 +5,25 @@ import ModalLayout from "../../layouts/ModalLayout.astro";
 ---
 
 <ModalLayout id="take-extra-token-modal">
-    <h1>TAKE EXTRA TOKEN</h1>
-    <p>Please select an extra token if desired.</p>
+    <h1>额外拿取宝石</h1>
+    <p>可选择一枚银行中仍有库存的普通宝石。</p>
 
     <div class="extra-token-container">
-        <div color="Red" class="board-token red-token"></div>
-        <div color="Blue" class="board-token blue-token"></div>
-        <div color="Green" class="board-token green-token"></div>
-        <div color="White" class="board-token white-token"></div>
-        <div color="Brown" class="board-token brown-token"></div>
+        <div color="Red" class="board-token red-token"><span class="bank-count"></span></div>
+        <div color="Blue" class="board-token blue-token"><span class="bank-count"></span></div>
+        <div color="Green" class="board-token green-token"><span class="bank-count"></span></div>
+        <div color="White" class="board-token white-token"><span class="bank-count"></span></div>
+        <div color="Brown" class="board-token brown-token"><span class="bank-count"></span></div>
     </div>
     
     <div class="button-container">
-        <button class="extra-token-confirm-btn" id="extra-token-confirm-btn">CONFIRM</button>
+        <button class="extra-token-confirm-btn" id="extra-token-confirm-btn">确认</button>
     </div>
 </ModalLayout>
 
 <ModalLayout id="putback-extra-token-modal">
-        <h1>PUT BACK TOKEN</h1>
-        <p>Please put back a token if desired.</p>
+        <h1>返还宝石</h1>
+        <p>如持有超过上限，请选择一枚宝石返还。</p>
 
         <div class="extra-token-container">
             <div color="Red" class="board-token red-token"></div>

@@ -1,7 +1,7 @@
 FROM node:18.14.2-alpine3.16 AS builder
 WORKDIR /client
 COPY ../client /client
-RUN npm install
+RUN npm config set registry https://registry.npmmirror.com && npm install
 RUN npm run build
 
 FROM nginx:1.23.3-alpine-slim

@@ -1,6 +1,7 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { mockGetUsername } from "./util/ls-mock.js";
 import { mockGameState, createBasicGame } from "./util/server-mock.js";
+import { DevCard, TokenType } from "./util/game.js";
 
 test.describe.parallel("Test orient game", () => {
     const MAIN_USER = "linus";
@@ -24,5 +25,79 @@ test.describe.parallel("Test orient game", () => {
         await expect(page.locator("#board .board-cards-dev-selectable .board-card-dev:not(.board-card-dev-orient) img[src]")).toHaveCount(12);
         await expect(page.locator("#board .board-cards-dev-selectable .board-card-dev.board-card-dev-orient img[src]")).toHaveCount(6);
     });
+
+    test("chat uses UTF-8 Chinese text and a top-right collapse control", async ({ page }) => {
+        await expect(page.locator('meta[charset="utf-8"]')).toHaveCount(1);
+        await expect(page.getByRole("heading", { name: "房间聊天" })).toBeVisible();
+
+        const chat = page.locator("#game-chat");
+        const toggle = page.getByRole("button", { name: "收起聊天" });
+        const chatBox = await chat.boundingBox();
+        const toggleBox = await toggle.boundingBox();
+        expect(chatBox).not.toBeNull();
+        expect(toggleBox).not.toBeNull();
+        expect(toggleBox!.x).toBeGreaterThan(chatBox!.x + chatBox!.width / 2);
+
+        await toggle.click();
+        await expect(chat).toHaveClass(/collapsed/);
+        await expect(page.locator(".chat-panel")).toBeHidden();
+        await expect(page.getByRole("button", { name: "展开聊天" })).toBeVisible();
+
+        await page.getByRole("button", { name: "展开聊天" }).click();
+        await expect(page.locator(".chat-panel")).toBeVisible();
+    });
+
+    test("turn-order labels appear directly below player nicknames", async ({ page }) => {
+        const identities = [
+            page.locator(".player-identity"),
+            page.locator(".other-player-profile").first()
+        ];
+
+        for (const [index, identity] of identities.entries()) {
+            const nickname = identity.locator(".player-name");
+            const order = identity.locator(".turn-order-label");
+            await expect(nickname).toBeVisible();
+            await expect(order).toHaveText(`第 ${index + 1} 位`);
+
+            const nicknameBox = await nickname.boundingBox();
+            const orderBox = await order.boundingBox();
+            expect(nicknameBox).not.toBeNull();
+            expect(orderBox).not.toBeNull();
+            expect(orderBox!.y).toBeGreaterThanOrEqual(nicknameBox!.y + nicknameBox!.height - 1);
+        }
+    });
+
+    test("the current player's reserved card remains fully visible when enlarged", async ({ page }) => {
+        const game = createBasicGame();
+        game.getPlayer(MAIN_USER).reservedCards.push(new DevCard("d1_0", TokenType.Red));
+        await mockGameState(page, game);
+        await page.reload();
+
+        const reservedCard = page.locator(".player-inventory-card-reserved").first();
+        await reservedCard.hover();
+        const imageBox = await reservedCard.locator("img").boundingBox();
+        const viewport = page.viewportSize();
+        expect(imageBox).not.toBeNull();
+        expect(viewport).not.toBeNull();
+        expect(imageBox!.x).toBeGreaterThanOrEqual(8);
+        expect(imageBox!.x + imageBox!.width).toBeLessThanOrEqual(viewport!.width - 8);
+    });
+
+    test("completed game shows its winner even when the turn index is no longer active", async ({ page }) => {
+        const game = createBasicGame();
+        const winner = game.getPlayer(MAIN_USER);
+        winner.prestigePoints = 16;
+        (game as any).gameOver = true;
+        (game as any).winners = [winner];
+        game.turnCounter = -10000;
+        await mockGameState(page, game);
+
+        await page.reload();
+
+        await expect(page.locator("#gameover-modal")).toBeVisible();
+        await expect(page.locator("#gameover-modal .winners-text")).toContainText(MAIN_USER);
+        await expect(page.locator("#turn-timer")).toHaveText("游戏已结束");
+    });
 });
+
 

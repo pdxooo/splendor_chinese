@@ -2,6 +2,17 @@ import { showNextModal, setupSelection, backButton } from "./modals.js";
 import { performAction } from "../actions";
 import { showError } from "../notify.js";
 
+const turnModal = document.querySelector("#your-turn-modal");
+const turnModalToggle = turnModal?.querySelector(".turn-modal-toggle");
+if(turnModalToggle) {
+    turnModalToggle.onclick = () => {
+        const collapsed = turnModal.classList.toggle("collapsed");
+        turnModalToggle.textContent = collapsed ? "+" : "−";
+        turnModalToggle.setAttribute("aria-label", collapsed ? "展开操作框" : "收起操作框");
+        turnModalToggle.setAttribute("aria-expanded", String(!collapsed));
+    };
+}
+
 /**
  * Get the list of tokens when taking / putting back tokens or purchasing a development card
  * @returns [{ token: count }]
@@ -32,6 +43,93 @@ const setBoardTokens = (modal) => {
     modalNode.querySelector(".gold-token > span").textContent = boardNode.querySelector(".gold-token > span").textContent;
 };
 
+const readTokenCount = (node) => {
+    if(!node) return 0;
+    const displayedCount = node.querySelector?.(".board-token > span, span")?.textContent;
+    if(displayedCount !== undefined && displayedCount !== null && displayedCount.trim() !== "") {
+        return Number(displayedCount) || 0;
+    }
+    return Number(node.count ?? node.parentNode?.count) || 0;
+};
+
+const countTokens = (selector) => Array.from(document.querySelectorAll(selector))
+    .reduce((total, node) => total + readTokenCount(node), 0);
+
+const submitTakeTokens = (putBackTokens = {}) => {
+    const takeTokens = getTokensList("#take-token-modal board-token-counter board-token .board-token");
+    return performAction("TAKE_TOKEN", () => ({ takeTokens, putBackTokens }))
+        .then((resp) => {
+            if(resp.error) showError(resp.message);
+        }).catch((err) => showError(err.toString()));
+};
+
+const paymentColors = ["Red", "Blue", "Green", "White", "Brown"];
+
+const getPlayerPaymentState = () => {
+    const tokens = {};
+    const bonuses = {};
+    document.querySelectorAll("#player-inventory .player-inventory-tokens .bonus-container").forEach(container => {
+        const token = container.querySelector("board-token");
+        const color = token?.getAttribute("color");
+        if(!color) return;
+        const key = color.charAt(0).toUpperCase() + color.slice(1);
+        tokens[key] = readTokenCount(token);
+        bonuses[key] = Number(container.querySelector(".bonus-icon > span")?.textContent) || 0;
+    });
+    return { tokens, bonuses };
+};
+
+const calculateMinimumPayment = (cardNode) => {
+    const rawCost = cardNode.getAttribute("cost");
+    if(!rawCost) return { purchasable: false, payment: {} };
+
+    const cost = JSON.parse(rawCost);
+    const { tokens, bonuses } = getPlayerPaymentState();
+    const payment = {};
+
+    // Some Orient cards are paid by permanently discarding bonuses instead
+    // of spending tokens. They are purchasable only when the bonus cost is met.
+    if(cardNode.getAttribute("cost-type") === "Bonus") {
+        const purchasable = paymentColors.every(color =>
+            Number(bonuses[color] || 0) >= Number(cost[color] || 0));
+        paymentColors.forEach(color => payment[color] = 0);
+        payment.Gold = 0;
+        return { purchasable, payment };
+    }
+
+    const goldValue = Number(document.querySelector("#player-inventory")
+        ?.getAttribute("data-gold-token-value")) === 2 ? 2 : 1;
+    let virtualGoldAvailable = Number(bonuses.Gold || 0);
+    let realGoldAvailable = Number(tokens.Gold || 0);
+    let realGoldUsed = 0;
+    let purchasable = true;
+
+    paymentColors.forEach(color => {
+        const remainingCost = Math.max(0, Number(cost[color] || 0) - Number(bonuses[color] || 0));
+        const coloredPayment = Math.min(remainingCost, Number(tokens[color] || 0));
+        payment[color] = coloredPayment;
+        let unpaid = remainingCost - coloredPayment;
+
+        const virtualForColor = Math.min(virtualGoldAvailable, Math.ceil(unpaid / goldValue));
+        virtualGoldAvailable -= virtualForColor;
+        unpaid = Math.max(0, unpaid - virtualForColor * goldValue);
+
+        const realForColor = Math.min(realGoldAvailable, Math.ceil(unpaid / goldValue));
+        realGoldAvailable -= realForColor;
+        realGoldUsed += realForColor;
+        unpaid = Math.max(0, unpaid - realForColor * goldValue);
+        if(unpaid > 0) purchasable = false;
+    });
+    // Each physical or virtual Gold piece covers up to goldValue tokens of
+    // one colour. Virtual Gold is consumed first to minimise real-token use.
+    payment.Gold = realGoldUsed;
+
+    return {
+        purchasable,
+        payment
+    };
+};
+
 
 // -----------------------------------------------------------------------------------------
 // Setup take token & put back token
@@ -57,12 +155,18 @@ const takeTokens = () => {
     setBoardTokens("#take-token-modal");
 
     document.querySelector("#take-token-modal #take-token-confirm-btn").onclick = () => {
-        putBackTokens();
-        showNextModal("#put-back-token-modal");
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const selectedTotal = countTokens("#take-token-modal board-token-counter board-token .board-token");
+        if(currentTotal + selectedTotal <= 10) {
+            submitTakeTokens();
+        } else {
+            putBackTokens(currentTotal + selectedTotal - 10);
+            showNextModal("#put-back-token-modal");
+        }
     };
 };
 
-const putBackTokens = () => {
+const putBackTokens = (requiredCount) => {
     const confirmBtn = document.querySelector("#put-back-token-modal .put-back-token-confirm-btn");
 
     // clear previous numbers
@@ -70,31 +174,35 @@ const putBackTokens = () => {
         elm.setCount(0);
     });
 
-    // set min and max for counters, TODO: set max and min values to what tokens the player has
+    // A player may return tokens already held as well as tokens selected in
+    // this action. Restrict each counter to that actual available amount.
     document.querySelectorAll("#put-back-token-modal board-token-counter").forEach(elm => {
-        elm.setMax(10);
+        const color = elm.getAttribute("color");
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setMax(held + taken);
     });
 
-    setBoardTokens("#put-back-token-modal");
+    document.querySelectorAll("#put-back-token-modal .player-token-count-container board-token").forEach(elm => {
+        const color = elm.getAttribute("color");
+        const held = readTokenCount(document.querySelector(
+            `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+        const taken = readTokenCount(document.querySelector(
+            `#take-token-modal board-token-counter[color="${color}"] board-token`));
+        elm.setCount(held + taken);
+    });
 
     confirmBtn.onclick = () => {
+        const selectedCount = countTokens("#put-back-token-modal board-token-counter board-token .board-token");
+        if(selectedCount !== requiredCount) {
+            showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+            return;
+        }
         confirmBtn.disabled = true;
-
-        const dataCallback = () => {
-            return {
-                "takeTokens": getTokensList("#take-token-modal board-token-counter board-token .board-token"),
-                "putBackTokens": getTokensList("#put-back-token-modal board-token-counter board-token .board-token")
-            };
-        };
-
-        performAction("TAKE_TOKEN", dataCallback)
-            .then((resp) => {
-                if(resp.error) {
-                    showError(resp.message);
-                }
-            }).catch((err) => {
-                showError(err.toString());
-            }).finally(() =>  confirmBtn.disabled = false);
+        submitTakeTokens(getTokensList("#put-back-token-modal board-token-counter board-token .board-token"))
+            .finally(() => confirmBtn.disabled = false);
     };
 };
 
@@ -120,6 +228,8 @@ const showPurchasableDevCards = () => {
         const imgUrl = `/images/development-cards/${cid}.jpg`;
 
         div.setAttribute("card-id", cid);
+        if(elm.hasAttribute("cost")) div.setAttribute("cost", elm.getAttribute("cost"));
+        if(elm.hasAttribute("cost-type")) div.setAttribute("cost-type", elm.getAttribute("cost-type"));
         div.querySelector("img").setAttribute("src", imgUrl);
 
         // add to inv
@@ -140,7 +250,13 @@ const showPurchasableDevCards = () => {
         modalCardRows.appendChild(cNode);
     });
 
-    const cardsSelectionSelector = "#buy-card-modal .board-card-dev";
+    const cardsSelectionSelector = "#buy-card-modal .board-card-dev:not(.stronghold-blocked)";
+
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        const { purchasable } = calculateMinimumPayment(card);
+        card.classList.toggle("purchasable", purchasable);
+        card.classList.toggle("unaffordable", !purchasable);
+    });
 
     setupSelection(cardsSelectionSelector);
 
@@ -151,13 +267,17 @@ const showPurchasableDevCards = () => {
             showError("You have not selected a card to purchase!");
             return;
         }
+        if(!calculateMinimumPayment(selectedCard).purchasable) {
+            showError("You do not have enough tokens to purchase this card.");
+            return;
+        }
 
         showPayment(selectedCard);
         showNextModal("#dev-card-payment-modal");
     };
 };
 
-const showPayment = (cardNode) => {
+export const showPayment = (cardNode, actionType = "BUY_CARD") => {
 
     const confirmBtn = document.querySelector("#dev-card-payment-modal .buy-card-confirm-btn");
 
@@ -169,27 +289,151 @@ const showPayment = (cardNode) => {
     const imgSrc = `/images/development-cards/${cardId}.jpg`;
     document.querySelector("#dev-card-payment-modal .purchase-show-card img").setAttribute("src", imgSrc);
 
-    // clear previous numbers
-    document.querySelectorAll("#dev-card-payment-modal board-token").forEach(elm => {
-        elm.setCount(0);
+    const modal = document.querySelector("#dev-card-payment-modal");
+    const { tokens, bonuses } = getPlayerPaymentState();
+    const rawCost = JSON.parse(cardNode.getAttribute("cost") || "{}");
+    const isBonusCost = cardNode.getAttribute("cost-type") === "Bonus";
+    const tokenPayment = modal.querySelector(".token-count-outer-container");
+    const burnPayment = modal.querySelector(".burn-card-payment");
+    tokenPayment.hidden = isBonusCost;
+    burnPayment.hidden = !isBonusCost;
+    const burnOptions = modal.querySelector(".burn-card-options");
+    burnOptions.innerHTML = "";
+    if(isBonusCost) {
+        document.querySelectorAll("#player-inventory .player-inventory-card[card-id]").forEach(card => {
+            const color = card.getAttribute("token-type");
+            const bonus = Number(card.getAttribute("bonus") || 0);
+            if(!color || color === "Gold" || color === "Satchel" || Number(rawCost[color] || 0) === 0) return;
+            const image = document.createElement("img");
+            image.className = "burn-card-option";
+            image.src = `/images/development-cards/${card.getAttribute("card-id")}.jpg`;
+            image.setAttribute("card-id", card.getAttribute("card-id"));
+            image.setAttribute("token-type", color);
+            image.setAttribute("bonus", bonus);
+            image.onclick = () => {
+                if(!image.classList.contains("selected")
+                        && burnOptions.querySelectorAll(".selected").length >= 2) {
+                    showError("最多选择两张要移除的发展卡。");
+                    return;
+                }
+                image.classList.toggle("selected");
+                refreshPaymentStatus();
+            };
+            burnOptions.appendChild(image);
+        });
+    }
+    const defaultPayment = {};
+    let realGoldAvailable = Number(tokens.Gold || 0);
+    let virtualGoldAvailable = Number(bonuses.Gold || 0);
+    let defaultVirtualGold = 0;
+    const goldValue = Number(document.querySelector("#player-inventory")
+        ?.getAttribute("data-gold-token-value")) === 2 ? 2 : 1;
+
+    paymentColors.forEach(color => {
+        const remaining = Math.max(0, Number(rawCost[color] || 0) - Number(bonuses[color] || 0));
+        defaultPayment[color] = Math.min(remaining, Number(tokens[color] || 0));
+        let unpaid = remaining - defaultPayment[color];
+        if(unpaid > 0 && realGoldAvailable > 0) {
+            const used = Math.min(realGoldAvailable, Math.ceil(unpaid / goldValue));
+            realGoldAvailable -= used;
+            defaultPayment.Gold = Number(defaultPayment.Gold || 0) + used;
+            unpaid = Math.max(0, unpaid - used * goldValue);
+        }
+        if(unpaid > 0 && virtualGoldAvailable > 0) {
+            const used = Math.min(virtualGoldAvailable, Math.ceil(unpaid / goldValue));
+            virtualGoldAvailable -= used;
+            defaultVirtualGold += used;
+        }
     });
 
-    // set min and max for counters, TODO: set max and min values to what tokens the player has
-    document.querySelectorAll("#dev-card-payment-modal board-token-counter").forEach(elm => {
-        elm.setMax(10);
+    modal.querySelectorAll('board-token-counter[data-payment-kind="real"]').forEach(elm => {
+        const color = elm.getAttribute("color");
+        const key = color.charAt(0).toUpperCase() + color.slice(1);
+        const amount = Number(defaultPayment[key] || 0);
+        elm.querySelector("board-token").setCount(amount);
+        elm.setMin(0);
+        elm.setMax(Number(tokens[key] || 0));
     });
+
+    const virtualCounter = modal.querySelector('board-token-counter[data-payment-kind="virtual"]');
+    const virtualGoldRow = modal.querySelector(".virtual-gold-payment");
+    const supportsVirtualGold = Number(bonuses.Gold || 0) > 0;
+    virtualGoldRow.hidden = !supportsVirtualGold;
+    virtualCounter.querySelector("board-token").setCount(defaultVirtualGold);
+    virtualCounter.setMin(0);
+    virtualCounter.setMax(supportsVirtualGold ? Number(bonuses.Gold || 0) : 0);
+
+    const exactPaymentIsValid = () => {
+        if(isBonusCost) {
+            const selectedBonuses = {};
+            burnOptions.querySelectorAll(".burn-card-option.selected").forEach(card => {
+                const color = card.getAttribute("token-type");
+                selectedBonuses[color] = Number(selectedBonuses[color] || 0)
+                    + Number(card.getAttribute("bonus") || 0);
+            });
+            return paymentColors.every(color =>
+                Number(selectedBonuses[color] || 0) === Number(rawCost[color] || 0));
+        }
+        const selected = getTokensList(
+            '#dev-card-payment-modal board-token-counter[data-payment-kind="real"] board-token .board-token');
+        const remaining = {};
+        for(const color of paymentColors) {
+            const due = Math.max(0, Number(rawCost[color] || 0) - Number(bonuses[color] || 0));
+            if(Number(selected[color] || 0) > due) return false;
+            remaining[color] = due - Number(selected[color] || 0);
+        }
+        const applyWild = (pieces) => {
+            for(let index = 0; index < pieces; index++) {
+                const color = paymentColors.find(value => remaining[value] > 0);
+                if(!color) return false;
+                remaining[color] = Math.max(0, remaining[color] - goldValue);
+            }
+            return true;
+        };
+        return applyWild(Number(selected.Gold || 0))
+            && applyWild(Number(virtualCounter.querySelector("board-token").count || 0))
+            && paymentColors.every(color => remaining[color] === 0);
+    };
+
+    const refreshPaymentStatus = () => {
+        const virtualUsed = Number(virtualCounter.querySelector("board-token").count || 0);
+        const valid = exactPaymentIsValid();
+        const status = modal.querySelector(".payment-status");
+        status.classList.toggle("invalid", !valid);
+        status.textContent = isBonusCost
+            ? (valid ? "选择有效；确认后这些发展卡及其分数、永久奖励将被移除。"
+                : "请选择合计刚好满足永久奖励费用的发展卡（最多两张）。")
+            : valid
+            ? (virtualUsed > 0
+                ? `支付有效；将弃置 ${Math.ceil(virtualUsed / 2)} 张双虚拟黄金卡，未用部分作废。`
+                : "支付有效；不会消耗虚拟黄金卡。")
+            : "请调整实体宝石与虚拟黄金，直到刚好付清费用。";
+        confirmBtn.disabled = !valid;
+    };
+    modal.querySelectorAll("board-token-counter").forEach(counter => {
+        counter.onchange = refreshPaymentStatus;
+    });
+    refreshPaymentStatus();
 
     confirmBtn.onclick = () => {
+        if(!exactPaymentIsValid()) {
+            showError("支付组合不能刚好付清这张卡牌。请重新选择实体宝石或虚拟黄金。");
+            return;
+        }
         confirmBtn.disabled = true;
 
         const dataCallback = () => {
             return {
                 "cardId": cardId,
-                "tokens": getTokensList("#dev-card-payment-modal board-token-counter board-token .board-token")
+                "tokens": getTokensList(
+                    '#dev-card-payment-modal board-token-counter[data-payment-kind="real"] board-token .board-token'),
+                "virtualGoldPieces": Number(virtualCounter.querySelector("board-token").count || 0),
+                "burnCardIds": [...burnOptions.querySelectorAll(".burn-card-option.selected")]
+                    .map(card => card.getAttribute("card-id"))
             };
         };
 
-        performAction("BUY_CARD", dataCallback)
+        performAction(actionType, dataCallback)
             .then((resp) => {
                 if(resp.error) {
                     showError(resp.message);
@@ -228,32 +472,106 @@ const showReservableDevCards = () => {
         modalCardRows.appendChild(cNode);
     });
 
-    const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev";
+    const deckByRow = {
+        "board-cards-level1": "DECK_TIER_1",
+        "board-cards-level2": "DECK_TIER_2",
+        "board-cards-level3": "DECK_TIER_3"
+    };
+    Object.entries(deckByRow).forEach(([rowClass, deckId]) => {
+        const deck = modalCardRows.querySelector(`.${rowClass} .board-cards-dev-deck`);
+        if(deck) {
+            deck.setAttribute("data-deck-id", deckId);
+            deck.setAttribute("title", `Reserve blindly from ${deckId.replace("DECK_TIER_", "level ")}`);
+        }
+    });
+
+    const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev:not(.stronghold-blocked)";
 
     setupSelection(cardsSelectionSelector);
 
-    confirmBtn.onclick = () => {
-        confirmBtn.disabled = true;
+    let selectedDeckId = null;
+    const deckButtons = document.querySelectorAll("#reserve-card-modal [data-deck-id]");
+    deckButtons.forEach(button => {
+        button.classList.remove("selected");
+        button.onclick = () => {
+            document.querySelectorAll(cardsSelectionSelector).forEach(card => card.classList.remove("selected"));
+            deckButtons.forEach(other => other.classList.remove("selected"));
+            button.classList.add("selected");
+            selectedDeckId = button.getAttribute("data-deck-id");
+        };
+    });
+    document.querySelectorAll(cardsSelectionSelector).forEach(card => {
+        card.addEventListener("click", () => {
+            selectedDeckId = null;
+            deckButtons.forEach(button => button.classList.remove("selected"));
+        });
+    });
 
+    const submitReservation = (cardId, putBackTokens = {}) => {
+        confirmBtn.disabled = true;
+        return performAction("RESERVE_CARD", () => ({ cardId, putBackTokens }))
+            .then((resp) => {
+                if(resp.error) showError(resp.message);
+            }).catch((err) => showError(err.toString()))
+            .finally(() => confirmBtn.disabled = false);
+    };
+
+    const requestReservationReturn = (cardId, requiredCount) => {
+        const modalSelector = "#put-back-token-modal";
+        const modal = document.querySelector(modalSelector);
+
+        modal.querySelectorAll("board-token-counter").forEach(counter => {
+            const color = counter.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            const goldReceived = color === "gold" ? 1 : 0;
+            counter.querySelector("board-token").setCount(0);
+            counter.setMin(0);
+            counter.setMax(held + goldReceived);
+        });
+
+        modal.querySelectorAll(".player-token-count-container board-token").forEach(token => {
+            const color = token.getAttribute("color");
+            const held = readTokenCount(document.querySelector(
+                `#player-inventory .player-inventory-tokens board-token[color="${color}"]`));
+            token.setCount(held + (color === "gold" ? 1 : 0));
+        });
+
+        const returnConfirmBtn = modal.querySelector(".put-back-token-confirm-btn");
+        returnConfirmBtn.onclick = () => {
+            const selectedCount = countTokens(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            if(selectedCount !== requiredCount) {
+                showError(`You must return exactly ${requiredCount} token(s) to keep no more than 10.`);
+                return;
+            }
+            returnConfirmBtn.disabled = true;
+            const returnedTokens = getTokensList(
+                `${modalSelector} board-token-counter board-token .board-token`);
+            submitReservation(cardId, returnedTokens)
+                .finally(() => returnConfirmBtn.disabled = false);
+        };
+
+        showNextModal(modalSelector);
+    };
+
+    confirmBtn.onclick = () => {
         const selectedCard = document.querySelector(`${cardsSelectionSelector}.selected`);
-        if(!selectedCard) {
+        if(!selectedCard && !selectedDeckId) {
             // no card has been selected, error
             showError("You have not selected a card to reserve!");
-            confirmBtn.disabled = false;
             return;
         }
 
-        const dataCallback = () => {
-            return { "cardId": selectedCard.getAttribute("card-id") };
-        };
+        const cardId = selectedDeckId ?? selectedCard.getAttribute("card-id");
+        const currentTotal = countTokens("#player-inventory .player-inventory-tokens board-token");
+        const bankGold = readTokenCount(document.querySelector("#board .board-tokens .gold-token"));
+        const requiredReturnCount = Math.max(0, currentTotal + (bankGold > 0 ? 1 : 0) - 10);
 
-        performAction("RESERVE_CARD", dataCallback)
-            .then((resp) => {
-                if(resp.error) {
-                    showError(resp.message);
-                }
-            }).catch((err) => {
-                showError(err.toString());
-            }).finally(() =>  confirmBtn.disabled = false);
+        if(requiredReturnCount > 0) {
+            requestReservationReturn(cardId, requiredReturnCount);
+        } else {
+            submitReservation(cardId);
+        }
     };
 };

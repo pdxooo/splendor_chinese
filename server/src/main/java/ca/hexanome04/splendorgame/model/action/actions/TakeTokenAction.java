@@ -72,7 +72,12 @@ public class TakeTokenAction extends Action {
                 return result;
             }
 
-            if (putBackTokensNum > playerCurrentTokensNum) {
+            if (takeTokensNum < 0 || putBackTokensNum < 0) {
+                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                return result;
+            }
+
+            if (putBackTokensNum > playerCurrentTokensNum + takeTokensNum) {
                 result.add(ActionResult.NOT_ENOUGH_TOKENS_IN_INVENTORY);
                 return result;
             }
@@ -91,14 +96,14 @@ public class TakeTokenAction extends Action {
         for (TokenType t : takeTokens.keySet()) {
             // invalid if player tries to take >2 of one token type (unless trade routes power unlocked)
             if (takeTokens.get(t) > 2) {
-                result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                result.add(ActionResult.TOO_MANY_SAME_COLOUR_TOKENS);
                 return result;
             } else if (takeTokens.get(t) == 2) {
                 doubleTokens += 1;
 
                 // board pile must have at least 4 of this token for player to take two
                 if (game.getTokens().get(t) < 4) {
-                    result.add(ActionResult.INVALID_TOKENS_GIVEN);
+                    result.add(ActionResult.DOUBLE_TOKENS_REQUIRE_FOUR);
                     return result;
                 }
             } else {
@@ -108,6 +113,12 @@ public class TakeTokenAction extends Action {
             }
         }
 
+        int goldTaken = takeTokens.getOrDefault(TokenType.Gold, 0);
+        int satchelTaken = takeTokens.getOrDefault(TokenType.Satchel, 0);
+        if (goldTaken > 0 || satchelTaken > 0) {
+            result.add(ActionResult.CANNOT_TAKE_GOLD_TOKEN);
+            return result;
+        }
         // verify either 2 of same token or 3 unique tokens
         // Unless for Trading routes, if player has power 2, can take 1 extra token of different color than doubleToken
         if (player instanceof TradingPostsPlayer tpp && tpp.extraTokenAfterTakingSameColor.isUnlocked()) {
@@ -116,7 +127,9 @@ public class TakeTokenAction extends Action {
                 return result;
             }
         } else if (doubleTokens > 1 || uniqueTokens > 3 || (uniqueTokens > 0 && doubleTokens > 0)) {
-            result.add(ActionResult.INVALID_TOKENS_GIVEN);
+            result.add(doubleTokens > 0 && uniqueTokens > 0
+                    ? ActionResult.CANNOT_MIX_DOUBLE_AND_SINGLE_TOKENS
+                    : ActionResult.INVALID_TOKENS_GIVEN);
             return result;
         }
 

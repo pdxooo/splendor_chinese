@@ -10,6 +10,9 @@ public abstract class DevelopmentCard extends Card {
     private TokenType tokenType;
     private final int bonus;
     private final CardTier cardTier;
+    private Boolean reservedFaceDown = Boolean.TRUE;
+    private String strongholdOwner;
+    private int strongholdCount;
 
     /**
      * Creates a development card from the class in which this was called super from.
@@ -58,6 +61,98 @@ public abstract class DevelopmentCard extends Card {
      */
     public int getBonus() {
         return bonus;
+    }
+
+    /**
+     * Whether this card entered a player's reserve from the face-down deck.
+     * Missing values from older saves are treated as hidden to avoid leaking
+     * information that may have been private.
+     *
+     * @return true when only the owner may see the card face
+     */
+    public boolean isReservedFaceDown() {
+        return !Boolean.FALSE.equals(reservedFaceDown);
+    }
+
+    /**
+     * Record whether this reservation came from a face-down deck.
+     *
+     * @param reservedFaceDown true for a blind reservation, false for a public card
+     */
+    public void setReservedFaceDown(boolean reservedFaceDown) {
+        this.reservedFaceDown = reservedFaceDown;
+    }
+
+    /**
+     * Obtain the tier containing this development card.
+     *
+     * @return card tier
+     */
+    public CardTier getCardTier() {
+        return cardTier;
+    }
+
+    /**
+     * Obtain the player whose strongholds occupy this card.
+     *
+     * @return owner name, or null when unoccupied
+     */
+    public String getStrongholdOwner() {
+        return strongholdOwner;
+    }
+
+    /**
+     * Obtain the number of strongholds on this card.
+     *
+     * @return stronghold count
+     */
+    public int getStrongholdCount() {
+        return strongholdCount;
+    }
+
+    /**
+     * Add one stronghold while enforcing a single owner and a maximum of three.
+     *
+     * @param owner player placing the stronghold
+     * @return whether the stronghold was added
+     */
+    public boolean addStronghold(String owner) {
+        if (owner == null || strongholdCount >= 3
+                || (strongholdOwner != null && !strongholdOwner.equals(owner))) {
+            return false;
+        }
+        strongholdOwner = owner;
+        strongholdCount++;
+        return true;
+    }
+
+    /**
+     * Remove one stronghold owned by the specified player.
+     *
+     * @param owner expected owner
+     * @return whether a stronghold was removed
+     */
+    public boolean removeStronghold(String owner) {
+        if (strongholdCount == 0 || !java.util.Objects.equals(strongholdOwner, owner)) {
+            return false;
+        }
+        strongholdCount--;
+        if (strongholdCount == 0) {
+            strongholdOwner = null;
+        }
+        return true;
+    }
+
+    /**
+     * Remove every stronghold from this card.
+     *
+     * @return number of removed strongholds
+     */
+    public int clearStrongholds() {
+        int removed = strongholdCount;
+        strongholdCount = 0;
+        strongholdOwner = null;
+        return removed;
     }
 
 }

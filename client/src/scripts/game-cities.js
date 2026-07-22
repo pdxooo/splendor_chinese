@@ -58,6 +58,6 @@ addUpdater(updateCities);
 
 // history updates
 const updatePlayerCitiesHistory = (oldState, newState) => {
-    writeCardUpdate("Obtained", cardsDiff(oldState.cities, newState.cities)[0], "cities");
+    writeCardUpdate("获得城市牌：", cardsDiff(oldState.cities, newState.cities)[0], "cities");
 };
 registerPlayerUpdater(updatePlayerCitiesHistory);

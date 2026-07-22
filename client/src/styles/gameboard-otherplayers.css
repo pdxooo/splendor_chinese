@@ -20,6 +20,7 @@
   width: var(--other-player-preview-size);
   min-height: calc(var(--other-player-card-size) + var(--other-player-container-padding) * 2);
   position: relative;
+  overflow: visible;
 }
 
 .other-player-container {
@@ -38,6 +39,7 @@
   padding: var(--other-player-container-padding) 0;
   box-shadow: rgb(0 0 0 / 24%) 0 3px 8px;
   transition: 0.3s;
+  overflow: visible;
 }
 
 .other-prestige-point-container {
@@ -93,6 +95,15 @@
   text-align: center;
 }
 
+.op-name-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  width: 100%;
+}
+
 .other-player-profile img {
   width: calc(var(--other-player-preview-size) / 2);
   aspect-ratio: 1 / 1;
@@ -102,6 +113,7 @@
   display: flex;
   gap: 1em;
   max-height: var(--other-player-card-size);
+  overflow: visible;
 }
 
 
@@ -153,6 +165,7 @@
   margin-left: 0.5em;
   margin-top: auto;
   margin-bottom: auto;
+  overflow: visible;
 }
 
 .other-inventory-card-reserved {
@@ -161,10 +174,11 @@
   margin-left: calc(-1 * var(--other-player-card-size) * var(--dev-card-aspect-ratio) + 0.7em);
   z-index: inherit;
   width: calc(var(--other-player-card-size));
+  transition: z-index 0s;
 }
 
 .other-inventory-card-reserved:hover {
-  /* z-index: 7; */
+  z-index: 50;
 }
 
 .other-inventory-card-reserved:last-child {
@@ -176,7 +190,8 @@
   aspect-ratio: var(--dev-card-aspect-ratio);
   height: var(--other-player-card-size);
   border-radius: var(--card-border-radius);
-  transition: 0.3s;
+  transition: top 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  transform-origin: right center;
   rotate: 90deg;
   translate: 25% -15%;
   top: 0;
@@ -185,7 +200,9 @@
 }
 
 .other-inventory-card-reserved:hover > img {
-  top: -33.33%;
+  top: -25%;
+  transform: scale(1.8);
+  filter: drop-shadow(0 0.35em 0.45em rgb(0 0 0 / 80%));
 }
 
 /* Nobles */

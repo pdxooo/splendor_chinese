@@ -25,7 +25,7 @@ export const performAction = async (actionType: string, actionDataCallback: Acti
     url.search = new URLSearchParams({"access_token": SETTINGS.getAccessToken()}).toString();
 
     let actionData: JSON;
-    if(actionDataCallback as ActionDataCallback) {
+    if(typeof actionDataCallback === "function") {
         actionData = (actionDataCallback as ActionDataCallback)();
     } else {
         actionData = (actionDataCallback as JSON);
