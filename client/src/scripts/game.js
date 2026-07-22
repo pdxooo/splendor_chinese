@@ -11,6 +11,17 @@ import { initGameOver } from "./modals/gameover.js";
 var MD5 = CryptoJS.MD5;
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const STRONGHOLD_FALLBACK_COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#a855f7"];
+
+const getStrongholdColourByOrder = (order) =>
+    STRONGHOLD_FALLBACK_COLORS[(Math.max(1, Number(order) || 1) - 1)
+        % STRONGHOLD_FALLBACK_COLORS.length];
+
+const getStrongholdColourByOwner = (owner, players) => {
+    const ownerIndex = players.findIndex(player => player.name === owner);
+    return getStrongholdColourByOrder(ownerIndex + 1);
+};
+
 const createStrongholdIcon = (extraClass = "") => {
     const icon = document.createElementNS(SVG_NAMESPACE, "svg");
     icon.setAttribute("viewBox", "0 0 32 32");
@@ -68,8 +79,7 @@ const updateStrongholdMarkers = (element, cardInfo, players) => {
     if(!owner || count <= 0) return;
     element.setAttribute("stronghold-owner", owner);
     element.setAttribute("stronghold-count", String(count));
-    const ownerInfo = players.find(player => player.name === owner);
-    element.style.setProperty("--stronghold-color", ownerInfo?.colour || "gold");
+    element.style.setProperty("--stronghold-color", getStrongholdColourByOwner(owner, players));
     element.classList.toggle("conquerable", count === 3);
     element.classList.toggle("stronghold-blocked", owner !== SETTINGS.getUsername());
     element.title = owner === SETTINGS.getUsername()
@@ -233,7 +243,7 @@ const setPlayerIdentity = (container, name, order) => {
     }
 };
 
-const updateAvailableStrongholds = (container, available, colour) => {
+const updateAvailableStrongholds = (container, available, order) => {
     let label = container.querySelector(".available-strongholds-label");
     if(available === undefined || available === null) {
         label?.remove();
@@ -246,7 +256,7 @@ const updateAvailableStrongholds = (container, available, colour) => {
     }
     const availableCount = Math.max(0, Math.min(3, Number(available)));
     label.replaceChildren();
-    label.style.setProperty("--stronghold-player-color", colour || "#f2bd21");
+    label.style.setProperty("--stronghold-player-color", getStrongholdColourByOrder(order));
     label.title = `可用要塞：${availableCount} / 3`;
     label.setAttribute("aria-label", label.title);
     for(let index = 0; index < 3; index++) {
@@ -264,7 +274,7 @@ const updateMainPlayerInfo = (playerInfo, order) => {
         String(playerInfo.availableStrongholds ?? 0));
     setPlayerIdentity(playerInv.querySelector(".player-identity"), playerInfo.name, order);
     updateAvailableStrongholds(playerInv.querySelector(".player-identity"),
-        playerInfo.availableStrongholds, playerInfo.colour);
+        playerInfo.availableStrongholds, order);
 
 
     // update prestige points
@@ -334,7 +344,7 @@ const updateOtherPlayerInfo = (pInfo, order) => {
     }
     setPlayerIdentity(pNode.querySelector(".other-player-profile"), pInfo.name, order);
     updateAvailableStrongholds(pNode.querySelector(".other-player-profile"),
-        pInfo.availableStrongholds, pInfo.colour);
+        pInfo.availableStrongholds, order);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;

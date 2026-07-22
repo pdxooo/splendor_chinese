@@ -161,6 +161,27 @@ class StrongholdsGameTest {
     }
 
     @Test
+    void ownerCanReserveOccupiedCardAndRecoverEveryStronghold() {
+        StrongholdsGame game = createGame();
+        StrongholdsPlayer owner = firstPlayer(game);
+        DevelopmentCard card = game.getTier1PurchasableDevelopmentCards().get(0);
+        game.placeOrMoveStronghold(owner, null, card.getId());
+        game.placeOrMoveStronghold(owner, null, card.getId());
+
+        assertThat(owner.getAvailableStrongholds()).isEqualTo(1);
+        List<ActionResult> result = game.takeAction(owner.getName(),
+                new ReserveCardAction(card.getId()));
+
+        assertThat(result).contains(ActionResult.VALID_ACTION, ActionResult.TURN_COMPLETED);
+        assertThat(owner.getReservedCards()).extracting(DevelopmentCard::getId)
+                .contains(card.getId());
+        assertThat(owner.getAvailableStrongholds()).isEqualTo(3);
+        assertThat(card.getStrongholdOwner()).isNull();
+        assertThat(card.getStrongholdCount()).isZero();
+        assertStrongholdInvariant(game, owner);
+    }
+
+    @Test
     void threeStrongholdsOfferOnePaidConquestAndNoInfiniteChain() {
         StrongholdsGame game = createGame();
         StrongholdsPlayer player = firstPlayer(game);

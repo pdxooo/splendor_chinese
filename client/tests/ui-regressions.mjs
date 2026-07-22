@@ -27,9 +27,19 @@ assert.match(strongholdCss, /grid-template-columns:\s*repeat\(4,/,
     "要塞选择页应固定为每行四张卡牌");
 assert.match(game, /createStrongholdIcon/,
     "要塞应使用项目内 SVG 图标，而不是文字棋子符号");
+assert.match(game, /STRONGHOLD_FALLBACK_COLORS/,
+    "必须按座次为玩家强制分配不同的要塞颜色");
+assert.doesNotMatch(game, /playerInfo\.colour|pInfo\.colour|ownerInfo\?\.colour/,
+    "要塞颜色不得读取账号颜色偏好");
 assert.doesNotMatch(game, /"♜"\.repeat/,
     "不得继续使用遮挡卡面的文字棋子符号");
 assert.match(strongholdCss, /\.stronghold-markers[\s\S]*top:\s*50%/,
     "卡牌上的要塞必须位于右侧中部，避开右上奖励和左下费用");
+assert.match(strongholdCss, /\.stronghold-on-card[\s\S]*width:\s*clamp\(1\.25rem/,
+    "卡面要塞必须足够大，正常缩放时仍能看清");
+assert.match(strongholdCss, /left:\s*auto\s*!important/,
+    "卡面要塞必须强制取消左侧定位，防止遮挡分数");
+assert.match(strongholdCss, /#stronghold-action-modal,[\s\S]*#conquest-modal[\s\S]*z-index:\s*1000/,
+    "要塞图标不得穿透显示在操作弹窗上方");
 
 console.log("要塞与游戏记录界面回归检查通过");
