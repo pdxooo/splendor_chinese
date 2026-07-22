@@ -4,12 +4,41 @@ import { showError } from "../notify.js";
 
 export const showExtraTokens = () => {
 
+    const extraTokenSelectionSelector = "#take-extra-token-modal .board-token";
+    const submitExtraToken = (takeToken, putBackToken = null) => {
+        const data = {};
+        if(takeToken) data.takeToken = takeToken;
+        if(putBackToken) data.putBackToken = putBackToken;
+        return performAction("TAKE_EXTRA_TOKEN_AFTER_PURCHASE_POWER", data)
+            .then((resp) => {
+                if(resp.error) showError(resp.message);
+                return resp;
+            }).catch((err) => showError(err.toString()));
+    };
+
     const takeConfirmBtn = document.querySelector("#take-extra-token-modal .extra-token-confirm-btn");
     takeConfirmBtn.onclick = () => {
+        const selected = document.querySelector(`${extraTokenSelectionSelector}.selected-token`);
+        if(!selected) {
+            showError("请选择一枚银行中仍有库存的宝石。");
+            return;
+        }
+        if(selected.classList.contains("unavailable")) {
+            showError("银行中已没有这种颜色的宝石。");
+            return;
+        }
+        const currentTotal = Array.from(document.querySelectorAll(
+            "#player-inventory .player-inventory-tokens board-token .board-token"))
+            .reduce((sum, token) => sum + (Number(token.textContent?.trim()) || 0), 0);
+        const takeToken = selected.getAttribute("color");
+        if(currentTotal + 1 <= 10) {
+            takeConfirmBtn.disabled = true;
+            submitExtraToken(takeToken).finally(() => takeConfirmBtn.disabled = false);
+            return;
+        }
         showNextModal("#putback-extra-token-modal");
     };
 
-    const extraTokenSelectionSelector = "#take-extra-token-modal .board-token";
     setupSelection(extraTokenSelectionSelector, "selected-token");
     document.querySelectorAll(extraTokenSelectionSelector).forEach(token => {
         const color = token.getAttribute("color").toLowerCase();
@@ -42,21 +71,7 @@ export const showExtraTokens = () => {
         const selectedPutBackToken = document.querySelector(`${putBackTokenSelectionSelector}.selected-token`);
         const putBackToken = selectedPutBackToken ? selectedPutBackToken.getAttribute("color") : null;
 
-        const dataCallback = () => {
-            const jsonData = {};
-            if(takeToken) jsonData["takeToken"] = takeToken;
-            if(putBackToken) jsonData["putBackToken"] = putBackToken;
-
-            return jsonData;
-        };
-
-        performAction("TAKE_EXTRA_TOKEN_AFTER_PURCHASE_POWER", dataCallback)
-            .then((resp) => {
-                if(resp.error) {
-                    showError(resp.message);
-                }
-            }).catch((err) => {
-                showError(err.toString());
-            }).finally(() =>  putBackConfirmBtn.disabled = false);
+        submitExtraToken(takeToken, putBackToken)
+            .finally(() => putBackConfirmBtn.disabled = false);
     };
 };

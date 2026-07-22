@@ -5,6 +5,7 @@ import ca.hexanome04.splendorgame.model.*;
 import ca.hexanome04.splendorgame.model.gameversions.*;
 import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -193,6 +194,7 @@ public class SessionManager {
             case BASE_ORIENT -> new OrientGame(15, 0);
             case BASE_ORIENT_CITIES -> new CitiesGame(0);
             case BASE_ORIENT_TRADE_ROUTES -> new TradingPostsGame(15, 0);
+            case BASE_STRONGHOLDS -> new StrongholdsGame(0);
         };
 
         List<Player> playerList = new ArrayList<>();

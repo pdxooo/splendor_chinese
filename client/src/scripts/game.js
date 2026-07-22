@@ -40,7 +40,31 @@ const updateTokensCount = (parentSelector, tokenInfo, bonusInfo = null) => {
     });
 };
 
-const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
+const updateStrongholdMarkers = (element, cardInfo, players) => {
+    element.querySelector(".stronghold-markers")?.remove();
+    element.classList.remove("conquerable", "stronghold-blocked");
+    element.removeAttribute("stronghold-owner");
+    element.removeAttribute("stronghold-count");
+    const count = Number(cardInfo.strongholdCount || 0);
+    const owner = cardInfo.strongholdOwner;
+    if(!owner || count <= 0) return;
+    element.setAttribute("stronghold-owner", owner);
+    element.setAttribute("stronghold-count", String(count));
+    const ownerInfo = players.find(player => player.name === owner);
+    element.style.setProperty("--stronghold-color", ownerInfo?.colour || "gold");
+    element.classList.toggle("conquerable", count === 3);
+    element.classList.toggle("stronghold-blocked", owner !== SETTINGS.getUsername());
+    element.title = owner === SETTINGS.getUsername()
+        ? `你的要塞：${count}${count === 3 ? "（可征服）" : ""}`
+        : `该卡被 ${owner} 的要塞占领`;
+    const markers = document.createElement("span");
+    markers.className = "stronghold-markers";
+    markers.textContent = "♜".repeat(count);
+    markers.setAttribute("aria-label", `${owner} 的 ${count} 个要塞`);
+    element.appendChild(markers);
+};
+
+const updateTierRow = (selector, devCardsDeck, orientCardsDeck, players = []) => {
     const devCards = devCardsDeck.visibleCards;
     const orientCards = orientCardsDeck.visibleCards;
     const row = document.querySelector(selector);
@@ -59,6 +83,7 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
         freeCardElm.setAttribute("card-id", cardId);
         freeCardElm.setAttribute("cost", JSON.stringify(cost));
         freeCardElm.setAttribute("cost-type", costType);
+        updateStrongholdMarkers(freeCardElm, cardInfo, players);
 
         // slight timeout to ensure no content shift
         // only delay if deck is not invisible
@@ -91,6 +116,11 @@ const updateTierRow = (selector, devCardsDeck, orientCardsDeck) => {
     };
     clearIfNeeded(devCards, ".board-card-dev:not(.board-card-dev-orient)", ".board-cards-dev-deck");
     clearIfNeeded(orientCards, ".board-card-dev.board-card-dev-orient", ".board-cards-dev-deck-orient");
+
+    [...devCards, ...orientCards].forEach(cardInfo => {
+        const element = row.querySelector(`.board-card-dev[card-id="${cardInfo.id}"]`);
+        if(element) updateStrongholdMarkers(element, cardInfo, players);
+    });
 
     // mark deck as empty if needed
     const setEmptyIfNeeded = (deckSelector, canDraw) => {
@@ -183,10 +213,28 @@ const setPlayerIdentity = (container, name, order) => {
     }
 };
 
+const updateAvailableStrongholds = (container, available) => {
+    let label = container.querySelector(".available-strongholds-label");
+    if(available === undefined || available === null) {
+        label?.remove();
+        return;
+    }
+    if(!label) {
+        label = document.createElement("span");
+        label.className = "available-strongholds-label";
+        container.appendChild(label);
+    }
+    label.textContent = `可用要塞：${available}`;
+};
+
 const updateMainPlayerInfo = (playerInfo, order) => {
 
     const playerInv = document.querySelector("#player-inventory");
+    playerInv.setAttribute("data-available-strongholds",
+        String(playerInfo.availableStrongholds ?? 0));
     setPlayerIdentity(playerInv.querySelector(".player-identity"), playerInfo.name, order);
+    updateAvailableStrongholds(playerInv.querySelector(".player-identity"),
+        playerInfo.availableStrongholds);
 
 
     // update prestige points
@@ -255,6 +303,8 @@ const updateOtherPlayerInfo = (pInfo, order) => {
         pNode = document.querySelector(selector);
     }
     setPlayerIdentity(pNode.querySelector(".other-player-profile"), pInfo.name, order);
+    updateAvailableStrongholds(pNode.querySelector(".other-player-profile"),
+        pInfo.availableStrongholds);
 
     // update tokens, cards, prestige points
     const tokenMap = pInfo.tokens;
@@ -412,7 +462,8 @@ const updateGameboard = async () => {
     const baseOnlyVersions = new Set([
         "BASE",
         "BASE_ORIENT_CITIES",
-        "BASE_ORIENT_TRADE_ROUTES"
+        "BASE_ORIENT_TRADE_ROUTES",
+        "BASE_STRONGHOLDS"
     ]);
     document.body.classList.toggle("classic-game", baseOnlyVersions.has(data.gameVersion));
     lastState = currentState;
@@ -448,9 +499,9 @@ const updateGameboard = async () => {
     }
 
     updateNoblesBoard(data.nobleDeck.visibleCards);
-    updateTierRow(".board-cards-row.board-cards-level1", data.tier1Deck, data.tier1OrientDeck);
-    updateTierRow(".board-cards-row.board-cards-level2", data.tier2Deck, data.tier2OrientDeck);
-    updateTierRow(".board-cards-row.board-cards-level3", data.tier3Deck, data.tier3OrientDeck);
+    updateTierRow(".board-cards-row.board-cards-level1", data.tier1Deck, data.tier1OrientDeck, data.players);
+    updateTierRow(".board-cards-row.board-cards-level2", data.tier2Deck, data.tier2OrientDeck, data.players);
+    updateTierRow(".board-cards-row.board-cards-level3", data.tier3Deck, data.tier3OrientDeck, data.players);
 
     furtherUpdates.forEach((func) => func(data));
 

@@ -5,6 +5,7 @@ import ca.hexanome04.splendorgame.model.gameversions.Game;
 import ca.hexanome04.splendorgame.model.gameversions.GameVersions;
 import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import com.google.gson.Gson;
 import java.time.Instant;
@@ -170,6 +171,7 @@ public class GameSession {
             case BASE, BASE_ORIENT -> gson.toJson(game, OrientGame.class);
             case BASE_ORIENT_CITIES -> gson.toJson(game, CitiesGame.class);
             case BASE_ORIENT_TRADE_ROUTES -> gson.toJson(game, TradingPostsGame.class);
+            case BASE_STRONGHOLDS -> gson.toJson(game, StrongholdsGame.class);
         };
     }
 
@@ -182,6 +184,7 @@ public class GameSession {
             case BASE, BASE_ORIENT -> gson.fromJson(turnStartSnapshot, OrientGame.class);
             case BASE_ORIENT_CITIES -> gson.fromJson(turnStartSnapshot, CitiesGame.class);
             case BASE_ORIENT_TRADE_ROUTES -> gson.fromJson(turnStartSnapshot, TradingPostsGame.class);
+            case BASE_STRONGHOLDS -> gson.fromJson(turnStartSnapshot, StrongholdsGame.class);
         };
     }
 

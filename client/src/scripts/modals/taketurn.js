@@ -250,7 +250,7 @@ const showPurchasableDevCards = () => {
         modalCardRows.appendChild(cNode);
     });
 
-    const cardsSelectionSelector = "#buy-card-modal .board-card-dev";
+    const cardsSelectionSelector = "#buy-card-modal .board-card-dev:not(.stronghold-blocked)";
 
     document.querySelectorAll(cardsSelectionSelector).forEach(card => {
         const { purchasable } = calculateMinimumPayment(card);
@@ -277,7 +277,7 @@ const showPurchasableDevCards = () => {
     };
 };
 
-const showPayment = (cardNode) => {
+export const showPayment = (cardNode, actionType = "BUY_CARD") => {
 
     const confirmBtn = document.querySelector("#dev-card-payment-modal .buy-card-confirm-btn");
 
@@ -433,7 +433,7 @@ const showPayment = (cardNode) => {
             };
         };
 
-        performAction("BUY_CARD", dataCallback)
+        performAction(actionType, dataCallback)
             .then((resp) => {
                 if(resp.error) {
                     showError(resp.message);
@@ -485,7 +485,7 @@ const showReservableDevCards = () => {
         }
     });
 
-    const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev";
+    const cardsSelectionSelector = "#reserve-card-modal .modal-board-cards .board-card-dev:not(.stronghold-blocked)";
 
     setupSelection(cardsSelectionSelector);
 

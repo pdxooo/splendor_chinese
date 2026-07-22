@@ -52,3 +52,25 @@
   max-height: 2.5rem;
   border-radius: var(--card-border-radius);
 }
+
+.event-content .card-event .content img.history-card-thumbnail {
+  cursor: zoom-in;
+  transition: filter 0.15s ease;
+}
+
+.event-content .card-event .content img.history-card-thumbnail:hover {
+  filter: brightness(1.12);
+}
+
+.history-card-preview {
+  position: fixed;
+  z-index: 1000;
+  width: min(14rem, 22vw);
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  border: 0.15rem solid goldenrod;
+  border-radius: var(--card-border-radius);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 75%);
+  pointer-events: none;
+}

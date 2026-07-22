@@ -38,6 +38,10 @@ public class ActionDecoder {
                 case CHOOSE_SATCHEL_TOKEN -> new ChooseTokenTypeAction().decodeAction(gson);
                 case TAKE_EXTRA_TOKEN_AFTER_PURCHASE_POWER -> new TakeExtraTokenAfterPurchasePowerAction().decodeAction(gson);
                 case CHOOSE_CITY -> new ChooseCityAction().decodeAction(gson);
+                case PLACE_OR_MOVE_STRONGHOLD -> new PlaceOrMoveStrongholdAction().decodeAction(gson);
+                case REMOVE_STRONGHOLD -> new RemoveStrongholdAction().decodeAction(gson);
+                case CONQUER_CARD -> new ConquerCardAction().decodeAction(gson);
+                case SKIP_CONQUEST -> new SkipConquestAction().decodeAction(gson);
             };
 
         } catch (Exception e) {

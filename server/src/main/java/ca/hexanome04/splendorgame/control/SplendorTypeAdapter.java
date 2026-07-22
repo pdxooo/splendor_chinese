@@ -12,6 +12,8 @@ import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesGame;
 import ca.hexanome04.splendorgame.model.gameversions.cities.CitiesPlayer;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientGame;
 import ca.hexanome04.splendorgame.model.gameversions.orient.OrientPlayer;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsGame;
+import ca.hexanome04.splendorgame.model.gameversions.strongholds.StrongholdsPlayer;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsGame;
 import ca.hexanome04.splendorgame.model.gameversions.tradingposts.TradingPostsPlayer;
 import com.google.gson.ExclusionStrategy;
@@ -48,12 +50,14 @@ public class SplendorTypeAdapter {
         var playerAdapterFactory = RuntimeTypeAdapterFactory.of(Player.class)
                 .registerSubtype(OrientPlayer.class)
                 .registerSubtype(CitiesPlayer.class)
-                .registerSubtype(TradingPostsPlayer.class);
+                .registerSubtype(TradingPostsPlayer.class)
+                .registerSubtype(StrongholdsPlayer.class);
 
         var gameAdapterFactory = RuntimeTypeAdapterFactory.of(Game.class)
                 .registerSubtype(OrientGame.class)
                 .registerSubtype(CitiesGame.class)
-                .registerSubtype(TradingPostsGame.class);
+                .registerSubtype(TradingPostsGame.class)
+                .registerSubtype(StrongholdsGame.class);
 
         var cardAdapterFactory = RuntimeTypeAdapterFactory.of(DevelopmentCard.class)
                 .registerSubtype(RegDevelopmentCard.class)

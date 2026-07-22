@@ -71,6 +71,17 @@ export function performFollowUpAction(data) {
         case "CHOOSE_CITY":
             initChooseCity(data);
             modalSelector = "#choose-city-modal";
+            break;
+        case "PLACE_OR_MOVE_STRONGHOLD":
+        case "REMOVE_STRONGHOLD":
+            window.splendorStrongholds?.showStrongholdAction(data);
+            modalSelector = "#stronghold-action-modal";
+            break;
+        case "CONQUER_CARD":
+        case "SKIP_CONQUEST":
+            window.splendorStrongholds?.showConquest(data);
+            modalSelector = "#conquest-modal";
+            break;
         default:
             // its fine
     }

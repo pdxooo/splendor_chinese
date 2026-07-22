@@ -253,5 +253,62 @@ public interface Game {
      */
     void setGameOver(boolean gameOver);
 
+    /**
+     * Validate mode-specific access to a visible development card.
+     *
+     * @param player acting player
+     * @param card selected card
+     * @return rejection result, or null when access is allowed
+     */
+    default ActionResult validateDevelopmentCardAccess(Player player, DevelopmentCard card) {
+        return null;
+    }
+
+    /**
+     * Apply mode state changes before a visible card leaves the board.
+     *
+     * @param player acting player
+     * @param card selected card
+     */
+    default void beforeDevelopmentCardLeavesBoard(Player player, DevelopmentCard card) {
+        // Most modes do not attach state to visible development cards.
+    }
+
+    /**
+     * Remove a purchased development card from the board.
+     *
+     * @param card purchased card
+     * @return whether the card was removed
+     */
+    default boolean takePurchasedDevelopmentCard(DevelopmentCard card) {
+        return takeCard(card);
+    }
+
+    /**
+     * Begin a mode-specific mandatory action after a successful purchase.
+     *
+     * @param player acting player
+     * @param card purchased card
+     * @param fromBoard whether the card came from the visible board
+     * @param conquest whether the purchase was a conquest
+     */
+    default void beginMandatoryStrongholdAction(Player player, DevelopmentCard card,
+                                                boolean fromBoard, boolean conquest) {
+        // Only the Strongholds mode adds a mandatory post-purchase action.
+    }
+
+    /**
+     * Transform completed action results before the turn state advances.
+     *
+     * @param player acting player
+     * @param action completed action
+     * @param results action results
+     * @return results after applying mode-specific follow-up choices
+     */
+    default ArrayList<ActionResult> transformActionResults(Player player, Action action,
+                                                            ArrayList<ActionResult> results) {
+        return results;
+    }
+
 
 }

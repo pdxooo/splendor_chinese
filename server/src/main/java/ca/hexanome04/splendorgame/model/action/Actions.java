@@ -54,4 +54,16 @@ public enum Actions {
      * Choose city action.
      */
     CHOOSE_CITY,
+
+    /** Place an available stronghold or move one already placed. */
+    PLACE_OR_MOVE_STRONGHOLD,
+
+    /** Remove exactly one opposing stronghold. */
+    REMOVE_STRONGHOLD,
+
+    /** Pay for a card occupied by three of the current player's strongholds. */
+    CONQUER_CARD,
+
+    /** Decline an available conquest and complete the turn. */
+    SKIP_CONQUEST,
 }

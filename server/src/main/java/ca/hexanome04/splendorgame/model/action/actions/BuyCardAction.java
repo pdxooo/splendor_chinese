@@ -16,10 +16,14 @@ import java.util.*;
  */
 public class BuyCardAction extends Action {
 
-    private String buyCardId;
-    private HashMap<TokenType, Integer> selectedTokens;
-    private int virtualGoldPieces;
-    private List<String> burnCardIds;
+    /** Identifier of the card selected for purchase. */
+    protected String buyCardId;
+    /** Real tokens selected as payment. */
+    protected HashMap<TokenType, Integer> selectedTokens;
+    /** Virtual Gold pieces selected as payment. */
+    protected int virtualGoldPieces;
+    /** Purchased cards selected for an Orient bonus-card cost. */
+    protected List<String> burnCardIds;
 
     /**
      * Construct a buy card action.
@@ -68,6 +72,24 @@ public class BuyCardAction extends Action {
         this("", new HashMap<>());
     }
 
+    /**
+     * Obtain the action identifier required by this purchase.
+     *
+     * @return buy-card action identifier
+     */
+    protected Actions requiredAction() {
+        return Actions.BUY_CARD;
+    }
+
+    /**
+     * Identify whether this purchase is a Strongholds conquest.
+     *
+     * @return false for a normal purchase
+     */
+    protected boolean isConquestPurchase() {
+        return false;
+    }
+
     @Override
     protected List<ActionResult> run(Game game, Player player) {
 
@@ -84,6 +106,13 @@ public class BuyCardAction extends Action {
 
         if (dc == null) {
             throw new SplendorException("Card with id '" + this.buyCardId + "' does not exist.");
+        }
+
+        if (!wasReserved) {
+            ActionResult accessError = game.validateDevelopmentCardAccess(player, dc);
+            if (accessError != null) {
+                return new ArrayList<>(List.of(accessError));
+            }
         }
 
         // for orient, can only buy satchel if you own another card with a bonus
@@ -130,11 +159,14 @@ public class BuyCardAction extends Action {
             discardVirtualGoldCards(player, virtualGoldPiecesUsed);
         }
 
+        if (!wasReserved) {
+            game.beforeDevelopmentCardLeavesBoard(player, dc);
+        }
         player.addCard(dc);
         if (wasReserved) {
             player.removeReservedCard(dc);
         } else {
-            game.takeCard(dc);
+            game.takePurchasedDevelopmentCard(dc);
         }
 
         if (dc.getTokenType() != TokenType.Satchel) {
@@ -181,11 +213,17 @@ public class BuyCardAction extends Action {
             }
         }
 
-        if (result.size() == 0) {
+        boolean actionWasValid = game.getCurValidActions().contains(requiredAction());
+        boolean mandatoryStrongholdAction = game.getGameVersion()
+                == ca.hexanome04.splendorgame.model.gameversions.GameVersions.BASE_STRONGHOLDS;
+        if (mandatoryStrongholdAction) {
+            game.beginMandatoryStrongholdAction(player, dc, !wasReserved, isConquestPurchase());
+            result.add(ActionResult.MUST_CHOOSE_STRONGHOLD_ACTION);
+        } else if (result.size() == 0) {
             result.add(ActionResult.TURN_COMPLETED);
         }
 
-        if (game.getCurValidActions().contains(Actions.BUY_CARD)) {
+        if (actionWasValid) {
             result.add(ActionResult.VALID_ACTION);
         }
 

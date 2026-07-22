@@ -1,0 +1,67 @@
+.board-card-dev { position: relative; }
+
+.stronghold-markers {
+  position: absolute;
+  right: 0.15rem;
+  bottom: 0.15rem;
+  z-index: 8;
+  display: flex;
+  gap: 0.08rem;
+  padding: 0.12rem 0.2rem;
+  color: var(--stronghold-color, gold);
+  background: rgb(0 0 0 / 72%);
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  font-size: clamp(0.65rem, 1vw, 1rem);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.board-card-dev.conquerable { box-shadow: 0 0 1rem 0.3rem #ffd700; }
+.board-card-dev.stronghold-blocked { filter: grayscale(0.65) brightness(0.58); }
+.board-card-dev.stronghold-blocked::after {
+  content: "他人要塞占领";
+  position: absolute;
+  inset: auto 0 42% 0;
+  z-index: 9;
+  padding: 0.15rem;
+  color: #fff;
+  background: rgb(90 0 0 / 85%);
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.stronghold-card-options,
+.conquest-card-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  max-height: 48vh;
+  overflow: auto;
+  padding: 0.8rem;
+}
+
+.stronghold-card-option,
+.conquest-card-option {
+  position: relative;
+  width: 7rem;
+  border: 2px solid transparent;
+  border-radius: var(--card-border-radius);
+  cursor: pointer;
+}
+
+.stronghold-card-option img,
+.conquest-card-option img { width: 100%; display: block; border-radius: inherit; }
+.stronghold-card-option.selected,
+.conquest-card-option.selected { border-color: gold; box-shadow: 0 0 0.8rem gold; }
+.stronghold-card-option.source { border-color: #40a9ff; box-shadow: 0 0 0.8rem #40a9ff; }
+.stronghold-mode-buttons { display: flex; justify-content: center; gap: 1rem; }
+.stronghold-mode-buttons button.active { background: #7a5b00; }
+.available-strongholds-label {
+    display: block;
+    margin-top: 0.35rem;
+    color: #f2bd21;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}

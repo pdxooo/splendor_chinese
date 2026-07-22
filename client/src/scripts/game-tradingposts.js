@@ -112,7 +112,7 @@ const updatePlayerTPHistory = (oldState, newState) => {
     });
 
     if(newPowersCount > 0) {
-        writeBasicUpdate(`Unlocked ${newPowersCount} new power${newPowersCount > 1 ? "s" : ""}`);
+        writeBasicUpdate(`解锁了 ${newPowersCount} 项贸易站能力`);
     }
 };
 registerPlayerUpdater(updatePlayerTPHistory);

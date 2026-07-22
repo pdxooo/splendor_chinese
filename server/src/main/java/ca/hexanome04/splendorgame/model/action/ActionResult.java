@@ -98,7 +98,22 @@ public enum ActionResult {
     /**
      * Player has qualified for 2+ cities and must choose city.
      */
-    MUST_CHOOSE_CITY;
+    MUST_CHOOSE_CITY,
+
+    /** A successful purchase requires a stronghold action. */
+    MUST_CHOOSE_STRONGHOLD_ACTION,
+
+    /** A card with three strongholds may now be conquered or skipped. */
+    MUST_CHOOSE_CONQUEST,
+
+    /** The selected card is protected by another player's strongholds. */
+    CARD_OCCUPIED_BY_OTHER_STRONGHOLD("该卡牌已被其他玩家要塞占领"),
+
+    /** The requested placement, move, or removal is illegal. */
+    INVALID_STRONGHOLD_ACTION("该要塞操作不合法。"),
+
+    /** The requested conquest is unavailable or invalid. */
+    INVALID_CONQUEST("当前不能征服这张卡牌。");
 
 
     private final String description;

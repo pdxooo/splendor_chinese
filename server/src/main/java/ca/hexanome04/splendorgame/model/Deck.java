@@ -56,6 +56,20 @@ public class Deck<T extends Card> {
      * @return card taken
      */
     public Card take(T card) {
+        Card takenCard = takeWithoutRefill(card);
+        if (takenCard != null && !(card instanceof NobleCard || card instanceof CityCard)) {
+            drawCards(1);
+        }
+        return takenCard;
+    }
+
+    /**
+     * Remove a visible card without drawing its replacement.
+     *
+     * @param card visible card to remove
+     * @return removed card, or null when it is not visible
+     */
+    public Card takeWithoutRefill(T card) {
         // or input a card id?
 
         // get the card from the visible cards list
@@ -78,11 +92,6 @@ public class Deck<T extends Card> {
 
         // take card out of visible list
         this.visibleCards.remove(i);
-
-        // also replenish the taken card (if there's enough in the cards stack, and if it's not a noble or city card)
-        if (!(card instanceof NobleCard || card instanceof CityCard)) {
-            drawCards(1);
-        }
 
         this.updateDrawable();
 

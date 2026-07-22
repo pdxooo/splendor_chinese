@@ -25,4 +25,7 @@ public enum GameVersions {
      */
     BASE_ORIENT_TRADE_ROUTES,
 
+    /** Base game with nobles and the Strongholds module. */
+    BASE_STRONGHOLDS,
+
 }

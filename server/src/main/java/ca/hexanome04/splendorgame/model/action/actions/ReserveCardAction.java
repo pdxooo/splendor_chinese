@@ -102,6 +102,14 @@ public class ReserveCardAction extends Action {
             throw new SplendorException("Card with id '" + this.reserveCardId + "' does not exist.");
         }
 
+        if (!faceDownReservation) {
+            ActionResult accessError = game.validateDevelopmentCardAccess(player, dc);
+            if (accessError != null) {
+                return new ArrayList<>(List.of(accessError));
+            }
+            game.beforeDevelopmentCardLeavesBoard(player, dc);
+        }
+
         // no error handling
         if (!faceDownReservation) {
             game.takeCard(dc);

@@ -360,6 +360,40 @@ public class OrientGame implements Game {
         return takenCard != null;
     }
 
+    /**
+     * Remove a visible regular card without revealing its replacement.
+     *
+     * @param card visible regular card
+     * @return whether the card was removed
+     */
+    public boolean takeCardWithoutRefill(DevelopmentCard card) {
+        Card takenCard = null;
+        if (card instanceof RegDevelopmentCard regular) {
+            takenCard = tier1Deck.takeWithoutRefill(regular);
+            if (takenCard == null) {
+                takenCard = tier2Deck.takeWithoutRefill(regular);
+            }
+            if (takenCard == null) {
+                takenCard = tier3Deck.takeWithoutRefill(regular);
+            }
+        }
+        return takenCard != null;
+    }
+
+    /**
+     * Reveal one replacement regular card after a delayed module action.
+     *
+     * @param tier tier whose empty slot is refilled
+     */
+    public void refillDevelopmentCard(CardTier tier) {
+        switch (tier) {
+            case TIER_1 -> tier1Deck.drawCards(1);
+            case TIER_2 -> tier2Deck.drawCards(1);
+            case TIER_3 -> tier3Deck.drawCards(1);
+            default -> throw new IllegalArgumentException("Unsupported development-card tier.");
+        }
+    }
+
     @Override
     public DevelopmentCard takeTopDevelopmentCard(CardTier tier) {
         return switch (tier) {
@@ -420,6 +454,7 @@ public class OrientGame implements Game {
 
         List<ActionResult> ar = action.execute(this, p);
         results.addAll(ar);
+        results = transformActionResults(p, action, results);
 
         // Check if player qualifies for noble card at end of turn
         ArrayList<NobleCard> nobleCards = qualifiesForNoble(p);
@@ -466,6 +501,11 @@ public class OrientGame implements Game {
                     case MUST_CHOOSE_CASCADE_CARD_TIER_2 -> this.addValidAction(Actions.CASCADE_2);
                     case MUST_CHOOSE_TOKEN_TYPE -> this.addValidAction(Actions.CHOOSE_SATCHEL_TOKEN);
                     case MUST_RESERVE_NOBLE -> this.addValidAction(Actions.RESERVE_NOBLE);
+                    case MUST_CHOOSE_STRONGHOLD_ACTION -> {
+                        this.addValidAction(Actions.PLACE_OR_MOVE_STRONGHOLD);
+                        this.addValidAction(Actions.REMOVE_STRONGHOLD);
+                    }
+                    case MUST_CHOOSE_CONQUEST -> { /* StrongholdsGame already installs both choices. */ }
                     default -> {
                         continue;
                     }

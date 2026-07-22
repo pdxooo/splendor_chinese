@@ -74,6 +74,10 @@ public class Initializer {
             new GameServiceInfo(gsName + "_" + GameVersions.BASE_ORIENT_TRADE_ROUTES,
                         gsDisplayName + " Trade Routes", gsLocation,
                         2, 4, "true"),
+
+            new GameServiceInfo(gsName + "_" + GameVersions.BASE_STRONGHOLDS,
+                        gsDisplayName + " Strongholds", gsLocation,
+                        2, 4, "true"),
         };
         this.restTemplate.setErrorHandler(new EmptyRestTemplateErrorHandler());
     }
